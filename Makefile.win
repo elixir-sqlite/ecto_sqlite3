@@ -1,0 +1,29 @@
+!IF [where /Q Makefile.auto.win]
+# The file doesn't exist, so don't include it.
+!ELSE
+!INCLUDE Makefile.auto.win
+!IF [del /Q /F Makefile.auto.win] == 0
+!ENDIF
+!ENDIF
+
+NMAKE = nmake /$(MAKEFLAGS)
+CFLAGS = /O2 /EHsc /I"sqlite3"
+
+SRC = sqlite3\sqlite3.c c_src\sqlite3_nif.c c_src\queue.c
+
+all: clean priv\sqlite3_nif.dll
+
+clean:
+    del /Q /F priv
+
+Makefile.auto.win:
+    erl -noshell -s init stop -eval "io:setopts(standard_io, [{encoding, unicode}]), io:format(\"ERTS_INCLUDE_PATH=~ts/erts-~ts/include/\", [code:root_dir(), erlang:system_info(version)])." > $@
+
+!IFDEF ERTS_INCLUDE_PATH
+priv\sqlite3_nif.dll:
+    if NOT EXIST "priv" mkdir "priv"
+    $(CC) $(CFLAGS) /I"$(ERTS_INCLUDE_PATH)" /LD /MD /Fe$@ $(SRC)
+!ELSE
+priv\sqlite3_nif.dll: Makefile.auto.win
+    $(NMAKE) /F Makefile.win priv\sqlite3_nif.dll
+!ENDIF
