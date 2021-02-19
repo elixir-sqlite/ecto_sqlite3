@@ -30,7 +30,6 @@ defmodule Exqlite.MixProject do
     [
       {:db_connection, "~> 2.1"},
       {:decimal, "~> 2.0"},
-      {:esqlite, "~> 0.4"},
       {:ecto_sql, "~> 3.5.4"},
       {:elixir_make, "~> 0.6", runtime: false},
       {:ex_doc, "~> 0.23.0", only: [:dev], runtime: false},
