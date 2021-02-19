@@ -48,6 +48,35 @@ defmodule Exqlite.Sqlite3Test do
       {:ok, 0} = Sqlite3.changes(conn)
       :ok = Sqlite3.close(conn)
     end
+
+    test "creates a virtual table with fts3" do
+      {:ok, conn} = Sqlite3.open(":memory:")
+
+      :ok =
+        Sqlite3.execute(conn, "create virtual table things using fts3(content text)")
+
+      :ok =
+        Sqlite3.execute(conn, "insert into things(content) VALUES ('this is content')")
+    end
+
+    test "creates a virtual table with fts4" do
+      {:ok, conn} = Sqlite3.open(":memory:")
+
+      :ok =
+        Sqlite3.execute(conn, "create virtual table things using fts4(content text)")
+
+      :ok =
+        Sqlite3.execute(conn, "insert into things(content) VALUES ('this is content')")
+    end
+
+    test "creates a virtual table with fts5" do
+      {:ok, conn} = Sqlite3.open(":memory:")
+
+      :ok = Sqlite3.execute(conn, "create virtual table things using fts5(content)")
+
+      :ok =
+        Sqlite3.execute(conn, "insert into things(content) VALUES ('this is content')")
+    end
   end
 
   describe ".prepare/3" do
