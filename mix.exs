@@ -10,7 +10,11 @@ defmodule Exqlite.MixProject do
       make_targets: ["all"],
       make_clean: ["clean"],
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      source_url: "https://github.com/warmwaffles/exqlite",
+      homepage_url: "https://github.com/warmwaffles/exqlite",
+      deps: deps(),
+      package: package(),
+      description: description()
     ]
   end
 
@@ -29,7 +33,23 @@ defmodule Exqlite.MixProject do
       {:esqlite, "~> 0.4"},
       {:ecto_sql, "~> 3.5.4"},
       {:elixir_make, "~> 0.6", runtime: false},
+      {:ex_doc, "~> 0.23.0", only: [:dev], runtime: false},
       {:temp, "~> 0.4", only: [:test]}
+    ]
+  end
+
+  defp description do
+    "An Sqlite3 Elixir library."
+  end
+
+  defp package do
+    [
+      name: "exqlite",
+      licenses: ["MIT"],
+      links: %{
+        "GitHub" => "https://github.com/warmwaffles/exqlite",
+        "docs" => "https://hexdocs.pm/exqlite"
+      }
     ]
   end
 end
