@@ -15,7 +15,7 @@ jobs:
       - name: Install system dependencies
         run: |
           apt-get update
-          apt-get install --no-install-recommends -y git make gcc
+          apt-get install --no-install-recommends -y git build-essential
           mix local.rebar --force
           mix local.hex --force
           mix deps.get
