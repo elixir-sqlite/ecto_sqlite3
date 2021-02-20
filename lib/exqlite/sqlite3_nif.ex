@@ -21,7 +21,7 @@ defmodule Exqlite.Sqlite3NIF do
   @spec close(db()) :: :ok | {:error, reason()}
   def close(_conn), do: :erlang.nif_error(:not_loaded)
 
-  @spec execute(db(), String.Chars.t()) :: {:ok, any} | {:error, reason()}
+  @spec execute(db(), String.Chars.t()) :: :ok | {:error, reason()}
   def execute(_conn, _sql), do: :erlang.nif_error(:not_loaded)
 
   @spec changes(db()) :: {:ok, integer()}
