@@ -43,4 +43,14 @@ defmodule Exqlite.Connection do
     end
   end
 
+  @impl true
+  def checkin(state) do
+    {:ok, state}
+  end
+
+  @impl true
+  def checkout(state) do
+    {:ok, state}
+  end
+
 end
