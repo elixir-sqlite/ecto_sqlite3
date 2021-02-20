@@ -1,4 +1,4 @@
-name: CI
+name: Main Workflow
 on: [push, pull_request]
 jobs:
   test-elixir:
