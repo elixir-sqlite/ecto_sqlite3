@@ -31,4 +31,18 @@ defmodule Exqlite.ConnectionTest do
       assert state.db
     end
   end
+
+  describe ".disconnect/2" do
+    test "disconnects a database that was never connected" do
+      conn = %Exqlite.Connection{db: nil, path: nil}
+
+      assert :ok == Connection.disconnect(nil, conn)
+    end
+
+    test "disconnects a connected database" do
+      {:ok, conn} = Connection.connect(path: :memory)
+
+      assert :ok == Connection.disconnect(nil, conn)
+    end
+  end
 end
