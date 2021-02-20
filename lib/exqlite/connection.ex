@@ -53,4 +53,18 @@ defmodule Exqlite.Connection do
     {:ok, state}
   end
 
+  ###----------------------------------
+  #   handle_* implementations
+  ###----------------------------------
+
+  @impl true
+  def handle_prepare(query, _opts, state) do
+    # TODO: we may want to cache prepared queries like Myxql does
+    #       for now we just invoke sqlite directly
+    case Sqlite3.prepare(state.db, query) do
+      {:ok, statement} -> {:ok, statement, state}
+      {:error, reason} -> %Error{message: reason}
+    end
+  end
+
 end
