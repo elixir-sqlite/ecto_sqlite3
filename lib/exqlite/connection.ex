@@ -27,7 +27,7 @@ defmodule Exqlite.Connection do
         {:error,
          %Error{
            message:
-             "You must provide a :path to the database. Example: connect(path: \"./\") or connect(path: :memory)"
+             ~s{You must provide a :path to the database. Example: connect(path: "./") or connect(path: :memory)}
          }}
 
       _ ->
