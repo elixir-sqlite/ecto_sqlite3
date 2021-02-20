@@ -1,6 +1,5 @@
 defmodule Exqlite.Connection do
-
-  @doc """
+  @moduledoc """
   This module imlements connection details as defined in DBProtocol.
 
   Notes:
@@ -13,6 +12,7 @@ defmodule Exqlite.Connection do
   alias Exqlite.Sqlite3
   alias Exqlite.Error
   alias Exqlite.Result
+  alias Exqlite.Query
 
   defstruct [
     :db
@@ -53,17 +53,21 @@ defmodule Exqlite.Connection do
     {:ok, state}
   end
 
-  ###----------------------------------
+  ### ----------------------------------
   #   handle_* implementations
-  ###----------------------------------
+  ### ----------------------------------
 
   @impl true
-  def handle_prepare(query, _opts, state) do
+  def handle_prepare(%Query{} = query, _opts, state) do
     # TODO: we may want to cache prepared queries like Myxql does
     #       for now we just invoke sqlite directly
-    case Sqlite3.prepare(state.db, query) do
-      {:ok, statement} -> {:ok, statement, state}
-      {:error, reason} -> %Error{message: reason}
+    prepare(query, state)
+  end
+
+  @impl true
+  def handle_execute(%Query{} = query, params, _opts, state) do
+    with {:ok, query, state} <- maybe_prepare(query, state) do
+      execute(query, params, state)
     end
   end
 
@@ -82,9 +86,14 @@ defmodule Exqlite.Connection do
 
     # TODO: handle/track SAVEPOINT
     case Keyword.get(opts, :mode, :deferred) do
-      :immediate -> handle_transaction(:begin, "BEGIN IMMEDIATE TRANSACTION", state)
-      :exclusive -> handle_transaction(:begin, "BEGIN EXCLUSIVE TRANSACTION", state)
-      mode when mode in [nil, :deferred] -> handle_transaction(:begin, "BEGIN TRANSACTION", state)
+      :immediate ->
+        handle_transaction(:begin, "BEGIN IMMEDIATE TRANSACTION", state)
+
+      :exclusive ->
+        handle_transaction(:begin, "BEGIN EXCLUSIVE TRANSACTION", state)
+
+      mode when mode in [nil, :deferred] ->
+        handle_transaction(:begin, "BEGIN TRANSACTION", state)
     end
   end
 
@@ -105,9 +114,9 @@ defmodule Exqlite.Connection do
     handle_transaction(:rollback, "ROLLBACK", state)
   end
 
-  ###----------------------------------
+  ### ----------------------------------
   #     Internal functions and helpers
-  ###----------------------------------
+  ### ----------------------------------
 
   defp do_connect(path) do
     case Sqlite3.open(path) do
@@ -120,6 +129,57 @@ defmodule Exqlite.Connection do
 
       {:error, reason} ->
         {:error, %Exqlite.Error{message: reason}}
+    end
+  end
+
+  defp maybe_prepare(%Query{ref: ref} = query, state) when ref != nil, do: {:ok, query, state}
+  defp maybe_prepare(%Query{} = query, state), do: prepare(query, state)
+
+  defp prepare(%Query{statement: statement} = query, state) do
+    case Sqlite3.prepare(state.db, statement) do
+      {:ok, ref} -> {:ok, %{query | ref: ref}, state}
+      {:error, reason} -> {:error, %Error{message: reason}}
+    end
+  end
+
+  defp execute(%Query{} = query, params, state) do
+    with {:ok, query} <- bind_params(query, params, state) do
+      do_execute(query, state, %Result{})
+    end
+  end
+
+  defp do_execute(%Query{ref: ref} = query, state, %Result{} = result) do
+    case Sqlite3.step(state.db, query.ref) do
+      :done ->
+        # TODO: this query may fail, we need to properly propagate this
+        {:ok, columns} = Sqlite3.columns(state.db, ref)
+
+        # TODO: this may fail, we need to properly propagate this
+        Sqlite3.close(ref)
+        {:ok, %{result | columns: columns}}
+
+      {:row, row} ->
+        # TODO: we need something better than simply appending rows
+        do_execute(query, state, %{result | rows: result.rows ++ [row]})
+
+      :busy ->
+        {:error, %Error{message: "Database busy"}}
+    end
+  end
+
+  defp bind_params(%Query{ref: ref} = query, params, state) do
+    # TODO:
+    #    - Add parameter translation to sqlite types. See e.g.
+    #      https://github.com/elixir-sqlite/sqlitex/blob/master/lib/sqlitex/statement.ex#L274
+    #    - Do we do anything special to distinguish the different types of
+    #      parameters? See https://www.sqlite.org/lang_expr.html#varparam and
+    #      https://www.sqlite.org/c3ref/bind_blob.html E.g. we can accept a map of params
+    #      that binds values to named params. We can look up their indices via
+    #      https://www.sqlite.org/c3ref/bind_parameter_index.html
+    case Sqlite3.bind(state.db, ref, params) do
+      :ok -> {:ok, query}
+      {:error, {code, reason}} -> {:error, %Error{message: "#{reason}. Code: #{code}"}}
+      {:error, reason} -> {:error, %Error{message: reason}}
     end
   end
 

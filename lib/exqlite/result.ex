@@ -6,5 +6,5 @@ defmodule Exqlite.Result do
           num_rows: integer
         }
 
-  defstruct command: nil, columns: nil, rows: nil, num_rows: nil
+  defstruct command: nil, columns: [], rows: [], num_rows: 0
 end
