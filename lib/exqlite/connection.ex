@@ -15,10 +15,19 @@ defmodule Exqlite.Connection do
   alias Exqlite.Query
 
   defstruct [
-    :db, :path
+    :db,
+    :path
   ]
 
   @impl true
+  @doc """
+  Initializes the Ecto Exqlite adapter.
+
+  Allowed options:
+
+    - `path` - The path to the database. In memory databses are allowed. Use
+      `:memory` or `":memory:"`.
+  """
   def connect(opts) do
     path = Keyword.get(opts, :path)
 
@@ -29,6 +38,9 @@ defmodule Exqlite.Connection do
            message:
              ~s{You must provide a :path to the database. Example: connect(path: "./") or connect(path: :memory)}
          }}
+
+      :memory ->
+        do_connect(":memory:")
 
       _ ->
         do_connect(path)
@@ -123,7 +135,7 @@ defmodule Exqlite.Connection do
       {:ok, db} ->
         state = %__MODULE__{
           db: db,
-          path: path,
+          path: path
         }
 
         {:ok, state}
@@ -133,7 +145,9 @@ defmodule Exqlite.Connection do
     end
   end
 
-  defp maybe_prepare(%Query{ref: ref} = query, state) when ref != nil, do: {:ok, query, state}
+  defp maybe_prepare(%Query{ref: ref} = query, state) when ref != nil,
+    do: {:ok, query, state}
+
   defp maybe_prepare(%Query{} = query, state), do: prepare(query, state)
 
   defp prepare(%Query{statement: statement} = query, state) do

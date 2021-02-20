@@ -6,18 +6,26 @@ defmodule Exqlite.ConnectionTest do
   describe ".connect/1" do
     test "returns error when path is missing from options" do
       {:error, error} = Connection.connect([])
+
       assert error.message == ~s{You must provide a :path to the database. Example: connect(path: "./") or connect(path: :memory)}
     end
 
     test "connects to an in memory database" do
-      {:ok, state} = Connection.connect([path: ":memory:"])
+      {:ok, state} = Connection.connect(path: ":memory:")
+
+      assert state.path == ":memory:"
+      assert state.db
+    end
+
+    test "connects to in memory when the memory atom is passed" do
+      {:ok, state} = Connection.connect(path: :memory)
 
       assert state.path == ":memory:"
       assert state.db
     end
 
     test "connects to a file" do
-      {:ok, state} = Connection.connect([path: Temp.path!()])
+      {:ok, state} = Connection.connect(path: Temp.path!())
 
       assert state.path
       assert state.db

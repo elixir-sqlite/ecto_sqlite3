@@ -39,7 +39,7 @@ defmodule Exqlite.Query do
     def encode(_query, params, _opts) do
       # TODO. See also Connection.bind/3
       params
-      #Protocol.encode_params(params)
+      # Protocol.encode_params(params)
     end
 
     def decode(_query, result, _opts) do
