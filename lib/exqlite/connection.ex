@@ -18,4 +18,29 @@ defmodule Exqlite.Connection do
     :db
   ]
 
+  @impl true
+  def connect(opts) do
+    path = Keyword.get(opts, :path)
+
+    case path do
+      nil ->
+        {:error,
+         %Error{
+           message:
+             "You must provide a :path to the database. Example: connect(path: \"./\") or connect(path: :memory)"
+         }}
+
+      _ ->
+        do_connect(path)
+    end
+  end
+
+  @impl true
+  def disconnect(_reason, %__MODULE__{db: db}) do
+    case Sqlite3.close(db) do
+      :ok -> :ok
+      {:error, reason} -> {:error, %Error{message: reason}}
+    end
+  end
+
 end
