@@ -15,7 +15,7 @@ defmodule Exqlite.Connection do
   alias Exqlite.Query
 
   defstruct [
-    :db
+    :db, :path
   ]
 
   @impl true
@@ -122,7 +122,8 @@ defmodule Exqlite.Connection do
     case Sqlite3.open(path) do
       {:ok, db} ->
         state = %__MODULE__{
-          db: db
+          db: db,
+          path: path,
         }
 
         {:ok, state}
