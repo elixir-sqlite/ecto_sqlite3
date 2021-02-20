@@ -14,7 +14,7 @@ jobs:
       - name: Install Dependencies
         run: |
           apt-get update
-          apt-get install -y git
+          apt-get install -y git build-essential
           mix local.rebar --force
           mix local.hex --force
           mix deps.get
