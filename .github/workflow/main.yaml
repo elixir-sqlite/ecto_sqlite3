@@ -2,7 +2,7 @@ name: Main Workflow
 on: [push, pull_request]
 jobs:
   test-elixir:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     container: elixir:${{ matrix.elixir_version }}-slim
 
     strategy:
