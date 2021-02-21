@@ -36,6 +36,17 @@ defmodule Exqlite.QueriesTest do
       assert :ok == Queries.put(cache, query)
       assert 1 == Queries.size(cache)
     end
+
+    test "stores named query in only one cache" do
+      cache1 = Queries.new(:foo)
+      cache2 = Queries.new(:foo)
+      query = %Query{name: "myquery", ref: make_ref()}
+
+      assert :ok == Queries.put(cache1, query)
+
+      assert 1 == Queries.size(cache1)
+      assert 0 == Queries.size(cache2)
+    end
   end
 
   describe ".get/2" do
@@ -59,9 +70,8 @@ defmodule Exqlite.QueriesTest do
       cache = Queries.new(:foo)
       existing = %Query{name: "myquery", ref: make_ref()}
       Queries.put(cache, existing)
-      lookup = %Query{name: "myquery", ref: nil}
 
-      found = Queries.get(cache, existing)
+      found = Queries.get(cache, %Query{name: "myquery", ref: nil})
 
       assert found.ref == existing.ref
     end

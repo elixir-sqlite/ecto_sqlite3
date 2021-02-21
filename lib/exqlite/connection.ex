@@ -160,6 +160,19 @@ defmodule Exqlite.Connection do
     end
   end
 
+  @doc """
+  Close a query prepared by `c:handle_prepare/3` with the database. Return
+  `{:ok, result, state}` on success and to continue,
+  `{:error, exception, state}` to return an error and continue, or
+  `{:disconnect, exception, state}` to return an error and disconnect.
+
+  This callback is called in the client process.
+  """
+  @impl true
+  def handle_close(_query, _opts, state) do
+    {:ok, nil, state}
+  end
+
   ### ----------------------------------
   #     Internal functions and helpers
   ### ----------------------------------
