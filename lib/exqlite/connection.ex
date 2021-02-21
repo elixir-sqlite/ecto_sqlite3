@@ -13,11 +13,13 @@ defmodule Exqlite.Connection do
   alias Exqlite.Error
   alias Exqlite.Result
   alias Exqlite.Query
+  alias Exqlite.Queries
 
   defstruct [
     :db,
     :path,
     :transaction_status,
+    :queries
   ]
 
   @impl true
@@ -154,6 +156,7 @@ defmodule Exqlite.Connection do
           db: db,
           path: path,
           transaction_status: :idle,
+          queries: Queries.new(__MODULE__)
         }
 
         {:ok, state}
