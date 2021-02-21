@@ -13,6 +13,10 @@ CFLAGS += -Isqlite3 -Ic_src
 # --> https://sqlite.org/compile.html
 CFLAGS += -DSQLITE_THREADSAFE=1
 CFLAGS += -DSQLITE_USE_URI
+
+# TODO: The following features should be completely configurable by the person
+#       installing the nif. Just need to have certain environment variables
+#       enabled to support them.
 CFLAGS += -DSQLITE_ENABLE_FTS4
 CFLAGS += -DSQLITE_ENABLE_FTS5
 CFLAGS += -DSQLITE_ENABLE_JSON1
