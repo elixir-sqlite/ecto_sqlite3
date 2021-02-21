@@ -16,7 +16,8 @@ defmodule Exqlite.Connection do
 
   defstruct [
     :db,
-    :path
+    :path,
+    :transaction_status,
   ]
 
   @impl true
@@ -91,39 +92,55 @@ defmodule Exqlite.Connection do
   Note: default transaction mode is DEFERRED.
   """
   @impl true
-  def handle_begin(opts, state) do
-    # TODO: track nested transactions.
-    #       sqlite doesn't nest transactions with BEGIN... COMMIT...,
-    #       use the SAVEPOINT and RELEASE commands.
+  def handle_begin(options, %{transaction_status: transaction_status} = state) do
+    # TODO: This doesn't handle more than 2 levels of transactions.
+    #
+    # One possible solution would be to just track the number of open
+    # transactions and use that for driving the transaction status being idle or
+    # in a transaction.
+    #
+    # I do not know why the other official adapters do not track this and just
+    # append level on the savepoint. Instead the rollbacks would just completely
+    # revert the issues when it may be desirable to fix something while in the
+    # transaction and then commit.
+    #
+    case Keyword.get(options, :mode, :deferred) do
+      :deferred when transaction_status == :idle ->
+        handle_transaction(:begin, "BEGIN TRANSACTION", state)
 
-    # TODO: handle/track SAVEPOINT
-    case Keyword.get(opts, :mode, :deferred) do
-      :immediate ->
+      :immediate when transaction_status == :idle ->
         handle_transaction(:begin, "BEGIN IMMEDIATE TRANSACTION", state)
 
-      :exclusive ->
+      :exclusive when transaction_status == :idle ->
         handle_transaction(:begin, "BEGIN EXCLUSIVE TRANSACTION", state)
 
-      mode when mode in [nil, :deferred] ->
-        handle_transaction(:begin, "BEGIN TRANSACTION", state)
+      mode when mode in [:deferred, :immediate, :exclusive, :savepoint] and transaction_status == :transaction ->
+        handle_transaction(:begin, "SAVEPOINT exqlite_savepoint", state)
     end
   end
 
   @impl true
-  def handle_commit(_opts, state) do
-    # TODO: once we handle SAVEPOINT, we need to handle RELEASE
-    #       COMMIT TO
-    #       Meanwhile we just COMMIT
-    #       see https://sqlite.org/lang_transaction.html
-    handle_transaction(:commit, "COMMIT", state)
+  def handle_commit(options, %{transaction_status: transaction_status} = state) do
+    case Keyword.get(options, :mode, :deferred) do
+      :savepoint when transaction_status == :transaction ->
+        handle_transaction(:commit, "RELEASE SAVEPOINT exqlite_savepoint", state)
+
+      mode when mode in [:deferred, :immediate, :exclusive] and transaction_status == :transaction ->
+        handle_transaction(:commit, "COMMIT", state)
+    end
   end
 
   @impl true
-  def handle_rollback(_opts, state) do
-    # TODO: once we handle SAVEPOINT, we need to handle ROLLBACK TO
-    #       Meanwhile we just ROLLBACK
-    #       see https://sqlite.org/lang_transaction.html
-    handle_transaction(:rollback, "ROLLBACK", state)
+  def handle_rollback(options, %{transaction_status: transaction_status} = state) do
+    case Keyword.get(options, :mode, :deferred) do
+      :savepoint when transaction_status == :transaction ->
+        with {:ok, _result, s} <- handle_transaction(:rollback, "ROLLBACK TO SAVEPOINT exqlite_savepoint", state) do
+          handle_transaction(:rollback, "RELEASE SAVEPOINT exqlite_savepoint", state)
+        end
+
+      mode when mode in [:deferred, :immediate, :exclusive] and transaction_status == :transaction ->
+        handle_transaction(:rollback, "ROLLBACK TRANSACTION", state)
+    end
   end
 
   ### ----------------------------------
@@ -135,7 +152,8 @@ defmodule Exqlite.Connection do
       {:ok, db} ->
         state = %__MODULE__{
           db: db,
-          path: path
+          path: path,
+          transaction_status: :idle,
         }
 
         {:ok, state}
