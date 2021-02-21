@@ -2,6 +2,21 @@ defmodule Exqlite.Connection do
   @moduledoc """
   This module imlements connection details as defined in DBProtocol.
 
+  ## Attributes
+
+  - `db` - The sqlite3 database reference.
+  - `path` - The path that was used to open.
+  - `transaction_status` - The status of the connection. Can be `:idle` or `:transaction`.
+  - `queries` - The `:ets` cache of prepared queries.
+
+  ## Unknowns
+
+  - How are pooled connections going to work? Since sqlite3 doesn't allow for
+    simultaneous access. We would need to check if the write ahead log is
+    enabled on the database. We can't assume and set the WAL pragma because the
+    database may be stored on a network volume which would cause potential
+    issues.
+
   Notes:
     - we try to closely follow structure and naming convention of myxql.
     - sqlite thrives when there are many small conventions, so we may not implement
