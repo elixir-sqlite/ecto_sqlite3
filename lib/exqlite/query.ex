@@ -4,10 +4,12 @@ defmodule Exqlite.Query do
   """
   @type t :: %__MODULE__{
           statement: iodata(),
+          name: atom() | String.t(),
           ref: reference() | nil
         }
 
   defstruct statement: nil,
+            name: nil,
             ref: nil
 
   defimpl DBConnection.Query do
