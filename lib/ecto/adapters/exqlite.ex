@@ -7,7 +7,7 @@ defmodule Ecto.Adapters.Exqlite do
   @behaviour Ecto.Adapter.Storage
   @behaviour Ecto.Adapter.Structure
 
-  @impl true
+  @impl Ecto.Adapter.Storage
   def storage_down(options) do
     db_path = Keyword.fetch!(options, :database)
 
@@ -20,7 +20,7 @@ defmodule Ecto.Adapters.Exqlite do
     end
   end
 
-  @impl true
+  @impl Ecto.Adapter.Storage
   def storage_status(options) do
     db_path = Keyword.fetch!(options, :database)
 
@@ -31,7 +31,7 @@ defmodule Ecto.Adapters.Exqlite do
     end
   end
 
-  @impl true
+  @impl Ecto.Adapter.Storage
   def storage_up(options) do
     db_path = Keyword.fetch!(options, :database)
 
@@ -43,7 +43,7 @@ defmodule Ecto.Adapters.Exqlite do
   @impl true
   def supports_ddl_transaction?(), do: true
 
-  @impl true
+  @impl Ecto.Adapter.Structure
   def structure_dump(_default, _config) do
     # table = config[:migration_source] || "schema_migrations"
     # path  = config[:dump_path] || Path.join(default, "structure.sql")
@@ -60,7 +60,7 @@ defmodule Ecto.Adapters.Exqlite do
     {:error, :not_implemented}
   end
 
-  @impl true
+  @impl Ecto.Adapter.Structure
   def structure_load(_default, _config) do
     # load the structure.sql file
     {:error, :not_implemented}
