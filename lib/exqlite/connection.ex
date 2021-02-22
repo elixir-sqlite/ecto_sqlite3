@@ -43,25 +43,25 @@ defmodule Exqlite.Connection do
 
   Allowed options:
 
-    - `path` - The path to the database. In memory databses are allowed. Use
+    - `database` - The database to the database. In memory databses are allowed. Use
       `:memory` or `":memory:"`.
   """
   def connect(opts) do
-    path = Keyword.get(opts, :path)
+    database = Keyword.get(opts, :database)
 
-    case path do
+    case database do
       nil ->
         {:error,
          %Error{
            message:
-             ~s{You must provide a :path to the database. Example: connect(path: "./") or connect(path: :memory)}
+             ~s{You must provide a :database to the database. Example: connect(database: "./") or connect(database: :memory)}
          }}
 
       :memory ->
         do_connect(":memory:")
 
       _ ->
-        do_connect(path)
+        do_connect(database)
     end
   end
 
