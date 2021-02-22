@@ -66,7 +66,8 @@ defmodule Exqlite.Connection do
   end
 
   @impl true
-  def disconnect(_err, %__MODULE__{db: db}) do
+  def disconnect(_err, %__MODULE__{db: db, queries: queries}) do
+    Queries.delete(queries)
     case Sqlite3.close(db) do
       :ok -> :ok
       {:error, reason} -> {:error, %Error{message: reason}}

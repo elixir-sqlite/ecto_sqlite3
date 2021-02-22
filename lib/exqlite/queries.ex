@@ -43,6 +43,15 @@ defmodule Exqlite.Queries do
     end
   end
 
+  @spec delete(nil) :: :ok
+  def delete(nil), do: :ok
+
+  @spec delete(cache()) :: :ok
+  def delete(cache) do
+    :ets.delete(cache)
+    :ok
+  end
+
   @spec delete(cache(), Query.t()) :: :error
   def delete(_cache, %Query{name: nil}), do: :error
 
