@@ -3,6 +3,13 @@ defmodule Exqlite.Queries do
   The interface to manage cached prepared queries.
   """
 
+  #
+  # TODO: We should probably do some tracking on the number of statements being
+  #       generated and culling the oldest cached value (LRU). In its current
+  #       implementation, this could just have a run away memory leak if we are
+  #       not careful.
+  #
+
   alias Exqlite.Query
 
   @type cache :: :ets.tid()
