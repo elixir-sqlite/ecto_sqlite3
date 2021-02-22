@@ -14,7 +14,9 @@ defmodule Exqlite.MixProject do
       homepage_url: "https://github.com/warmwaffles/exqlite",
       deps: deps(),
       package: package(),
-      description: description()
+      description: description(),
+      test_paths: test_paths(),
+      elixirc_paths: elixirc_paths(Mix.env())
     ]
   end
 
@@ -51,4 +53,9 @@ defmodule Exqlite.MixProject do
       }
     ]
   end
+
+  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  defp elixirc_paths(_), do: ["lib"]
+
+  defp test_paths, do: ["test"]
 end
