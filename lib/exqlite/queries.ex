@@ -37,10 +37,10 @@ defmodule Exqlite.Queries do
   end
 
   @spec delete(cache(), Query.t()) :: :error
-  def delete(cache, %Query{name: nil}), do: :error
+  def delete(_cache, %Query{name: nil}), do: :error
 
   @spec delete(cache(), Query.t()) :: :error
-  def delete(cache, %Query{name: ""}), do: :error
+  def delete(_cache, %Query{name: ""}), do: :error
 
   @spec delete(cache(), Query.t()) :: :ok | :error
   def delete(cache, %Query{name: query_name}) do
@@ -54,10 +54,10 @@ defmodule Exqlite.Queries do
   end
 
   @spec get(cache(), Query.t()) :: nil
-  def get(cache, %Query{name: nil}), do: nil
+  def get(_cache, %Query{name: nil}), do: nil
 
   @spec get(cache(), Query.t()) :: nil
-  def get(cache, %Query{name: ""}), do: nil
+  def get(_cache, %Query{name: ""}), do: nil
 
   @doc """
   Gets an existing prepared query if it exists. Otherwise `nil` is returned.

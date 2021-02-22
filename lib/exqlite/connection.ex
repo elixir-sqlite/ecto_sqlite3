@@ -74,29 +74,24 @@ defmodule Exqlite.Connection do
   end
 
   @impl true
-  def checkin(state) do
-    {:ok, state}
-  end
+  def checkin(state), do: {:ok, state}
 
   @impl true
-  def checkout(state) do
-    {:ok, state}
-  end
+  def checkout(state), do: {:ok, state}
+
+  @impl true
+  def ping(state), do: {:ok, state}
 
   ### ----------------------------------
   #   handle_* implementations
   ### ----------------------------------
 
   @impl true
-  def handle_prepare(%Query{} = query, _opts, state) do
-    # TODO: we may want to cache prepared queries like Myxql does
-    #       for now we just invoke sqlite directly
-    prepare(query, state)
-  end
+  def handle_prepare(%Query{} = query, _opts, state), do: prepare(query, state)
 
   @impl true
   def handle_execute(%Query{} = query, params, _opts, state) do
-    with {:ok, query, state} <- maybe_prepare(query, state) do
+    with {:ok, query, state} <- prepare(query, state) do
       execute(query, params, state)
     end
   end
@@ -151,7 +146,7 @@ defmodule Exqlite.Connection do
   def handle_rollback(options, %{transaction_status: transaction_status} = state) do
     case Keyword.get(options, :mode, :deferred) do
       :savepoint when transaction_status == :transaction ->
-        with {:ok, _result, s} <- handle_transaction(:rollback, "ROLLBACK TO SAVEPOINT exqlite_savepoint", state) do
+        with {:ok, _result, state} <- handle_transaction(:rollback, "ROLLBACK TO SAVEPOINT exqlite_savepoint", state) do
           handle_transaction(:rollback, "RELEASE SAVEPOINT exqlite_savepoint", state)
         end
 
@@ -171,6 +166,31 @@ defmodule Exqlite.Connection do
   @impl true
   def handle_close(_query, _opts, state) do
     {:ok, nil, state}
+  end
+
+  @impl true
+  def handle_declare(_query, _cursor, _opts, state) do
+    # TODO: Explore building cursor like support
+    #
+    # IDEA: SQLite3 does not support cursors. HOWEVER, prepared statements are
+    #       similar since we have to step through them. Perhaps we can implement
+    #       it that way.
+    {:error, %Error{message: "cursors not supported"}, state}
+  end
+
+  @impl true
+  def handle_deallocate(_query, _cursor, _opts, state) do
+    {:error, %Error{message: "cursors not supported"}, state}
+  end
+
+  @impl true
+  def handle_fetch(_query, _cursor, _opts, state) do
+    {:error, %Error{message: "cursors not supported"}, state}
+  end
+
+  @impl true
+  def handle_status(_opts, state) do
+    {state.transaction_status, state}
   end
 
   ### ----------------------------------
@@ -194,15 +214,20 @@ defmodule Exqlite.Connection do
     end
   end
 
-  defp maybe_prepare(%Query{ref: ref} = query, state) when ref != nil,
-    do: {:ok, query, state}
-
-  defp maybe_prepare(%Query{} = query, state), do: prepare(query, state)
-
+  # Attempt to retrieve the cached query, if it doesn't exist, we'll prepare one
+  # and cache it for later.
   defp prepare(%Query{statement: statement} = query, state) do
-    case Sqlite3.prepare(state.db, statement) do
-      {:ok, ref} -> {:ok, %{query | ref: ref}, state}
-      {:error, reason} -> {:error, %Error{message: reason}}
+    if cached_query = Queries.get(state.queries, query) do
+      {:ok, cached_query, state}
+    else
+      case Sqlite3.prepare(state.db, statement) do
+        {:ok, ref} ->
+          query = %{query | ref: ref}
+          Queries.put(state.queries, query)
+          {:ok, query, state}
+        {:error, reason} ->
+          {:error, %Error{message: reason}}
+      end
     end
   end
 
