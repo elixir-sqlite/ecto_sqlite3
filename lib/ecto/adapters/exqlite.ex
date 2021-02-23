@@ -33,11 +33,9 @@ defmodule Ecto.Adapters.Exqlite do
 
   @impl Ecto.Adapter.Storage
   def storage_up(options) do
-    db_path = Keyword.fetch!(options, :database)
-
-    Path.dirname(db_path) |> File.mkdir_p!()
-    {:ok, db} = Exqlite.Sqlite3.open(db_path)
-    :ok = Exqlite.Sqlite3.close(db)
+    options
+    |> Keyword.get(:database)
+    |> storage_up_with_path()
   end
 
   @impl true
@@ -71,7 +69,8 @@ defmodule Ecto.Adapters.Exqlite do
     %{source: source, prefix: prefix} = schema_meta
     {_, query_params, _} = on_conflict
 
-    key = primary_key!(schema_meta, returning)
+    # TODO: Use key here
+    _key = primary_key!(schema_meta, returning)
     {fields, values} = :lists.unzip(params)
 
     # Construct the insertion sql statement
@@ -97,12 +96,9 @@ defmodule Ecto.Adapters.Exqlite do
     end
   end
 
-  defp primary_key!(%{autogenerate_id: {_, key, _type}}, [key]), do: key
-  defp primary_key!(_, []), do: nil
-  defp primary_key!(%{schema: schema}, returning) do
-    raise ArgumentError, "Sqlite3 does not support :read_after_writes in schemas for non-primary keys. " <>
-                         "The following fields in #{inspect schema} are tagged as such: #{inspect returning}"
-  end
+  ##
+  ## Loaders
+  ##
 
   @impl true
   def loaders(:boolean, type), do: [&bool_decode/1, type]
@@ -154,6 +150,10 @@ defmodule Ecto.Adapters.Exqlite do
   defp float_decode(x) when is_integer(x), do: {:ok, x / 1}
   defp float_decode(x), do: {:ok, x}
 
+  ##
+  ## Dumpers
+  ##
+
   @impl true
   def dumpers(:binary, type), do: [type, &blob_encode/1]
   def dumpers(:binary_id, type), do: [type, Ecto.UUID]
@@ -176,8 +176,41 @@ defmodule Ecto.Adapters.Exqlite do
     {:ok, NaiveDateTime.to_iso8601(value)}
   end
 
+  ##
+  ## HELPERS
+  ##
+
+  defp primary_key!(%{autogenerate_id: {_, key, _type}}, [key]), do: key
+  defp primary_key!(_, []), do: nil
+  defp primary_key!(%{schema: schema}, returning) do
+    raise ArgumentError, "Sqlite3 does not support :read_after_writes in schemas for non-primary keys. " <>
+                         "The following fields in #{inspect schema} are tagged as such: #{inspect returning}"
+  end
+
   defp generate_cache_name(operation, sql) do
     digest = :crypto.hash(:sha, sql) |> Base.encode16()
     "ecto_#{operation}_#{digest}"
+  end
+
+  defp storage_up_with_path(nil) do
+    raise ArgumentError,
+      """
+      No SQLite database path specified. Please check the configuration for your Repo.
+      Your config/*.exs file should have something like this in it:
+
+        config :my_app, MyApp.Repo,
+          adapter: Ecto.Adapters.Exqlite,
+          database: "/path/to/sqlite/database"
+      """
+  end
+
+  defp storage_up_with_path(db_path) do
+    if File.exists?(db_path) do
+      {:error, :already_up}
+    else
+      db_path |> Path.dirname() |> File.mkdir_p!()
+      {:ok, db} = Exqlite.Sqlite3.open(db_path)
+      :ok = Exqlite.Sqlite3.close(db)
+    end
   end
 end
