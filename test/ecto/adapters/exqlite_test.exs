@@ -14,16 +14,23 @@ defmodule Ecto.Adapters.ExqliteTest do
       opts = [database: Temp.path!()]
       assert Exqlite.storage_up(opts) == :ok
       assert File.exists?(opts[:database])
-      assert Exqlite.storage_up(opts) == :ok
+      assert Exqlite.storage_up(opts) == {:error, :already_up}
       File.rm(opts[:database])
     end
 
     test "fails with helpful error message if no database specified" do
-      opts = []
+      assert_raise(
+        ArgumentError,
+        """
+        No SQLite database path specified. Please check the configuration for your Repo.
+        Your config/*.exs file should have something like this in it:
 
-      assert_raise KeyError, "key :database not found in: []", fn ->
-        Exqlite.storage_up(opts)
-      end
+          config :my_app, MyApp.Repo,
+            adapter: Ecto.Adapters.Exqlite,
+            database: "/path/to/sqlite/database"
+        """,
+        fn -> Exqlite.storage_up(mumble: "no database here") == :ok end
+      )
     end
   end
 

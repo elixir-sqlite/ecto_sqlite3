@@ -10,6 +10,8 @@ defmodule Ecto.Adapters.Exqlite.Connection do
   alias Ecto.Query.QueryExpr
   alias Ecto.Query.WithExpr
 
+  import Ecto.Adapters.Exqlite.DataType
+
   @parent_as __MODULE__
 
   @impl true
@@ -72,7 +74,7 @@ defmodule Ecto.Adapters.Exqlite.Connection do
 
   @impl true
   def all(%Ecto.Query{lock: lock}) when lock != nil do
-    raise ArgumentError, "locks are not supported by SQLite"
+    raise ArgumentError, "locks are not supported by SQLite3"
   end
 
   @impl true
@@ -184,21 +186,18 @@ defmodule Ecto.Adapters.Exqlite.Connection do
   end
 
   def insert(_prefix, _table, _header, _rows, _on_conflict, returning, _placeholders)
-    when length(returning) > 0
-  do
+      when length(returning) > 0 do
     raise ArgumentError, ":returning is not supported in insert/6 by SQLite3"
   end
 
   def insert(_prefix, _table, _header, _rows, _on_conflict, _returning, placeholders)
-    when length(placeholders) > 0
-  do
+      when length(placeholders) > 0 do
     raise ArgumentError, ":placeholders is not supported insert/6 by SQLite3"
   end
 
   @impl true
   def update(_prefix, _table, _fields, _filters, returning)
-    when length(returning) > 0
-  do
+      when length(returning) > 0 do
     raise ArgumentError, ":returning is not supported in update/5 by SQLite3"
   end
 
@@ -220,8 +219,7 @@ defmodule Ecto.Adapters.Exqlite.Connection do
 
   @impl true
   def delete(_prefix, _table, _filters, returning)
-    when length(returning) > 0
-  do
+      when length(returning) > 0 do
     raise ArgumentError, ":returning is not supported in delete/4 by SQLite3"
   end
 
@@ -251,8 +249,8 @@ defmodule Ecto.Adapters.Exqlite.Connection do
   end
 
   @impl true
-  def execute_ddl({_command, %Table{options: keyword}, _}) when is_list(keyword) do
-    raise ArgumentError, "SQLite3 adapter does not support keyword lists in :options"
+  def execute_ddl({_command, %Table{options: keyword}, _}) when keyword != nil do
+    raise ArgumentError, "SQLite3 adapter does not support :options"
   end
 
   @impl true
@@ -262,8 +260,12 @@ defmodule Ecto.Adapters.Exqlite.Connection do
     [
       [
         "CREATE TABLE ",
-        quote_table(table.prefix, table.name), ?\s, ?(,
-        column_definitions(table, columns), composite_pk_def, ?),
+        quote_table(table.prefix, table.name),
+        ?\s,
+        ?(,
+        column_definitions(table, columns),
+        composite_pk_def,
+        ?),
         options_expr(table.options)
       ]
     ]
@@ -276,8 +278,12 @@ defmodule Ecto.Adapters.Exqlite.Connection do
     [
       [
         "CREATE TABLE IF NOT EXISTS ",
-        quote_table(table.prefix, table.name), ?\s, ?(,
-        column_definitions(table, columns), composite_pk_def, ?),
+        quote_table(table.prefix, table.name),
+        ?\s,
+        ?(,
+        column_definitions(table, columns),
+        composite_pk_def,
+        ?),
         options_expr(table.options)
       ]
     ]
@@ -305,15 +311,19 @@ defmodule Ecto.Adapters.Exqlite.Connection do
 
   @impl true
   def execute_ddl({:alter, %Table{} = table, changes}) do
-    Enum.map(changes, fn (change) ->
-      ["ALTER TABLE ", quote_table(table.prefix, table.name), ?\s, column_change(table, change)]
+    Enum.map(changes, fn change ->
+      [
+        "ALTER TABLE ",
+        quote_table(table.prefix, table.name),
+        ?\s,
+        column_change(table, change)
+      ]
     end)
   end
 
   @impl true
   def execute_ddl({command, %Index{} = index})
-    when command in [:create, :create_if_not_exists]
-  do
+      when command in [:create, :create_if_not_exists] do
     fields = intersperse_map(index.columns, ", ", &index_expr/1)
 
     [
@@ -326,7 +336,10 @@ defmodule Ecto.Adapters.Exqlite.Connection do
         quote_name(index.name),
         " ON ",
         quote_table(index.prefix, index.table),
-        ?\s, ?(, fields, ?),
+        ?\s,
+        ?(,
+        fields,
+        ?),
         if_do(index.where, [" WHERE ", to_string(index.where)])
       ]
     ]
@@ -346,7 +359,7 @@ defmodule Ecto.Adapters.Exqlite.Connection do
   def execute_ddl({:drop_if_exists, %Index{} = index}) do
     [
       [
-        "DROP INDEX IF EXISTS",
+        "DROP INDEX IF EXISTS ",
         quote_table(index.prefix, index.name)
       ]
     ]
@@ -547,22 +560,6 @@ defmodule Ecto.Adapters.Exqlite.Connection do
   ## Query generation
   ##
 
-  # defp strip_quotes(quoted) do
-  #   size = byte_size(quoted) - 2
-  #   <<_, unquoted::binary-size(size), _>> = quoted
-  #   unquoted
-  # end
-
-  # defp normalize_index_name(quoted, source) do
-  #   name = strip_quotes(quoted)
-  #
-  #   if source do
-  #     String.trim_leading(name, "#{source}.")
-  #   else
-  #     name
-  #   end
-  # end
-
   def on_conflict({:raise, _, []}, _header), do: []
 
   def on_conflict({:nothing, _, targets}, _header) do
@@ -570,15 +567,19 @@ defmodule Ecto.Adapters.Exqlite.Connection do
   end
 
   def on_conflict({:replace_all, _, []}, _header) do
-    raise(ArgumentError, "Upsert in SQLite requires :conflict_target")
+    raise ArgumentError, "Upsert in SQLite3 requires :conflict_target"
   end
 
   def on_conflict({:replace_all, _, {:constraint, _}}, _header) do
-    raise(ArgumentError, "Upsert in SQLite does not support ON CONSTRAINT")
+    raise ArgumentError, "Upsert in SQLite3 does not support ON CONSTRAINT"
   end
 
   def on_conflict({:replace_all, _, targets}, header) do
-    [" ON CONFLICT ", conflict_target(targets), "DO " | replace_all(header)]
+    [
+      " ON CONFLICT ",
+      conflict_target(targets),
+      "DO " | replace_all(header)
+    ]
   end
 
   def on_conflict({query, _, targets}, _header) do
@@ -605,15 +606,29 @@ defmodule Ecto.Adapters.Exqlite.Connection do
     ]
   end
 
-  def insert_all(rows) do
-    intersperse_map(rows, ?,, fn row ->
-      [?(, intersperse_map(row, ?,, &insert_all_value/1), ?)]
+  def insert_all(rows), do: insert_all(rows, 1)
+
+  def insert_all(rows, counter) do
+    intersperse_reduce(rows, ?,, counter, fn row, counter ->
+      {row, counter} = insert_each(row, counter)
+      {[?(, row, ?)], counter}
     end)
+    |> elem(0)
   end
 
-  def insert_all_value(nil), do: "DEFAULT"
-  def insert_all_value({%Ecto.Query{} = query, _params_counter}), do: [?(, all(query), ?)]
-  def insert_all_value(_), do: '?'
+  def insert_each(values, counter) do
+    intersperse_reduce(values, ?,, counter, fn
+      nil, _counter ->
+        raise ArgumentError,
+              "Cell-wise default values are not supported on INSERT statements by SQLite3"
+
+      _, counter ->
+        # TODO: Should we have cell wise value support?
+        #       Essentially ``?1 ?2 ?3`` instead of ``? ? ?``
+        # {['?' | Integer.to_string(counter)], counter + 1}
+        {['?'], counter + 1}
+    end)
+  end
 
   binary_ops = [
     ==: " = ",
@@ -639,30 +654,35 @@ defmodule Ecto.Adapters.Exqlite.Connection do
 
   def handle_call(fun, _arity), do: {:fun, Atom.to_string(fun)}
 
-  def select(%{select: %{fields: fields}, distinct: distinct} = query, sources) do
-    ["SELECT ", distinct(distinct, sources, query) | select(fields, sources, query)]
-  end
-
   def distinct(nil, _sources, _query), do: []
   def distinct(%QueryExpr{expr: true}, _sources, _query), do: "DISTINCT "
   def distinct(%QueryExpr{expr: false}, _sources, _query), do: []
 
-  def distinct(%QueryExpr{expr: exprs}, _sources, query) when is_list(exprs) do
-    error!(query, "DISTINCT with multiple columns is not supported by SQLite3")
+  def distinct(%QueryExpr{expr: expression}, _sources, query)
+      when is_list(expression) do
+    raise Ecto.QueryError,
+      query: query,
+      message: "DISTINCT with multiple columns is not supported by SQLite3"
   end
 
-  defp select([], _sources, _query), do: "TRUE"
+  def select(%{select: %{fields: fields}, distinct: distinct} = query, sources) do
+    ["SELECT ", distinct(distinct, sources, query) | select(fields, sources, query)]
+  end
+
+  defp select([], _sources, _query), do: "1"
 
   defp select(fields, sources, query) do
     intersperse_map(fields, ", ", fn
       {:&, _, [idx]} ->
         case elem(sources, idx) do
           {source, _, nil} ->
-            error!(
-              query,
-              "SQLite3 does not support selecting all fields from #{source} without a schema. " <>
-                "Please specify a schema or specify exactly which fields you want to select"
-            )
+            raise Ecto.QueryError,
+              query: query,
+              message: """
+              SQLite3 does not support selecting all fields from #{source} \
+              without a schema. Please specify a schema or specify exactly \
+              which fields you want to select\
+              """
 
           {_, source, _} ->
             source
@@ -678,33 +698,51 @@ defmodule Ecto.Adapters.Exqlite.Connection do
 
   def from(%{from: %{source: source}} = query, sources) do
     {from, name} = get_source(query, sources, 0, source)
-    [" FROM ", from, " AS ", name]
+
+    [
+      " FROM ",
+      from,
+      " AS ",
+      name
+    ]
   end
 
   def cte(
-         %{with_ctes: %WithExpr{recursive: recursive, queries: [_ | _] = queries}} =
-           query,
-         sources
-       ) do
+        %{with_ctes: %WithExpr{recursive: recursive, queries: [_ | _] = queries}} =
+          query,
+        sources
+      ) do
     recursive_opt = if recursive, do: "RECURSIVE ", else: ""
     ctes = intersperse_map(queries, ", ", &cte_expr(&1, sources, query))
-    ["WITH ", recursive_opt, ctes, " "]
+
+    [
+      "WITH ",
+      recursive_opt,
+      ctes,
+      " "
+    ]
   end
 
   def cte(%{with_ctes: _}, _), do: []
 
   defp cte_expr({name, cte}, sources, query) do
-    [quote_name(name), " AS ", cte_query(cte, sources, query)]
+    [
+      quote_name(name),
+      " AS ",
+      cte_query(cte, sources, query)
+    ]
   end
 
   defp cte_query(%Ecto.Query{} = query, _, _), do: ["(", all(query), ")"]
-  defp cte_query(%QueryExpr{expr: expr}, sources, query), do: expr(expr, sources, query)
+
+  defp cte_query(%QueryExpr{expr: expression}, sources, query),
+    do: expr(expression, sources, query)
 
   defp update_fields(type, %{updates: updates} = query, sources) do
     fields =
       for(
-        %{expr: expr} <- updates,
-        {op, kw} <- expr,
+        %{expr: expression} <- updates,
+        {op, kw} <- expression,
         {key, value} <- kw,
         do: update_op(op, update_key(type, key, query, sources), value, sources, query)
       )
@@ -715,7 +753,10 @@ defmodule Ecto.Adapters.Exqlite.Connection do
   defp update_key(:update, key, %{from: from} = query, sources) do
     {_from, name} = get_source(query, sources, 0, from)
 
-    [name, ?. | quote_name(key)]
+    [
+      name,
+      ?. | quote_name(key)
+    ]
   end
 
   defp update_key(:on_conflict, key, _query, _sources) do
@@ -723,15 +764,25 @@ defmodule Ecto.Adapters.Exqlite.Connection do
   end
 
   defp update_op(:set, quoted_key, value, sources, query) do
-    [quoted_key, " = " | expr(value, sources, query)]
+    [
+      quoted_key,
+      " = " | expr(value, sources, query)
+    ]
   end
 
   defp update_op(:inc, quoted_key, value, sources, query) do
-    [quoted_key, " = ", quoted_key, " + " | expr(value, sources, query)]
+    [
+      quoted_key,
+      " = ",
+      quoted_key,
+      " + " | expr(value, sources, query)
+    ]
   end
 
   defp update_op(command, _quoted_key, _value, _sources, query) do
-    error!(query, "Unknown update operation #{inspect(command)} for SQLite3")
+    raise Ecto.QueryError,
+      query: query,
+      message: "Unknown update operation #{inspect(command)} for SQLite3"
   end
 
   defp using_join(%{joins: []}, _kind, _sources), do: {[], []}
@@ -744,16 +795,16 @@ defmodule Ecto.Adapters.Exqlite.Connection do
           [join, " AS " | name]
 
         %JoinExpr{qual: qual} ->
-          error!(
-            query,
-            "SQLite3 adapter supports only inner joins on #{kind}, got: `#{qual}`"
-          )
+          raise Ecto.QueryError,
+            query: query,
+            message:
+              "SQLite3 adapter supports only inner joins on #{kind}, got: `#{qual}`"
       end)
 
     wheres =
-      for %JoinExpr{on: %QueryExpr{expr: value} = expr} <- joins,
+      for %JoinExpr{on: %QueryExpr{expr: value} = query_expr} <- joins,
           value != true,
-          do: expr |> Map.put(:__struct__, BooleanExpr) |> Map.put(:op, :and)
+          do: query_expr |> Map.put(:__struct__, BooleanExpr) |> Map.put(:op, :and)
 
     {[?,, ?\s | froms], wheres}
   end
@@ -763,10 +814,10 @@ defmodule Ecto.Adapters.Exqlite.Connection do
   def join(%{joins: joins} = query, sources) do
     Enum.map(joins, fn
       %JoinExpr{
-        on: %QueryExpr{expr: expr},
+        on: %QueryExpr{expr: expression},
         qual: qual,
         ix: ix,
-        source: source,
+        source: source
       } ->
         {join, name} = get_source(query, sources, ix, source)
 
@@ -775,13 +826,15 @@ defmodule Ecto.Adapters.Exqlite.Connection do
           join,
           " AS ",
           name,
-          join_on(qual, expr, sources, query)
+          join_on(qual, expression, sources, query)
         ]
     end)
   end
 
   defp join_on(:cross, true, _sources, _query), do: []
-  defp join_on(_qual, expr, sources, query), do: [" ON " | expr(expr, sources, query)]
+
+  defp join_on(_qual, expression, sources, query),
+    do: [" ON " | expr(expression, sources, query)]
 
   defp join_qual(:inner, _), do: " INNER JOIN "
   defp join_qual(:left, _), do: " LEFT OUTER JOIN "
@@ -789,8 +842,10 @@ defmodule Ecto.Adapters.Exqlite.Connection do
   defp join_qual(:full, _), do: " FULL OUTER JOIN "
   defp join_qual(:cross, _), do: " CROSS JOIN "
 
-  defp join_qual(mode, q) do
-    error!(q, "join `#{inspect(mode)}` not supported by SQLite3")
+  defp join_qual(mode, query) do
+    raise Ecto.QueryError,
+      query: query,
+      message: "join `#{inspect(mode)}` not supported by SQLite3"
   end
 
   def where(%{wheres: wheres} = query, sources) do
@@ -806,8 +861,8 @@ defmodule Ecto.Adapters.Exqlite.Connection do
   def group_by(%{group_bys: group_bys} = query, sources) do
     [
       " GROUP BY "
-      | intersperse_map(group_bys, ", ", fn %QueryExpr{expr: expr} ->
-          intersperse_map(expr, ", ", &expr(&1, sources, query))
+      | intersperse_map(group_bys, ", ", fn %QueryExpr{expr: expression} ->
+          intersperse_map(expression, ", ", &expr(&1, sources, query))
         end)
     ]
   end
@@ -844,32 +899,39 @@ defmodule Ecto.Adapters.Exqlite.Connection do
   def order_by(%{order_bys: order_bys} = query, sources) do
     [
       " ORDER BY "
-      | intersperse_map(order_bys, ", ", fn %QueryExpr{expr: expr} ->
-          intersperse_map(expr, ", ", &order_by_expr(&1, sources, query))
+      | intersperse_map(order_bys, ", ", fn %QueryExpr{expr: expression} ->
+          intersperse_map(expression, ", ", &order_by_expr(&1, sources, query))
         end)
     ]
   end
 
-  defp order_by_expr({dir, expr}, sources, query) do
-    str = expr(expr, sources, query)
+  defp order_by_expr({dir, expression}, sources, query) do
+    str = expr(expression, sources, query)
 
     case dir do
-      :asc -> str
-      :desc -> [str | " DESC"]
-      _ -> error!(query, "#{dir} is not supported in ORDER BY in SQLite3")
+      :asc ->
+        str
+
+      :desc ->
+        [str | " DESC"]
+
+      _ ->
+        raise Ecto.QueryError,
+          query: query,
+          message: "#{dir} is not supported in ORDER BY in SQLite3"
     end
   end
 
   def limit(%{limit: nil}, _sources), do: []
 
-  def limit(%{limit: %QueryExpr{expr: expr}} = query, sources) do
-    [" LIMIT " | expr(expr, sources, query)]
+  def limit(%{limit: %QueryExpr{expr: expression}} = query, sources) do
+    [" LIMIT " | expr(expression, sources, query)]
   end
 
   def offset(%{offset: nil}, _sources), do: []
 
-  def offset(%{offset: %QueryExpr{expr: expr}} = query, sources) do
-    [" OFFSET " | expr(expr, sources, query)]
+  def offset(%{offset: %QueryExpr{expr: expression}} = query, sources) do
+    [" OFFSET " | expr(expression, sources, query)]
   end
 
   defp combinations(%{combinations: combinations}) do
@@ -884,21 +946,28 @@ defmodule Ecto.Adapters.Exqlite.Connection do
   end
 
   def lock(query, _sources) do
-    error!(query, "SQLite3 does not support locks")
+    raise Ecto.QueryError,
+      query: query,
+      message: "SQLite3 does not support locks"
   end
 
   defp boolean(_name, [], _sources, _query), do: []
 
-  defp boolean(name, [%{expr: expr, op: op} | query_exprs], sources, query) do
+  defp boolean(name, [%{expr: expression, op: op} | query_exprs], sources, query) do
     [
       name,
-      Enum.reduce(query_exprs, {op, paren_expr(expr, sources, query)}, fn
-        %BooleanExpr{expr: expr, op: op}, {op, acc} ->
-          {op, [acc, operator_to_boolean(op) | paren_expr(expr, sources, query)]}
+      Enum.reduce(query_exprs, {op, paren_expr(expression, sources, query)}, fn
+        %BooleanExpr{expr: expression, op: op}, {op, acc} ->
+          {op, [acc, operator_to_boolean(op) | paren_expr(expression, sources, query)]}
 
-        %BooleanExpr{expr: expr, op: op}, {_, acc} ->
+        %BooleanExpr{expr: expression, op: op}, {_, acc} ->
           {op,
-           [?(, acc, ?), operator_to_boolean(op) | paren_expr(expr, sources, query)]}
+           [
+             ?(,
+             acc,
+             ?),
+             operator_to_boolean(op) | paren_expr(expression, sources, query)
+           ]}
       end)
       |> elem(1)
     ]
@@ -907,16 +976,16 @@ defmodule Ecto.Adapters.Exqlite.Connection do
   defp operator_to_boolean(:and), do: " AND "
   defp operator_to_boolean(:or), do: " OR "
 
-  defp parens_for_select([first_expr | _] = expr) do
+  defp parens_for_select([first_expr | _] = expression) do
     if is_binary(first_expr) and String.match?(first_expr, ~r/^\s*select/i) do
-      [?(, expr, ?)]
+      [?(, expression, ?)]
     else
-      expr
+      expression
     end
   end
 
-  defp paren_expr(expr, sources, query) do
-    [?(, expr(expr, sources, query), ?)]
+  defp paren_expr(expression, sources, query) do
+    [?(, expr(expression, sources, query), ?)]
   end
 
   ##
@@ -961,8 +1030,8 @@ defmodule Ecto.Adapters.Exqlite.Connection do
     "false"
   end
 
-  def expr({:in, _, [left, {:^, _, [_, length]}]}, sources, query) do
-    args = Enum.intersperse(List.duplicate(??, length), ?,)
+  def expr({:in, _, [left, {:^, _, [_, len]}]}, sources, query) do
+    args = Enum.intersperse(List.duplicate(??, len), ?,)
     [expr(left, sources, query), " IN (", args, ?)]
   end
 
@@ -978,12 +1047,14 @@ defmodule Ecto.Adapters.Exqlite.Connection do
     [expr(arg, sources, query) | " IS NULL"]
   end
 
-  def expr({:not, _, [expr]}, sources, query) do
-    ["NOT (", expr(expr, sources, query), ?)]
+  def expr({:not, _, [expression]}, sources, query) do
+    ["NOT (", expr(expression, sources, query), ?)]
   end
 
   def expr({:filter, _, _}, _sources, query) do
-    error!(query, "SQLite3 adapter does not support aggregate filters")
+    raise Ecto.QueryError,
+      query: query,
+      message: "SQLite3 adapter does not support aggregate filters"
   end
 
   def expr(%Ecto.SubQuery{query: query}, sources, _query) do
@@ -993,14 +1064,16 @@ defmodule Ecto.Adapters.Exqlite.Connection do
 
   def expr({:fragment, _, [kw]}, _sources, query)
       when is_list(kw) or tuple_size(kw) == 3 do
-    error!(query, "SQLite3 adapter does not support keyword or interpolated fragments")
+    raise Ecto.QueryError,
+      query: query,
+      message: "SQLite3 adapter does not support keyword or interpolated fragments"
   end
 
   def expr({:fragment, _, parts}, sources, query) do
     parts
     |> Enum.map(fn
       {:raw, part} -> part
-      {:expr, expr} -> expr(expr, sources, query)
+      {:expr, expression} -> expr(expression, sources, query)
     end)
     |> parens_for_select
   end
@@ -1030,7 +1103,9 @@ defmodule Ecto.Adapters.Exqlite.Connection do
   end
 
   def expr({:ilike, _, [_, _]}, _sources, query) do
-    raise Ecto.QueryError, query: query, message: "ilike is not supported by SQLite3"
+    raise Ecto.QueryError,
+      query: query,
+      message: "ilike is not supported by SQLite3"
   end
 
   def expr({:over, _, [agg, name]}, sources, query) when is_atom(name) do
@@ -1056,7 +1131,7 @@ defmodule Ecto.Adapters.Exqlite.Connection do
       message: "json_extract_path is not currently supported"
   end
 
-  # def expr({:json_extract_path, _, [expr, path]}, sources, query) do
+  # def expr({:json_extract_path, _, [expression, path]}, sources, query) do
   #   path =
   #     Enum.map(path, fn
   #       binary when is_binary(binary) ->
@@ -1066,7 +1141,7 @@ defmodule Ecto.Adapters.Exqlite.Connection do
   #         "[#{integer}]"
   #     end)
   #
-  #   ["json_extract(", expr(expr, sources, query), ", '$", path, "')"]
+  #   ["json_extract(", expr(expression, sources, query), ", '$", path, "')"]
   # end
 
   def expr({fun, _, args}, sources, query) when is_atom(fun) and is_list(args) do
@@ -1087,7 +1162,9 @@ defmodule Ecto.Adapters.Exqlite.Connection do
   end
 
   def expr(list, _sources, query) when is_list(list) do
-    error!(query, "Array type is not supported by SQLite3")
+    raise Ecto.QueryError,
+      query: query,
+      message: "Array type is not supported by SQLite3"
   end
 
   def expr(%Decimal{} = decimal, _sources, _query) do
@@ -1106,12 +1183,12 @@ defmodule Ecto.Adapters.Exqlite.Connection do
   end
 
   def expr(%Ecto.Query.Tagged{value: other, type: type}, sources, query) do
-    ["CAST(", expr(other, sources, query), " AS ", ecto_cast_to_db(type, query), ?)]
+    ["CAST(", expr(other, sources, query), " AS ", column_type(type, query), ?)]
   end
 
   def expr(nil, _sources, _query), do: "NULL"
-  def expr(true, _sources, _query), do: "TRUE"
-  def expr(false, _sources, _query), do: "FALSE"
+  def expr(true, _sources, _query), do: "1"
+  def expr(false, _sources, _query), do: "0"
 
   def expr(literal, _sources, _query) when is_binary(literal) do
     [?', escape_string(literal), ?']
@@ -1143,16 +1220,22 @@ defmodule Ecto.Adapters.Exqlite.Connection do
     "#{expr(count, sources, nil)} || ' #{interval}'"
   end
 
-  defp op_to_binary({op, _, [_, _]} = expr, sources, query) when op in @binary_ops,
-    do: paren_expr(expr, sources, query)
+  defp op_to_binary({op, _, [_, _]} = expression, sources, query)
+       when op in @binary_ops do
+    paren_expr(expression, sources, query)
+  end
 
-  defp op_to_binary({:is_nil, _, [_]} = expr, sources, query),
-    do: paren_expr(expr, sources, query)
+  defp op_to_binary({:is_nil, _, [_]} = expression, sources, query) do
+    paren_expr(expression, sources, query)
+  end
 
-  defp op_to_binary(expr, sources, query),
-    do: expr(expr, sources, query)
+  defp op_to_binary(expression, sources, query) do
+    expr(expression, sources, query)
+  end
 
-  def create_names(query), do: create_names(query, [])
+  def create_names(query) do
+    create_names(query, [])
+  end
 
   def create_names(%{sources: sources}, as_prefix) do
     create_names(sources, 0, tuple_size(sources), as_prefix) |> List.to_tuple()
@@ -1202,17 +1285,33 @@ defmodule Ecto.Adapters.Exqlite.Connection do
   end
 
   defp column_definition(table, {:add, name, %Reference{} = ref, opts}) do
-    [quote_name(name), ?\s, reference_column_type(ref.type, opts),
-      column_options(table, ref.type, opts), reference_expr(ref, table, name)]
+    [
+      quote_name(name),
+      ?\s,
+      column_type(ref.type, opts),
+      column_options(table, ref.type, opts),
+      reference_expr(ref, table, name)
+    ]
   end
 
   defp column_definition(table, {:add, name, type, opts}) do
-    [quote_name(name), ?\s, column_type(type, opts), column_options(table, type, opts)]
+    [
+      quote_name(name),
+      ?\s,
+      column_type(type, opts),
+      column_options(table, type, opts)
+    ]
   end
 
   defp column_change(table, {:add, name, %Reference{} = ref, opts}) do
-    ["ADD COLUMN ", quote_name(name), ?\s, reference_column_type(ref.type, opts),
-      column_options(table, ref.type, opts), reference_expr(ref, table, name)]
+    [
+      "ADD COLUMN ",
+      quote_name(name),
+      ?\s,
+      column_type(ref.type, opts),
+      column_options(table, ref.type, opts),
+      reference_expr(ref, table, name)
+    ]
   end
 
   # If we are adding a DATETIME column with the NOT NULL constraint, SQLite
@@ -1223,9 +1322,9 @@ defmodule Ecto.Adapters.Exqlite.Connection do
   # Therefore the best option is just to remove the NOT NULL constraint when
   # we add new datetime columns.
   defp column_change(table, {:add, name, type, opts})
-    when type in [:utc_datetime, :naive_datetime]
-  do
+       when type in [:utc_datetime, :naive_datetime] do
     opts = Keyword.delete(opts, :null)
+
     [
       "ADD COLUMN ",
       quote_name(name),
@@ -1246,25 +1345,25 @@ defmodule Ecto.Adapters.Exqlite.Connection do
   end
 
   defp column_change(_table, {:modify, _name, _type, _opts}) do
-    raise ArgumentError, "ALTER COLUMN not supported by SQLite"
+    raise ArgumentError, "ALTER COLUMN not supported by SQLite3"
   end
 
   defp column_change(_table, {:remove, _name, _type, _opts}) do
-    raise ArgumentError, "ALTER COLUMN not supported by SQLite"
+    raise ArgumentError, "ALTER COLUMN not supported by SQLite3"
   end
 
   defp column_change(_table, {:remove, :summary}) do
-    raise ArgumentError, "DROP COLUMN not supported by SQLite"
+    raise ArgumentError, "DROP COLUMN not supported by SQLite3"
   end
 
   defp column_change(_table, _) do
-    raise ArgumentError, "Not supported by SQLite"
+    raise ArgumentError, "Not supported by SQLite3"
   end
 
   defp column_options(table, type, opts) do
     default = Keyword.fetch(opts, :default)
-    null    = Keyword.get(opts, :null)
-    pk      = (table.primary_key != :composite) and Keyword.get(opts, :primary_key, false)
+    null = Keyword.get(opts, :null)
+    pk = table.primary_key != :composite and Keyword.get(opts, :primary_key, false)
 
     column_options(default, type, null, pk)
   end
@@ -1272,6 +1371,7 @@ defmodule Ecto.Adapters.Exqlite.Connection do
   defp column_options(_default, :serial, _, true) do
     " PRIMARY KEY AUTOINCREMENT"
   end
+
   defp column_options(default, type, null, pk) do
     [default_expr(default, type), null_expr(null), pk_expr(pk)]
   end
@@ -1292,30 +1392,32 @@ defmodule Ecto.Adapters.Exqlite.Connection do
     ]
   end
 
-  defp default_expr({:ok, literal}, _type) when is_number(literal) or is_boolean(literal) do
+  defp default_expr({:ok, literal}, _type)
+       when is_number(literal) or is_boolean(literal) do
     [
       " DEFAULT ",
       to_string(literal)
     ]
   end
 
-  defp default_expr({:ok, {:fragment, expr}}, _type) do
+  defp default_expr({:ok, {:fragment, expression}}, _type) do
     [
       " DEFAULT ",
-      expr
+      expression
     ]
   end
 
   defp default_expr({:ok, value}, _type) when is_map(value) do
     library = Application.get_env(:myxql, :json_library, Jason)
-    expr = IO.iodata_to_binary(library.encode_to_iodata!(value))
+    expression = IO.iodata_to_binary(library.encode_to_iodata!(value))
+
     [
       " DEFAULT ",
       ?(,
-        ?',
-        escape_string(expr),
-        ?',
-        ?)
+      ?',
+      escape_string(expression),
+      ?',
+      ?)
     ]
   end
 
@@ -1328,71 +1430,25 @@ defmodule Ecto.Adapters.Exqlite.Connection do
   defp pk_expr(_), do: []
 
   defp options_expr(nil), do: []
+
   defp options_expr(keyword) when is_list(keyword) do
     raise ArgumentError, "SQLite3 adapter does not support keyword lists in :options"
   end
 
   defp options_expr(options), do: [?\s, to_string(options)]
 
-  # Simple column types. Note that we ignore options like :size, :precision,
-  # etc. because columns do not have types, and SQLite will not coerce any
-  # stored value. Thus, "strings" are all text and "numerics" have arbitrary
-  # precision regardless of the declared column type. Decimals are the
-  # only exception.
-  defp column_type(:serial, _opts), do: "INTEGER"
-  defp column_type(:bigserial, _opts), do: "INTEGER"
-  defp column_type(:string, _opts), do: "TEXT"
-  defp column_type(:map, _opts), do: "TEXT"
-  defp column_type({:map, _}, _opts), do: "JSON"
-  defp column_type({:array, _}, _opts), do: "JSON"
-
-  defp column_type(:decimal, opts) do
-    # We only store precision and scale for DECIMAL.
-    precision = Keyword.get(opts, :precision)
-    scale = Keyword.get(opts, :scale, 0)
-
-    decimal_column_type(precision, scale)
-  end
-
-  defp column_type(type, _opts) do
-    type
-    |> Atom.to_string()
-    |> String.upcase()
-  end
-
-  defp decimal_column_type(precision, scale) when is_integer(precision) do
-    "DECIMAL(#{precision},#{scale})"
-  end
-
-  defp decimal_column_type(_precision, _scale), do: "DECIMAL"
-
-  defp reference_expr(type, ref, table, name) do
-    {current_columns, reference_columns} = Enum.unzip([{name, ref.column} | ref.with])
-
-    if ref.match do
-      raise ArgumentError, ":match is not supported in references for tds"
-    end
-
+  defp reference_expr(%Reference{} = ref, table, name) do
     [
-      "CONSTRAINT ",
+      " CONSTRAINT ",
       reference_name(ref, table, name),
-      " ",
-      type,
-      " (",
-      quote_names(current_columns),
-      ?),
       " REFERENCES ",
-      quote_table(ref.prefix || table.prefix, ref.table),
+      quote_table(table.prefix, ref.table),
       ?(,
-      quote_names(reference_columns),
+      quote_name(ref.column),
       ?),
       reference_on_delete(ref.on_delete),
       reference_on_update(ref.on_update)
     ]
-  end
-
-  defp reference_expr(%Reference{} = ref, table, name) do
-    [", " | reference_expr("FOREIGN KEY", ref, table, name)]
   end
 
   defp reference_name(%Reference{name: nil}, table, column) do
@@ -1402,10 +1458,6 @@ defmodule Ecto.Adapters.Exqlite.Connection do
   defp reference_name(%Reference{name: name}, _table, _column) do
     quote_name(name)
   end
-
-  defp reference_column_type(:serial, _opts), do: "INTEGER"
-  defp reference_column_type(:bigserial, _opts), do: "INTEGER"
-  defp reference_column_type(type, opts), do: column_type(type, opts)
 
   defp reference_on_delete(:nilify_all), do: " ON DELETE SET NULL"
   defp reference_on_delete(:delete_all), do: " ON DELETE CASCADE"
@@ -1422,24 +1474,29 @@ defmodule Ecto.Adapters.Exqlite.Connection do
   ##
 
   defp composite_pk_definition(%Table{} = table, columns) do
-    pks = Enum.reduce(columns, [], fn({_, name, _, opts}, pk_acc) ->
-      case Keyword.get(opts, :primary_key, false) do
-        true -> [name | pk_acc]
-        false -> pk_acc
-      end
-    end)
+    pks =
+      Enum.reduce(columns, [], fn {_, name, _, opts}, pk_acc ->
+        case Keyword.get(opts, :primary_key, false) do
+          true -> [name | pk_acc]
+          false -> pk_acc
+        end
+      end)
 
     if length(pks) > 1 do
       composite_pk_expr = pks |> Enum.reverse() |> Enum.map_join(", ", &quote_name/1)
-      {%{table | primary_key: :composite}, ", PRIMARY KEY (" <> composite_pk_expr <> ")"}
+
+      {
+        %{table | primary_key: :composite},
+        ", PRIMARY KEY (" <> composite_pk_expr <> ")"
+      }
     else
       {table, ""}
     end
   end
 
   defp get_source(query, sources, ix, source) do
-    {expr, name, _schema} = elem(sources, ix)
-    {expr || expr(source, sources, query), name}
+    {expression, name, _schema} = elem(sources, ix)
+    {expression || expr(source, sources, query), name}
   end
 
   defp quote_names(names), do: intersperse_map(names, ?,, &quote_name/1)
@@ -1454,9 +1511,11 @@ defmodule Ecto.Adapters.Exqlite.Connection do
   defp quote_entity(val) when is_atom(val) do
     quote_entity(Atom.to_string(val))
   end
+
   defp quote_entity(val), do: [val]
 
   defp intersperse_map(list, separator, mapper, acc \\ [])
+
   defp intersperse_map([], _separator, _mapper, acc) do
     acc
   end
@@ -1467,6 +1526,21 @@ defmodule Ecto.Adapters.Exqlite.Connection do
 
   defp intersperse_map([elem | rest], separator, mapper, acc) do
     intersperse_map(rest, separator, mapper, [acc, mapper.(elem), separator])
+  end
+
+  defp intersperse_reduce(list, separator, user_acc, reducer, acc \\ [])
+
+  defp intersperse_reduce([], _separator, user_acc, _reducer, acc),
+    do: {acc, user_acc}
+
+  defp intersperse_reduce([item], _separator, user_acc, reducer, acc) do
+    {item, user_acc} = reducer.(item, user_acc)
+    {[acc | item], user_acc}
+  end
+
+  defp intersperse_reduce([item | rest], separator, user_acc, reducer, acc) do
+    {item, user_acc} = reducer.(item, user_acc)
+    intersperse_reduce(rest, separator, user_acc, reducer, [acc, item, separator])
   end
 
   defp if_do(condition, value) do
@@ -1484,46 +1558,4 @@ defmodule Ecto.Adapters.Exqlite.Connection do
   #   |> escape_string()
   #   |> :binary.replace("\"", "\\\\\"", [:global])
   # end
-
-  defp ecto_cast_to_db(:id, _query), do: "INTEGER"
-  defp ecto_cast_to_db(:integer, _query), do: "INTEGER"
-  defp ecto_cast_to_db(:string, _query), do: "TEXT"
-  defp ecto_cast_to_db(type, query), do: ecto_to_db(type, query)
-
-  defp ecto_to_db({:array, _}, query),
-    do: error!(query, "Array type is not supported by SQLite3")
-
-  defp ecto_to_db(:id, _query), do: "INTEGER"
-  defp ecto_to_db(:serial, _query), do: "INTEGER"
-  defp ecto_to_db(:bigserial, _query), do: "INTEGER"
-  # TODO: We should make this configurable
-  defp ecto_to_db(:binary_id, _query), do: "TEXT"
-  defp ecto_to_db(:string, _query), do: "TEXT"
-  defp ecto_to_db(:float, _query), do: "NUMERIC"
-  defp ecto_to_db(:binary, _query), do: "BLOB"
-  # TODO: We should make this configurable
-  # SQLite3 does not support uuid
-  defp ecto_to_db(:uuid, _query), do: "TEXT"
-  defp ecto_to_db(:map, _query), do: "TEXT"
-  defp ecto_to_db({:map, _}, _query), do: "TEXT"
-  defp ecto_to_db(:utc_datetime, _query), do: "TEXT_DATETIME"
-  defp ecto_to_db(:utc_datetime_usec, _query), do: "TEXT_DATETIME"
-  defp ecto_to_db(:naive_datetime, _query), do: "TEXT_DATETIME"
-  defp ecto_to_db(:naive_datetime_usec, _query), do: "TEXT_DATETIME"
-  defp ecto_to_db(atom, _query) when is_atom(atom), do: Atom.to_string(atom)
-  defp ecto_to_db(str, _query) when is_binary(str), do: str
-
-  defp ecto_to_db(type, _query) do
-    raise ArgumentError,
-          "unsupported type `#{inspect(type)}`. The type can either be an atom, a string " <>
-            "or a tuple of the form `{:map, t}` where `t` itself follows the same conditions."
-  end
-
-  defp error!(nil, message) do
-    raise ArgumentError, message
-  end
-
-  defp error!(query, message) do
-    raise Ecto.QueryError, query: query, message: message
-  end
 end

@@ -80,17 +80,17 @@ defmodule Ecto.Adapters.Exqlite do
     opts = [{:query_name, generate_cache_name(:insert, sql)} | opts]
 
     case Ecto.Adapters.SQL.query(adapter_meta, sql, values ++ query_params, opts) do
-    # TODO: Within the connection, we need to fetch the last rowid from Sqlite3
-    #
-    #   {:ok, %{num_rows: 1, last_insert_id: last_insert_id}} ->
-    #     {:ok, last_insert_id(key, last_insert_id)}
-    #
-    #   {:ok, %{num_rows: 2, last_insert_id: last_insert_id}} ->
-    #     {:ok, last_insert_id(key, last_insert_id)}
+      # TODO: Within the connection, we need to fetch the last rowid from Sqlite3
+      #
+      #   {:ok, %{num_rows: 1, last_insert_id: last_insert_id}} ->
+      #     {:ok, last_insert_id(key, last_insert_id)}
+      #
+      #   {:ok, %{num_rows: 2, last_insert_id: last_insert_id}} ->
+      #     {:ok, last_insert_id(key, last_insert_id)}
 
       {:error, err} ->
         case @conn.to_constraints(err, source: source) do
-          []          -> raise err
+          [] -> raise err
           constraints -> {:invalid, constraints}
         end
     end
@@ -182,9 +182,13 @@ defmodule Ecto.Adapters.Exqlite do
 
   defp primary_key!(%{autogenerate_id: {_, key, _type}}, [key]), do: key
   defp primary_key!(_, []), do: nil
+
   defp primary_key!(%{schema: schema}, returning) do
-    raise ArgumentError, "Sqlite3 does not support :read_after_writes in schemas for non-primary keys. " <>
-                         "The following fields in #{inspect schema} are tagged as such: #{inspect returning}"
+    raise ArgumentError,
+          "Sqlite3 does not support :read_after_writes in schemas for non-primary keys. " <>
+            "The following fields in #{inspect(schema)} are tagged as such: #{
+              inspect(returning)
+            }"
   end
 
   defp generate_cache_name(operation, sql) do
@@ -194,14 +198,14 @@ defmodule Ecto.Adapters.Exqlite do
 
   defp storage_up_with_path(nil) do
     raise ArgumentError,
-      """
-      No SQLite database path specified. Please check the configuration for your Repo.
-      Your config/*.exs file should have something like this in it:
+          """
+          No SQLite database path specified. Please check the configuration for your Repo.
+          Your config/*.exs file should have something like this in it:
 
-        config :my_app, MyApp.Repo,
-          adapter: Ecto.Adapters.Exqlite,
-          database: "/path/to/sqlite/database"
-      """
+            config :my_app, MyApp.Repo,
+              adapter: Ecto.Adapters.Exqlite,
+              database: "/path/to/sqlite/database"
+          """
   end
 
   defp storage_up_with_path(db_path) do

@@ -7,7 +7,8 @@ defmodule Exqlite.ConnectionTest do
     test "returns error when path is missing from options" do
       {:error, error} = Connection.connect([])
 
-      assert error.message == ~s{You must provide a :database to the database. Example: connect(database: "./") or connect(database: :memory)}
+      assert error.message ==
+               ~s{You must provide a :database to the database. Example: connect(database: "./") or connect(database: :memory)}
     end
 
     test "connects to an in memory database" do

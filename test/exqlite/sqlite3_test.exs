@@ -201,11 +201,17 @@ defmodule Exqlite.Sqlite3Test do
   describe "working with prepared statements after close" do
     test "returns proper error" do
       {:ok, conn} = Sqlite3.open(":memory:")
-      :ok = Sqlite3.execute(conn, "create table test (id integer primary key, stuff text)")
+
+      :ok =
+        Sqlite3.execute(conn, "create table test (id integer primary key, stuff text)")
+
       {:ok, statement} = Sqlite3.prepare(conn, "insert into test (stuff) values (?1)")
       :ok = Sqlite3.close(conn)
       :ok = Sqlite3.bind(conn, statement, ["this is a test"])
-      {:error, {:misuse, _message}} = Sqlite3.execute(conn, "create table test (id integer primary key, stuff text);")
+
+      {:error, {:misuse, _message}} =
+        Sqlite3.execute(conn, "create table test (id integer primary key, stuff text);")
+
       assert :done == Sqlite3.step(conn, statement)
     end
   end

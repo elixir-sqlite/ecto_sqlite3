@@ -68,6 +68,7 @@ defmodule Exqlite.Connection do
   @impl true
   def disconnect(_err, %__MODULE__{db: db, queries: queries}) do
     Queries.delete(queries)
+
     case Sqlite3.close(db) do
       :ok -> :ok
       {:error, reason} -> {:error, %Error{message: reason}}
@@ -127,7 +128,9 @@ defmodule Exqlite.Connection do
       :exclusive when transaction_status == :idle ->
         handle_transaction(:begin, "BEGIN EXCLUSIVE TRANSACTION", state)
 
-      mode when mode in [:deferred, :immediate, :exclusive, :savepoint] and transaction_status == :transaction ->
+      mode
+      when mode in [:deferred, :immediate, :exclusive, :savepoint] and
+             transaction_status == :transaction ->
         handle_transaction(:begin, "SAVEPOINT exqlite_savepoint", state)
     end
   end
@@ -138,7 +141,9 @@ defmodule Exqlite.Connection do
       :savepoint when transaction_status == :transaction ->
         handle_transaction(:commit, "RELEASE SAVEPOINT exqlite_savepoint", state)
 
-      mode when mode in [:deferred, :immediate, :exclusive] and transaction_status == :transaction ->
+      mode
+      when mode in [:deferred, :immediate, :exclusive] and
+             transaction_status == :transaction ->
         handle_transaction(:commit, "COMMIT", state)
     end
   end
@@ -147,11 +152,18 @@ defmodule Exqlite.Connection do
   def handle_rollback(options, %{transaction_status: transaction_status} = state) do
     case Keyword.get(options, :mode, :deferred) do
       :savepoint when transaction_status == :transaction ->
-        with {:ok, _result, state} <- handle_transaction(:rollback, "ROLLBACK TO SAVEPOINT exqlite_savepoint", state) do
+        with {:ok, _result, state} <-
+               handle_transaction(
+                 :rollback,
+                 "ROLLBACK TO SAVEPOINT exqlite_savepoint",
+                 state
+               ) do
           handle_transaction(:rollback, "RELEASE SAVEPOINT exqlite_savepoint", state)
         end
 
-      mode when mode in [:deferred, :immediate, :exclusive] and transaction_status == :transaction ->
+      mode
+      when mode in [:deferred, :immediate, :exclusive] and
+             transaction_status == :transaction ->
         handle_transaction(:rollback, "ROLLBACK TRANSACTION", state)
     end
   end
@@ -226,6 +238,7 @@ defmodule Exqlite.Connection do
           query = %{query | ref: ref}
           Queries.put(state.queries, query)
           {:ok, query, state}
+
         {:error, reason} ->
           {:error, %Error{message: reason}}
       end
