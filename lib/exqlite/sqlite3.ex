@@ -3,6 +3,14 @@ defmodule Exqlite.Sqlite3 do
   The interface to the NIF implementation.
   """
 
+  #
+  # TODO: If the database reference is closed, any prepared statements should be
+  #       dereferenced as well. It is entirely possible that an application does
+  #       not properly remove a stale reference.
+  #
+  #       Will need to add a test for this and think of possible solution.
+  #
+
   alias Exqlite.Sqlite3NIF
 
   @type db() :: reference()

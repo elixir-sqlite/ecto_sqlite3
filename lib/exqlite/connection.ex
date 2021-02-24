@@ -43,30 +43,32 @@ defmodule Exqlite.Connection do
 
   Allowed options:
 
-    - `path` - The path to the database. In memory databses are allowed. Use
+    - `database` - The database to the database. In memory databses are allowed. Use
       `:memory` or `":memory:"`.
   """
   def connect(opts) do
-    path = Keyword.get(opts, :path)
+    database = Keyword.get(opts, :database)
 
-    case path do
+    case database do
       nil ->
         {:error,
          %Error{
            message:
-             ~s{You must provide a :path to the database. Example: connect(path: "./") or connect(path: :memory)}
+             ~s{You must provide a :database to the database. Example: connect(database: "./") or connect(database: :memory)}
          }}
 
       :memory ->
         do_connect(":memory:")
 
       _ ->
-        do_connect(path)
+        do_connect(database)
     end
   end
 
   @impl true
-  def disconnect(_err, %__MODULE__{db: db}) do
+  def disconnect(_err, %__MODULE__{db: db, queries: queries}) do
+    Queries.delete(queries)
+
     case Sqlite3.close(db) do
       :ok -> :ok
       {:error, reason} -> {:error, %Error{message: reason}}
@@ -126,7 +128,9 @@ defmodule Exqlite.Connection do
       :exclusive when transaction_status == :idle ->
         handle_transaction(:begin, "BEGIN EXCLUSIVE TRANSACTION", state)
 
-      mode when mode in [:deferred, :immediate, :exclusive, :savepoint] and transaction_status == :transaction ->
+      mode
+      when mode in [:deferred, :immediate, :exclusive, :savepoint] and
+             transaction_status == :transaction ->
         handle_transaction(:begin, "SAVEPOINT exqlite_savepoint", state)
     end
   end
@@ -137,7 +141,9 @@ defmodule Exqlite.Connection do
       :savepoint when transaction_status == :transaction ->
         handle_transaction(:commit, "RELEASE SAVEPOINT exqlite_savepoint", state)
 
-      mode when mode in [:deferred, :immediate, :exclusive] and transaction_status == :transaction ->
+      mode
+      when mode in [:deferred, :immediate, :exclusive] and
+             transaction_status == :transaction ->
         handle_transaction(:commit, "COMMIT", state)
     end
   end
@@ -146,11 +152,18 @@ defmodule Exqlite.Connection do
   def handle_rollback(options, %{transaction_status: transaction_status} = state) do
     case Keyword.get(options, :mode, :deferred) do
       :savepoint when transaction_status == :transaction ->
-        with {:ok, _result, state} <- handle_transaction(:rollback, "ROLLBACK TO SAVEPOINT exqlite_savepoint", state) do
+        with {:ok, _result, state} <-
+               handle_transaction(
+                 :rollback,
+                 "ROLLBACK TO SAVEPOINT exqlite_savepoint",
+                 state
+               ) do
           handle_transaction(:rollback, "RELEASE SAVEPOINT exqlite_savepoint", state)
         end
 
-      mode when mode in [:deferred, :immediate, :exclusive] and transaction_status == :transaction ->
+      mode
+      when mode in [:deferred, :immediate, :exclusive] and
+             transaction_status == :transaction ->
         handle_transaction(:rollback, "ROLLBACK TRANSACTION", state)
     end
   end
@@ -225,6 +238,7 @@ defmodule Exqlite.Connection do
           query = %{query | ref: ref}
           Queries.put(state.queries, query)
           {:ok, query, state}
+
         {:error, reason} ->
           {:error, %Error{message: reason}}
       end

@@ -7,7 +7,7 @@ defmodule Ecto.Adapters.Exqlite do
   @behaviour Ecto.Adapter.Storage
   @behaviour Ecto.Adapter.Structure
 
-  @impl true
+  @impl Ecto.Adapter.Storage
   def storage_down(options) do
     db_path = Keyword.fetch!(options, :database)
 
@@ -20,7 +20,7 @@ defmodule Ecto.Adapters.Exqlite do
     end
   end
 
-  @impl true
+  @impl Ecto.Adapter.Storage
   def storage_status(options) do
     db_path = Keyword.fetch!(options, :database)
 
@@ -31,19 +31,17 @@ defmodule Ecto.Adapters.Exqlite do
     end
   end
 
-  @impl true
+  @impl Ecto.Adapter.Storage
   def storage_up(options) do
-    db_path = Keyword.fetch!(options, :database)
-
-    Path.dirname(db_path) |> File.mkdir_p!()
-    {:ok, db} = Exqlite.Sqlite3.open(db_path)
-    :ok = Exqlite.Sqlite3.close(db)
+    options
+    |> Keyword.get(:database)
+    |> storage_up_with_path()
   end
 
   @impl true
   def supports_ddl_transaction?(), do: true
 
-  @impl true
+  @impl Ecto.Adapter.Structure
   def structure_dump(_default, _config) do
     # table = config[:migration_source] || "schema_migrations"
     # path  = config[:dump_path] || Path.join(default, "structure.sql")
@@ -60,11 +58,47 @@ defmodule Ecto.Adapters.Exqlite do
     {:error, :not_implemented}
   end
 
-  @impl true
+  @impl Ecto.Adapter.Structure
   def structure_load(_default, _config) do
     # load the structure.sql file
     {:error, :not_implemented}
   end
+
+  @impl true
+  def insert(adapter_meta, schema_meta, params, on_conflict, returning, opts) do
+    %{source: source, prefix: prefix} = schema_meta
+    {_, query_params, _} = on_conflict
+
+    # TODO: Use key here
+    _key = primary_key!(schema_meta, returning)
+    {fields, values} = :lists.unzip(params)
+
+    # Construct the insertion sql statement
+    sql = @conn.insert(prefix, source, fields, [fields], on_conflict, [], [])
+
+    # Build the query name we are going to pass on
+    opts = [{:query_name, generate_cache_name(:insert, sql)} | opts]
+
+    case Ecto.Adapters.SQL.query(adapter_meta, sql, values ++ query_params, opts) do
+      # TODO: Within the connection, we need to fetch the last rowid from Sqlite3
+      #
+      #   {:ok, %{num_rows: 1, last_insert_id: last_insert_id}} ->
+      #     {:ok, last_insert_id(key, last_insert_id)}
+      #
+      #   {:ok, %{num_rows: 2, last_insert_id: last_insert_id}} ->
+      #     {:ok, last_insert_id(key, last_insert_id)}
+
+      {:error, err} ->
+        case @conn.to_constraints(err, source: source) do
+          [] -> raise err
+          constraints -> {:invalid, constraints}
+        end
+    end
+  end
+
+  ##
+  ## Loaders
+  ##
 
   @impl true
   def loaders(:boolean, type), do: [&bool_decode/1, type]
@@ -116,6 +150,10 @@ defmodule Ecto.Adapters.Exqlite do
   defp float_decode(x) when is_integer(x), do: {:ok, x / 1}
   defp float_decode(x), do: {:ok, x}
 
+  ##
+  ## Dumpers
+  ##
+
   @impl true
   def dumpers(:binary, type), do: [type, &blob_encode/1]
   def dumpers(:binary_id, type), do: [type, Ecto.UUID]
@@ -136,5 +174,47 @@ defmodule Ecto.Adapters.Exqlite do
 
   defp naive_datetime_encode(value) do
     {:ok, NaiveDateTime.to_iso8601(value)}
+  end
+
+  ##
+  ## HELPERS
+  ##
+
+  defp primary_key!(%{autogenerate_id: {_, key, _type}}, [key]), do: key
+  defp primary_key!(_, []), do: nil
+
+  defp primary_key!(%{schema: schema}, returning) do
+    raise ArgumentError,
+          "Sqlite3 does not support :read_after_writes in schemas for non-primary keys. " <>
+            "The following fields in #{inspect(schema)} are tagged as such: #{
+              inspect(returning)
+            }"
+  end
+
+  defp generate_cache_name(operation, sql) do
+    digest = :crypto.hash(:sha, sql) |> Base.encode16()
+    "ecto_#{operation}_#{digest}"
+  end
+
+  defp storage_up_with_path(nil) do
+    raise ArgumentError,
+          """
+          No SQLite database path specified. Please check the configuration for your Repo.
+          Your config/*.exs file should have something like this in it:
+
+            config :my_app, MyApp.Repo,
+              adapter: Ecto.Adapters.Exqlite,
+              database: "/path/to/sqlite/database"
+          """
+  end
+
+  defp storage_up_with_path(db_path) do
+    if File.exists?(db_path) do
+      {:error, :already_up}
+    else
+      db_path |> Path.dirname() |> File.mkdir_p!()
+      {:ok, db} = Exqlite.Sqlite3.open(db_path)
+      :ok = Exqlite.Sqlite3.close(db)
+    end
   end
 end

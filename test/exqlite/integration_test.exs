@@ -10,7 +10,7 @@ defmodule Exqlite.IntegrationTest do
     :ok = Sqlite3.execute(db, "create table test (id ingeger primary key, stuff text)")
     :ok = Sqlite3.close(db)
 
-    {:ok, conn} = Connection.connect(path: path)
+    {:ok, conn} = Connection.connect(database: path)
 
     {:ok, query, _} =
       %Exqlite.Query{statement: "SELECT * FROM test WHERE id = :id"}
