@@ -9,6 +9,7 @@ defmodule Ecto.Adapters.Exqlite.DataType do
   def column_type(:id, _opts), do: "INTEGER"
   def column_type(:serial, _opts), do: "INTEGER"
   def column_type(:bigserial, _opts), do: "INTEGER"
+  def column_type(:bigint, _opts), do: "INTEGER"
   # TODO: We should make this configurable
   def column_type(:binary_id, _opts), do: "TEXT"
   def column_type(:string, _opts), do: "TEXT"
