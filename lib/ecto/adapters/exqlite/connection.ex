@@ -72,6 +72,10 @@ defmodule Ecto.Adapters.Exqlite.Connection do
   @impl true
   def to_constraints(_, _), do: []
 
+  ##
+  ## Queries
+  ##
+
   @impl true
   def all(%Ecto.Query{lock: lock}) when lock != nil do
     raise ArgumentError, "locks are not supported by SQLite3"
@@ -111,12 +115,6 @@ defmodule Ecto.Adapters.Exqlite.Connection do
   end
 
   @impl true
-  def update_all(%Ecto.Query{joins: [_ | _]}) do
-    # TODO: It is supported but not in the traditional sense
-    raise ArgumentError, "JOINS are not supported on UPDATE statements by SQLite"
-  end
-
-  @impl true
   def update_all(query, prefix \\ nil) do
     %{from: %{source: source}, select: select} = query
 
@@ -136,10 +134,10 @@ defmodule Ecto.Adapters.Exqlite.Connection do
       end
 
     {join, wheres} = using_join(query, :update_all, sources)
-    prefix = prefix || ["UPDATE ", from, " AS ", name, join, " SET "]
+    prefix = prefix || ["UPDATE ", from, " AS ", name, " SET "]
     where = where(%{query | wheres: wheres ++ query.wheres}, sources)
 
-    [cte, prefix, fields | where]
+    [cte, prefix, fields, join, where]
   end
 
   @impl true
@@ -159,9 +157,6 @@ defmodule Ecto.Adapters.Exqlite.Connection do
     {_, name, _} = elem(sources, 0)
 
     from = from(query, sources)
-    # TODO: joins are not supported, but we could alter the query to utilize
-    #       from and where.
-    # join = join(query, sources)
     where = where(query, sources)
 
     [cte, "DELETE ", name, ".*", from, where]
@@ -241,12 +236,16 @@ defmodule Ecto.Adapters.Exqlite.Connection do
   def explain_query(conn, query, params, opts) do
     case query(conn, build_explain_query(query), params, opts) do
       {:ok, %Exqlite.Result{} = result} ->
-        {:ok, SQL.format_table(result)}
+        {:ok, Ecto.Adapters.SQL.format_table(result)}
 
       error ->
         error
     end
   end
+
+  ##
+  ## DDL
+  ##
 
   @impl true
   def execute_ddl({_command, %Table{options: keyword}, _}) when keyword != nil do
