@@ -772,15 +772,18 @@ defmodule Ecto.Adapters.Exqlite.Connection do
   defp using_join(%{joins: joins} = query, kind, sources) do
     froms =
       intersperse_map(joins, ", ", fn
-        %JoinExpr{qual: :inner, ix: ix, source: source} ->
+        %JoinExpr{qual: _qual, ix: ix, source: source} ->
           {join, name} = get_source(query, sources, ix, source)
           [join, " AS " | name]
 
-        %JoinExpr{qual: qual} ->
-          raise Ecto.QueryError,
-            query: query,
-            message:
-              "SQLite3 adapter supports only inner joins on #{kind}, got: `#{qual}`"
+          # This is hold over from sqlite_ecto2. According to sqlite3
+          # documentation, all of the join types are allowed.
+          #
+          # %JoinExpr{qual: qual} ->
+          #   raise Ecto.QueryError,
+          #     query: query,
+          #     message:
+          #       "SQLite3 adapter supports only inner joins on #{kind}, got: `#{qual}`"
       end)
 
     wheres =
