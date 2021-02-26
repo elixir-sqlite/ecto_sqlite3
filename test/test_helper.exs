@@ -32,7 +32,7 @@ _ = Ecto.Adapters.Exqlite.storage_down(Ecto.Integration.TestRepo.config())
 {:ok, _pid} = Ecto.Integration.TestRepo.start_link()
 {:ok, _pid} = Ecto.Integration.PoolRepo.start_link()
 
-# :ok = Ecto.Migrator.up(Ecto.Integration.TestRepo, 0, Ecto.Integration.Migration, log: false)
+:ok = Ecto.Migrator.up(Ecto.Integration.TestRepo, 0, Ecto.Integration.Migration, log: false)
 Ecto.Adapters.SQL.Sandbox.mode(Ecto.Integration.TestRepo, :manual)
 Process.flag(:trap_exit, true)
 
