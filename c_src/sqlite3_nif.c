@@ -774,10 +774,14 @@ static void
 statement_type_destructor(ErlNifEnv* env, void* arg)
 {
     assert(env);
+    assert(arg);
 
     statement_t* statement = (statement_t*)arg;
-    sqlite3_finalize(statement->statement);
-    statement->statement = NULL;
+
+    if (statement->statement) {
+        sqlite3_finalize(statement->statement);
+        statement->statement = NULL;
+    }
 }
 
 static int
