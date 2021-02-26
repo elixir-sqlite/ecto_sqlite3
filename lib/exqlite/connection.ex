@@ -257,35 +257,20 @@ defmodule Exqlite.Connection do
   end
 
   defp execute(call, %Query{} = query, params, state) do
-    with {:ok, query} <- bind_params(query, params, state) do
-      do_execute(call, query, state, %Result{})
-    end
-  end
-
-  defp do_execute(call, %Query{ref: ref} = query, state, %Result{} = result) do
-    case Sqlite3.step(state.db, query.ref) do
-      :done ->
-        case Sqlite3.columns(state.db, ref) do
-          {:ok, columns} -> {:ok, %{result | columns: columns}, state}
-          {:error, reason} -> {:error, %Error{message: reason}}
-        end
-
-      {:row, row} ->
-        # TODO: we need something better than simply appending rows. Maybe.
-        # Ideally we do not want to block all of the dirty nif threads so
-        # iterative fetching will work fine here.
-        do_execute(
-          call,
-          query,
-          state,
-          %{result | rows: result.rows ++ [row], command: call}
-        )
-
-      :busy ->
-        {:error, %Error{message: "Database busy"}}
-
-      {:error, reason} ->
-        {:error, %Error{message: reason}}
+    with {:ok, query} <- bind_params(query, params, state),
+         {:ok, columns} <- Sqlite3.columns(state.db, query.ref),
+         {:ok, rows} <- Sqlite3.fetch_all(state.db, query.ref) do
+      {
+        :ok,
+        %Result{
+          columns: columns,
+          rows: rows,
+          command: call,
+        },
+        state
+      }
+    else
+      {:error, reason} -> {:error, %Error{message: reason}}
     end
   end
 

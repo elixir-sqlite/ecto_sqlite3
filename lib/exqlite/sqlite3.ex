@@ -86,6 +86,25 @@ defmodule Exqlite.Sqlite3 do
   @spec last_insert_rowid(db()) :: {:ok, integer()}
   def last_insert_rowid(conn), do: Sqlite3NIF.last_insert_rowid(conn)
 
+  @spec fetch_all(db(), statement()) :: {:ok, []} | {:error, reason()}
+  def fetch_all(conn, statement) do
+    # TODO: Should this be done in the NIF? It can be _much_ faster to build a
+    # list there, but at the expense that it could block other dirty nifs from
+    # getting work done.
+    #
+    # For now this just works
+    fetch_all(conn, statement, [])
+  end
+
+  defp fetch_all(conn, statement, result) do
+    case step(conn, statement) do
+      :busy -> {:error, "Database busy"}
+      {:error, reason} -> {:error, reason}
+      :done -> {:ok, result}
+      {:row, row} -> fetch_all(conn, statement, result ++ [row])
+    end
+  end
+
   defp convert(%Date{} = val), do: Date.to_iso8601(val)
   defp convert(%DateTime{} = val), do: DateTime.to_iso8601(val)
   defp convert(%Time{} = val), do: Time.to_iso8601(val)
