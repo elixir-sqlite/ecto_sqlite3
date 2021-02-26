@@ -264,7 +264,7 @@ defmodule Ecto.Adapters.Exqlite do
   end
 
   defp generate_cache_name(operation, sql) do
-    digest = :crypto.hash(:sha, sql) |> Base.encode16()
+    digest = :crypto.hash(:sha, IO.iodata_to_binary(sql)) |> Base.encode16()
     "ecto_#{operation}_#{digest}"
   end
 
