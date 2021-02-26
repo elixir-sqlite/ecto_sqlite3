@@ -2,6 +2,8 @@ defmodule Exqlite.ConnectionTest do
   use ExUnit.Case
 
   alias Exqlite.Connection
+  alias Exqlite.Query
+  alias Exqlite.Sqlite3
 
   describe ".connect/1" do
     test "returns error when path is missing from options" do
@@ -26,16 +28,19 @@ defmodule Exqlite.ConnectionTest do
     end
 
     test "connects to a file" do
-      {:ok, state} = Connection.connect(database: Temp.path!())
+      path = Temp.path!()
+      {:ok, state} = Connection.connect(database: path)
 
-      assert state.path
+      assert state.path == path
       assert state.db
+
+      File.rm(path)
     end
   end
 
   describe ".disconnect/2" do
     test "disconnects a database that was never connected" do
-      conn = %Exqlite.Connection{db: nil, path: nil}
+      conn = %Connection{db: nil, path: nil}
 
       assert :ok == Connection.disconnect(nil, conn)
     end
@@ -44,6 +49,31 @@ defmodule Exqlite.ConnectionTest do
       {:ok, conn} = Connection.connect(database: :memory)
 
       assert :ok == Connection.disconnect(nil, conn)
+    end
+  end
+
+  describe ".handle_execute/4" do
+    test "returns records" do
+      path = Temp.path!()
+
+      {:ok, db} = Sqlite3.open(path)
+      :ok = Sqlite3.execute(db, "create table users (id integer primary key, name text)")
+      :ok = Sqlite3.execute(db, "insert into users (id, name) values (1, 'Jim')")
+      :ok = Sqlite3.execute(db, "insert into users (id, name) values (2, 'Bob')")
+      :ok = Sqlite3.execute(db, "insert into users (id, name) values (3, 'Dave')")
+      :ok = Sqlite3.execute(db, "insert into users (id, name) values (4, 'Steve')")
+      Sqlite3.close(db)
+
+      {:ok, conn} = Connection.connect(database: path)
+      {:ok, result, conn} =
+        %Query{statement: "select * from users where id < ?"}
+        |> Connection.handle_execute([4], [], conn)
+
+      assert result.command == :execute
+      assert result.columns == [id: "INTEGER", name: "text"]
+      assert result.rows == [[1, {:text, "Jim"}], [2, {:text, "Bob"}], [3, {:text, "Dave"}]]
+
+      File.rm(path)
     end
   end
 end
