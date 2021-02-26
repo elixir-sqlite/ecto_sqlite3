@@ -32,8 +32,13 @@ defmodule Ecto.Adapters.Exqlite.Connection do
   end
 
   @impl true
-  def execute(conn, %Exqlite.Query{} = cached, params, opts) do
+  def execute(conn, %Exqlite.Query{ref: ref} = cached, params, opts) when ref != nil do
     DBConnection.execute(conn, cached, params, opts)
+  end
+
+  @impl true
+  def execute(conn, %Exqlite.Query{statement: statement, ref: nil} = cached, params, opts) do
+    execute(conn, statement, params, opts)
   end
 
   @impl true
