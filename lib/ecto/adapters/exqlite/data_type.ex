@@ -4,26 +4,27 @@ defmodule Ecto.Adapters.Exqlite.DataType do
   # stored value. Thus, "strings" are all text and "numerics" have arbitrary
   # precision regardless of the declared column type. Decimals are the
   # only exception.
-  def column_type(:id, _query), do: "INTEGER"
-  def column_type(:serial, _query), do: "INTEGER"
-  def column_type(:bigserial, _query), do: "INTEGER"
+
+  @spec column_type(atom(), Keyword.t()) :: String.t()
+  def column_type(:id, _opts), do: "INTEGER"
+  def column_type(:serial, _opts), do: "INTEGER"
+  def column_type(:bigserial, _opts), do: "INTEGER"
   # TODO: We should make this configurable
-  def column_type(:binary_id, _query), do: "TEXT"
-  def column_type(:string, _query), do: "TEXT"
-  def column_type(:float, _query), do: "NUMERIC"
-  def column_type(:binary, _query), do: "BLOB"
+  def column_type(:binary_id, _opts), do: "TEXT"
+  def column_type(:string, _opts), do: "TEXT"
+  def column_type(:float, _opts), do: "NUMERIC"
+  def column_type(:binary, _opts), do: "BLOB"
   # TODO: We should make this configurable
   # SQLite3 does not support uuid
-  def column_type(:uuid, _query), do: "TEXT"
-  def column_type(:map, _query), do: "JSON"
-  def column_type(:array, _query), do: "JSON"
-  def column_type({:map, _}, _query), do: "JSON"
-  def column_type({:array, _}, _query), do: "JSON"
-  def column_type(:utc_datetime, _query), do: "DATETIME"
-  def column_type(:utc_datetime_usec, _query), do: "DATETIME"
-  def column_type(:naive_datetime, _query), do: "DATETIME"
-  def column_type(:naive_datetime_usec, _query), do: "DATETIME"
-
+  def column_type(:uuid, _opts), do: "TEXT"
+  def column_type(:map, _opts), do: "JSON"
+  def column_type(:array, _opts), do: "JSON"
+  def column_type({:map, _}, _opts), do: "JSON"
+  def column_type({:array, _}, _opts), do: "JSON"
+  def column_type(:utc_datetime, _opts), do: "DATETIME"
+  def column_type(:utc_datetime_usec, _opts), do: "DATETIME"
+  def column_type(:naive_datetime, _opts), do: "DATETIME"
+  def column_type(:naive_datetime_usec, _opts), do: "DATETIME"
   def column_type(:decimal, nil), do: "DECIMAL"
 
   def column_type(:decimal, opts) do
