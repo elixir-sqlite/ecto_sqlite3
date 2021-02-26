@@ -64,7 +64,7 @@ defmodule Ecto.Adapters.Exqlite do
     {:error, :not_implemented}
   end
 
-  @impl true
+  @impl Ecto.Adapter.Schema
   def insert(adapter_meta, schema_meta, params, on_conflict, returning, opts) do
     %{source: source, prefix: prefix} = schema_meta
     {_, query_params, _} = on_conflict
