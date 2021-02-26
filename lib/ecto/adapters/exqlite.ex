@@ -39,7 +39,7 @@ defmodule Ecto.Adapters.Exqlite do
   end
 
   @impl true
-  def supports_ddl_transaction?(), do: true
+  def supports_ddl_transaction?(), do: false
 
   @impl Ecto.Adapter.Structure
   def structure_dump(_default, _config) do
@@ -69,24 +69,19 @@ defmodule Ecto.Adapters.Exqlite do
     %{source: source, prefix: prefix} = schema_meta
     {_, query_params, _} = on_conflict
 
-    # TODO: Use key here
-    _key = primary_key!(schema_meta, returning)
+    key = primary_key!(schema_meta, returning)
     {fields, values} = :lists.unzip(params)
 
     # Construct the insertion sql statement
     sql = @conn.insert(prefix, source, fields, [fields], on_conflict, [], [])
 
     # Build the query name we are going to pass on
+    opts = [{:command, :insert} | opts]
     opts = [{:query_name, generate_cache_name(:insert, sql)} | opts]
 
     case Ecto.Adapters.SQL.query(adapter_meta, sql, values ++ query_params, opts) do
-      # TODO: Within the connection, we need to fetch the last rowid from Sqlite3
-      #
-      #   {:ok, %{num_rows: 1, last_insert_id: last_insert_id}} ->
-      #     {:ok, last_insert_id(key, last_insert_id)}
-      #
-      #   {:ok, %{num_rows: 2, last_insert_id: last_insert_id}} ->
-      #     {:ok, last_insert_id(key, last_insert_id)}
+      {:ok, %{last_insert_id: rowid}} ->
+        {:ok, last_insert_id(key, rowid)}
 
       {:error, err} ->
         case @conn.to_constraints(err, source: source) do
@@ -262,6 +257,10 @@ defmodule Ecto.Adapters.Exqlite do
               inspect(returning)
             }"
   end
+
+  defp last_insert_id(nil, _last_insert_id), do: []
+  defp last_insert_id(_key, 0), do: []
+  defp last_insert_id(key, last_insert_id), do: [{key, last_insert_id}]
 
   defp generate_cache_name(operation, sql) do
     digest = :crypto.hash(:sha, IO.iodata_to_binary(sql)) |> Base.encode16()

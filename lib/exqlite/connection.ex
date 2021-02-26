@@ -34,14 +34,16 @@ defmodule Exqlite.Connection do
     :db,
     :path,
     :transaction_status,
-    :queries
+    :queries,
+    :status
   ]
 
   @type t() :: %__MODULE__{
           db: Sqlite3.db(),
           path: String.t(),
           transaction_status: :idle | :transaction,
-          queries: Queries.t()
+          queries: Queries.t(),
+          status: :idle | :busy
         }
 
   @impl true
@@ -85,10 +87,22 @@ defmodule Exqlite.Connection do
   end
 
   @impl true
-  def checkin(state), do: {:ok, state}
+  def checkin(%__MODULE__{status: :busy} = state) do
+    {:ok, %{state | status: :idle}}
+  end
+
+  def checkin(%__MODULE__{status: :idle} = state) do
+    {:ok, state}
+  end
 
   @impl true
-  def checkout(state), do: {:ok, state}
+  def checkout(%__MODULE__{status: :idle} = state) do
+    {:ok, %{state | status: :busy}}
+  end
+
+  def checkout(%__MODULE__{status: :busy} = state) do
+    {:disconnect, %Error{message: "Database is busy"}, state}
+  end
 
   @impl true
   def ping(state), do: {:ok, state}
@@ -98,13 +112,13 @@ defmodule Exqlite.Connection do
   ##
 
   @impl true
-  def handle_prepare(%Query{} = query, _opts, state) do
-    prepare(query, state)
+  def handle_prepare(%Query{} = query, options, state) do
+    prepare(query, options, state)
   end
 
   @impl true
-  def handle_execute(%Query{} = query, params, _opts, state) do
-    with {:ok, query, state} <- prepare(query, state) do
+  def handle_execute(%Query{} = query, params, options, state) do
+    with {:ok, query, state} <- prepare(query, options, state) do
       execute(:execute, query, params, state)
     end
   end
@@ -199,8 +213,8 @@ defmodule Exqlite.Connection do
   end
 
   @impl true
-  def handle_declare(%Query{} = query, params, _opts, state) do
-    with {:ok, query} <- prepare_no_cache(query, state),
+  def handle_declare(%Query{} = query, params, opts, state) do
+    with {:ok, query} <- prepare_no_cache(query, opts, state),
          {:ok, query} <- bind_params(query, params, state) do
       {:ok, query, query.ref, state}
     end
@@ -246,12 +260,14 @@ defmodule Exqlite.Connection do
          :ok <- Sqlite3.execute(db, "PRAGMA journal_mode = 'WAL'"),
          :ok <- Sqlite3.execute(db, "PRAGMA temp_store = 2"),
          :ok <- Sqlite3.execute(db, "PRAGMA synchronous = 1"),
+         :ok <- Sqlite3.execute(db, "PRAGMA foreign_keys = ON"),
          :ok <- Sqlite3.execute(db, "PRAGMA cache_size = -64000") do
       state = %__MODULE__{
         db: db,
         path: path,
         transaction_status: :idle,
-        queries: Queries.new(__MODULE__)
+        queries: Queries.new(__MODULE__),
+        status: :idle
       }
 
       {:ok, state}
@@ -263,7 +279,10 @@ defmodule Exqlite.Connection do
 
   # Attempt to retrieve the cached query, if it doesn't exist, we'll prepare one
   # and cache it for later.
-  defp prepare(%Query{statement: statement, ref: nil} = query, state) do
+  defp prepare(%Query{statement: statement, ref: nil} = query, options, state) do
+    command = Keyword.get(options, :command)
+    query = %{query | command: command}
+
     case Queries.get(state.queries, query) do
       nil ->
         case Sqlite3.prepare(state.db, IO.iodata_to_binary(statement)) do
@@ -281,12 +300,18 @@ defmodule Exqlite.Connection do
     end
   end
 
-  defp prepare(%Query{ref: ref} = query, state) when ref != nil do
+  defp prepare(%Query{ref: ref} = query, options, state) when ref != nil do
+    command = Keyword.get(options, :command)
+    query = %{query | command: command}
+
     {:ok, query, state}
   end
 
   # Prepare a query and do not cache it.
-  defp prepare_no_cache(%Query{statement: statement} = query, state) do
+  defp prepare_no_cache(%Query{statement: statement} = query, options, state) do
+    command = Keyword.get(options, :command)
+    query = %{query | command: command}
+
     case Sqlite3.prepare(state.db, statement) do
       {:ok, ref} ->
         {:ok, %{query | ref: ref}, state}
@@ -296,10 +321,19 @@ defmodule Exqlite.Connection do
     end
   end
 
+  defp maybe_last_insert_id(db, %Query{command: :insert}) do
+    case Sqlite3.last_insert_rowid(db) do
+      {:ok, rowid} -> rowid
+      _ -> nil
+    end
+  end
+  defp maybe_last_insert_id(_, _), do: nil
+
   defp execute(call, %Query{} = query, params, state) do
     with {:ok, query} <- bind_params(query, params, state),
          {:ok, columns} <- Sqlite3.columns(state.db, query.ref),
-         {:ok, rows} <- Sqlite3.fetch_all(state.db, query.ref) do
+         {:ok, rows} <- Sqlite3.fetch_all(state.db, query.ref),
+         last_insert_id <- maybe_last_insert_id(state.db, query) do
       {
         :ok,
         query,
@@ -307,7 +341,8 @@ defmodule Exqlite.Connection do
           columns: columns,
           rows: rows,
           command: call,
-          num_rows: Enum.count(rows)
+          num_rows: Enum.count(rows),
+          last_insert_id: last_insert_id,
         },
         state
       }
@@ -338,10 +373,18 @@ defmodule Exqlite.Connection do
         result = %Result{
           command: call,
           rows: [],
-          columns: []
+          columns: [],
+          last_insert_id: nil,
+          num_rows: 0,
         }
 
-        {:ok, result, %{state| transaction_status: :transaction}}
+        case call do
+          :rollback ->
+            {:ok, result, %{state | transaction_status: :idle}}
+
+          _ ->
+            {:ok, result, %{state | transaction_status: :transaction}}
+        end
 
       {:error, reason} ->
         {:error, %Error{message: reason}}

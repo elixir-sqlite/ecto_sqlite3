@@ -69,7 +69,7 @@ defmodule Exqlite.ConnectionTest do
 
       {:ok, conn} = Connection.connect(database: path)
 
-      {:ok, result, conn} =
+      {:ok, _query, result, conn} =
         %Query{statement: "select * from users where id < ?"}
         |> Connection.handle_execute([4], [], conn)
 
@@ -85,7 +85,7 @@ defmodule Exqlite.ConnectionTest do
     test "returns a prepared query" do
       {:ok, conn} = Connection.connect(database: :memory)
 
-      {:ok, _, conn} =
+      {:ok, _query, _result, conn} =
         %Query{statement: "create table users (id integer primary key, name text)"}
         |> Connection.handle_execute([], [], conn)
 
@@ -111,18 +111,40 @@ defmodule Exqlite.ConnectionTest do
   end
 
   describe ".checkin/1" do
-    test "returns the state passed unchanged" do
+    test "checking in an idle connection" do
       {:ok, conn} = Connection.connect(database: :memory)
+      conn = %{conn | status: :idle}
 
-      assert {:ok, conn} == Connection.checkin(conn)
+      {:ok, conn} = Connection.checkin(conn)
+
+      assert conn.status == :idle
+    end
+
+    test "checking in a busy connection" do
+      {:ok, conn} = Connection.connect(database: :memory)
+      conn = %{conn | status: :busy}
+
+      {:ok, conn} = Connection.checkin(conn)
+
+      assert conn.status == :idle
     end
   end
 
   describe ".checkout/1" do
-    test "returns the state passed unchanged" do
+    test "checking out an idle connection" do
       {:ok, conn} = Connection.connect(database: :memory)
 
-      assert {:ok, conn} == Connection.checkout(conn)
+      {:ok, conn} = Connection.checkout(conn)
+      assert conn.status == :busy
+    end
+
+    test "checking out a busy connection" do
+      {:ok, conn} = Connection.connect(database: :memory)
+      conn = %{conn | status: :busy}
+
+      {:disconnect, error, _conn} = Connection.checkout(conn)
+
+      assert error.message == "Database is busy"
     end
   end
 

@@ -15,16 +15,16 @@ defmodule Ecto.Adapters.Exqlite.Connection do
   @parent_as __MODULE__
 
   @impl true
-  def child_spec(opts) do
+  def child_spec(options) do
     {:ok, _} = Application.ensure_all_started(:db_connection)
-    DBConnection.child_spec(Exqlite.Connection, opts)
+    DBConnection.child_spec(Exqlite.Connection, options)
   end
 
   @impl true
-  def prepare_execute(conn, name, sql, params, opts) do
+  def prepare_execute(conn, name, sql, params, options) do
     query = %Exqlite.Query{name: name, statement: sql}
 
-    case DBConnection.prepare_execute(conn, query, params, opts) do
+    case DBConnection.prepare_execute(conn, query, params, options) do
       {:ok, _, _} = ok -> ok
       {:error, %Exqlite.Error{}} = error -> error
       {:error, err} -> raise err
@@ -32,25 +32,26 @@ defmodule Ecto.Adapters.Exqlite.Connection do
   end
 
   @impl true
-  def execute(conn, %Exqlite.Query{ref: ref} = cached, params, opts) when ref != nil do
-    DBConnection.execute(conn, cached, params, opts)
+  def execute(conn, %Exqlite.Query{ref: ref} = cached, params, options)
+      when ref != nil do
+    DBConnection.execute(conn, cached, params, options)
   end
 
   @impl true
   def execute(
         conn,
-        %Exqlite.Query{statement: statement, ref: nil} = cached,
+        %Exqlite.Query{statement: statement, ref: nil},
         params,
-        opts
+        options
       ) do
-    execute(conn, statement, params, opts)
+    execute(conn, statement, params, options)
   end
 
   @impl true
-  def execute(conn, sql, params, opts) when is_binary(sql) or is_list(sql) do
+  def execute(conn, sql, params, options) when is_binary(sql) or is_list(sql) do
     query = %Exqlite.Query{name: "", statement: IO.iodata_to_binary(sql)}
 
-    case DBConnection.prepare_execute(conn, query, params, opts) do
+    case DBConnection.prepare_execute(conn, query, params, options) do
       {:ok, %Exqlite.Query{}, result} -> {:ok, result}
       {:error, %Exqlite.Error{}} = error -> error
       {:error, err} -> raise err
@@ -58,8 +59,8 @@ defmodule Ecto.Adapters.Exqlite.Connection do
   end
 
   @impl true
-  def execute(conn, query, params, opts) do
-    case DBConnection.execute(conn, query, params, opts) do
+  def execute(conn, query, params, options) do
+    case DBConnection.execute(conn, query, params, options) do
       {:ok, _} = ok -> ok
       {:error, %ArgumentError{} = err} -> {:reset, err}
       {:error, %Exqlite.Error{}} = error -> error
@@ -68,19 +69,19 @@ defmodule Ecto.Adapters.Exqlite.Connection do
   end
 
   @impl true
-  def query(conn, sql, params, opts) do
-    query = %Exqlite.Query{statement: sql}
+  def query(conn, sql, params, options) do
+    query = %Exqlite.Query{statement: IO.iodata_to_binary(sql)}
 
-    case DBConnection.execute(conn, query, params, opts) do
+    case DBConnection.execute(conn, query, params, options) do
       {:ok, _, result} -> {:ok, result}
       other -> other
     end
   end
 
   @impl true
-  def stream(conn, sql, params, opts) do
+  def stream(conn, sql, params, options) do
     query = %Exqlite.Query{statement: sql}
-    DBConnection.stream(conn, query, params, opts)
+    DBConnection.stream(conn, query, params, options)
   end
 
   @impl true
@@ -783,7 +784,7 @@ defmodule Ecto.Adapters.Exqlite.Connection do
 
   defp using_join(%{joins: []}, _kind, _sources), do: {[], []}
 
-  defp using_join(%{joins: joins} = query, kind, sources) do
+  defp using_join(%{joins: joins} = query, _kind, sources) do
     froms =
       intersperse_map(joins, ", ", fn
         %JoinExpr{qual: _qual, ix: ix, source: source} ->

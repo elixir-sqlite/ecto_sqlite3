@@ -5,12 +5,14 @@ defmodule Exqlite.Query do
   @type t :: %__MODULE__{
           statement: iodata(),
           name: atom() | String.t(),
-          ref: reference() | nil
+          ref: reference() | nil,
+          command: :insert | :delete | :update | nil
         }
 
   defstruct statement: nil,
             name: nil,
-            ref: nil
+            ref: nil,
+            command: nil
 
   defimpl DBConnection.Query do
     def parse(query, _opts) do
