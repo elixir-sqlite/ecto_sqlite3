@@ -21,27 +21,27 @@ defmodule Exqlite.Query do
       query
     end
 
-    def encode(%{ref: nil} = query, _params, _opts) do
-      raise ArgumentError, "query #{inspect(query)} has not been prepared"
-    end
-
-    def encode(%{num_params: nil} = query, _params, _opts) do
-      raise ArgumentError, "query #{inspect(query)} has not been prepared"
-    end
-
-    def encode(%{num_params: num_params} = query, params, _opts)
-        when num_params != length(params) do
-      message =
-        "expected params count: #{inspect(num_params)}, got values: #{inspect(params)}" <>
-          " for query: #{inspect(query)}"
-
-      raise ArgumentError, message
-    end
+    # TODO: See also Connection.bind/3
+    #
+    # def encode(%{ref: nil} = query, _params, _opts) do
+    #   raise ArgumentError, "query #{inspect(query)} has not been prepared"
+    # end
+    #
+    # def encode(%{num_params: nil} = query, _params, _opts) do
+    #   raise ArgumentError, "query #{inspect(query)} has not been prepared"
+    # end
+    #
+    # def encode(%{num_params: num_params} = query, params, _opts)
+    #     when num_params != length(params) do
+    #   message =
+    #     "expected params count: #{inspect(num_params)}, got values: #{inspect(params)}" <>
+    #       " for query: #{inspect(query)}"
+    #
+    #   raise ArgumentError, message
+    # end
 
     def encode(_query, params, _opts) do
-      # TODO. See also Connection.bind/3
       params
-      # Protocol.encode_params(params)
     end
 
     def decode(_query, result, _opts) do

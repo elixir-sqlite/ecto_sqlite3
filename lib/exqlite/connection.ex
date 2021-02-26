@@ -319,7 +319,6 @@ defmodule Exqlite.Connection do
     #      https://www.sqlite.org/c3ref/bind_parameter_index.html
     case Sqlite3.bind(state.db, ref, params) do
       :ok -> {:ok, query}
-      {:error, {code, reason}} -> {:error, %Error{message: "#{reason}. Code: #{code}"}}
       {:error, reason} -> {:error, %Error{message: reason}}
     end
   end
