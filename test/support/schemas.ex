@@ -1,4 +1,4 @@
-defmodule Exqlite.Integration.User do
+defmodule Ecto.Integration.User do
   use Ecto.Schema
 
   schema "users" do
@@ -6,24 +6,24 @@ defmodule Exqlite.Integration.User do
   end
 end
 
-defmodule Exqlite.Integration.Comment do
+defmodule Ecto.Integration.Comment do
   use Ecto.Schema
 
   schema "comments" do
     field(:body, :string)
 
-    has_one(:author, Exqlite.Integration.User)
+    has_one(:author, Ecto.Integration.User)
   end
 end
 
-defmodule Exqlite.Integration.Post do
+defmodule Ecto.Integration.Post do
   use Ecto.Schema
 
   schema "posts" do
     field(:title, :string)
     field(:body, :string)
 
-    has_one(:author, Exqlite.Integration.User)
-    has_many(:comments, Exqlite.Integration.Comment)
+    has_one(:author, Ecto.Integration.User)
+    has_many(:comments, Ecto.Integration.Comment)
   end
 end
