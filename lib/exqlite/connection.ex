@@ -334,8 +334,8 @@ defmodule Exqlite.Connection do
 
         {:ok, result, state}
 
-      {:error, {code, reason}} ->
-        {:error, %Error{message: "#{reason}. Code: #{code}"}}
+      {:error, reason} ->
+        {:error, %Error{message: reason}}
     end
   end
 end
