@@ -120,28 +120,50 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
   end
 
   test "from without schema" do
-    query = "posts" |> select([r], r.x) |> plan()
+    query =
+      "posts"
+      |> select([r], r.x)
+      |> plan()
+
     assert all(query) == ~s{SELECT p0.x FROM posts AS p0}
 
-    query = "posts" |> select([r], fragment("?", r)) |> plan()
+    query =
+      "posts"
+      |> select([r], fragment("?", r))
+      |> plan()
+
     assert all(query) == ~s{SELECT p0 FROM posts AS p0}
 
-    query = "Posts" |> select([:x]) |> plan()
+    query =
+      "Posts"
+      |> select([:x])
+      |> plan()
+
     assert all(query) == ~s{SELECT P0.x FROM Posts AS P0}
 
-    query = "0posts" |> select([:x]) |> plan()
+    query =
+      "0posts"
+      |> select([:x])
+      |> plan()
+
     assert all(query) == ~s{SELECT t0.x FROM 0posts AS t0}
 
-    assert_raise Ecto.QueryError,
-                 ~r"SQLite3 does not support selecting all fields from posts without a schema",
-                 fn ->
-                   all(from(p in "posts", select: p) |> plan())
-                 end
+    assert_raise(
+      Ecto.QueryError,
+      ~r"SQLite3 does not support selecting all fields from posts without a schema",
+      fn ->
+        from(p in "posts", select: p) |> plan() |> all()
+      end
+    )
   end
 
   test "from with subquery" do
     query =
-      subquery("posts" |> select([r], %{x: r.x, y: r.y})) |> select([r], r.x) |> plan()
+      "posts"
+      |> select([r], %{x: r.x, y: r.y})
+      |> subquery()
+      |> select([r], r.x)
+      |> plan()
 
     assert all(query) == """
            SELECT s0.x \
@@ -149,7 +171,11 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
            """
 
     query =
-      subquery("posts" |> select([r], %{x: r.x, z: r.y})) |> select([r], r) |> plan()
+      "posts"
+      |> select([r], %{x: r.x, z: r.y})
+      |> subquery()
+      |> select([r], r)
+      |> plan()
 
     assert all(query) ==
              """
@@ -158,7 +184,11 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
              """
 
     query =
-      subquery(subquery("posts" |> select([r], %{x: r.x, z: r.y})) |> select([r], r))
+      "posts"
+      |> select([r], %{x: r.x, z: r.y})
+      |> subquery()
+      |> select([r], r)
+      |> subquery()
       |> select([r], r)
       |> plan()
 
@@ -176,17 +206,16 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
   end
 
   test "common table expression" do
-    initial_query =
-      "categories"
-      |> where([c], is_nil(c.parent_id))
-      |> select([c], %{id: c.id, depth: fragment("1")})
-
     iteration_query =
       "categories"
       |> join(:inner, [c], t in "tree", on: t.id == c.parent_id)
       |> select([c, t], %{id: c.id, depth: fragment("? + 1", t.depth)})
 
-    cte_query = initial_query |> union_all(^iteration_query)
+    cte_query =
+      "categories"
+      |> where([c], is_nil(c.parent_id))
+      |> select([c], %{id: c.id, depth: fragment("1")})
+      |> union_all(^iteration_query)
 
     query =
       Schema
@@ -289,8 +318,9 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
              """
              WITH target_rows AS \
              (SELECT s0.id AS id FROM schema AS s0 ORDER BY s0.id LIMIT 10) \
-             UPDATE schema AS s0, target_rows AS t1 \
+             UPDATE schema AS s0 \
              SET s0.x = 123 \
+             FROM target_rows AS t1 \
              WHERE (t1.id = s0.id)\
              """
   end
@@ -310,65 +340,109 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
              WITH target_rows AS \
              (SELECT s0.id AS id FROM schema AS s0 ORDER BY s0.id LIMIT 10) \
              DELETE s0.* \
-             FROM schema AS s0 \
-             INNER JOIN target_rows AS t1 ON t1.id = s0.id\
+             FROM schema AS s0\
              """
   end
 
   test "select" do
-    query = Schema |> select([r], {r.x, r.y}) |> plan()
+    query =
+      Schema
+      |> select([r], {r.x, r.y})
+      |> plan()
+
     assert all(query) == ~s{SELECT s0.x, s0.y FROM schema AS s0}
 
-    query = Schema |> select([r], [r.x, r.y]) |> plan()
+    query =
+      Schema
+      |> select([r], [r.x, r.y])
+      |> plan()
+
     assert all(query) == ~s{SELECT s0.x, s0.y FROM schema AS s0}
 
-    query = Schema |> select([r], struct(r, [:x, :y])) |> plan()
+    query =
+      Schema
+      |> select([r], struct(r, [:x, :y]))
+      |> plan()
+
     assert all(query) == ~s{SELECT s0.x, s0.y FROM schema AS s0}
   end
 
   test "aggregates" do
-    query = Schema |> select(count()) |> plan()
+    query =
+      Schema
+      |> select(count())
+      |> plan()
+
     assert all(query) == ~s{SELECT count(*) FROM schema AS s0}
   end
 
   test "aggregate filters" do
-    query = Schema |> select([r], count(r.x) |> filter(r.x > 10)) |> plan()
+    query =
+      Schema
+      |> select([r], count(r.x) |> filter(r.x > 10))
+      |> plan()
 
-    assert_raise Ecto.QueryError,
-                 ~r/SQLite3 adapter does not support aggregate filters in query/,
-                 fn ->
-                   all(query)
-                 end
+    assert_raise(
+      Ecto.QueryError,
+      ~r/SQLite3 adapter does not support aggregate filters in query/,
+      fn ->
+        all(query)
+      end
+    )
   end
 
   test "distinct" do
-    query = Schema |> distinct([r], true) |> select([r], {r.x, r.y}) |> plan()
+    query =
+      Schema
+      |> distinct([r], true)
+      |> select([r], {r.x, r.y})
+      |> plan()
+
     assert all(query) == ~s{SELECT DISTINCT s0.x, s0.y FROM schema AS s0}
 
-    query = Schema |> distinct([r], false) |> select([r], {r.x, r.y}) |> plan()
+    query =
+      Schema
+      |> distinct([r], false)
+      |> select([r], {r.x, r.y})
+      |> plan()
+
     assert all(query) == ~s{SELECT s0.x, s0.y FROM schema AS s0}
 
-    query = Schema |> distinct(true) |> select([r], {r.x, r.y}) |> plan()
+    query =
+      Schema
+      |> distinct(true)
+      |> select([r], {r.x, r.y})
+      |> plan()
+
     assert all(query) == ~s{SELECT DISTINCT s0.x, s0.y FROM schema AS s0}
 
-    query = Schema |> distinct(false) |> select([r], {r.x, r.y}) |> plan()
+    query =
+      Schema
+      |> distinct(false)
+      |> select([r], {r.x, r.y})
+      |> plan()
+
     assert all(query) == ~s{SELECT s0.x, s0.y FROM schema AS s0}
 
-    assert_raise Ecto.QueryError,
-                 ~r"DISTINCT with multiple columns is not supported by SQLite3",
-                 fn ->
-                   query =
-                     Schema
-                     |> distinct([r], [r.x, r.y])
-                     |> select([r], {r.x, r.y})
-                     |> plan()
-
-                   all(query)
-                 end
+    assert_raise(
+      Ecto.QueryError,
+      ~r"DISTINCT with multiple columns is not supported by SQLite3",
+      fn ->
+        Schema
+        |> distinct([r], [r.x, r.y])
+        |> select([r], {r.x, r.y})
+        |> plan()
+        |> all()
+      end
+    )
   end
 
   test "coalesce" do
-    query = Schema |> select([s], coalesce(s.x, 5)) |> plan()
+    query =
+      Schema
+      |> select([s], coalesce(s.x, 5))
+      |> plan()
+
     assert all(query) == ~s{SELECT coalesce(s0.x, 5) FROM schema AS s0}
   end
 
@@ -383,7 +457,12 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
     assert all(query) ==
              ~s{SELECT s0.x FROM schema AS s0 WHERE (s0.x = 42) AND (s0.y != 43)}
 
-    query = Schema |> where([r], {r.x, r.y} > {1, 2}) |> select([r], r.x) |> plan()
+    query =
+      Schema
+      |> where([r], {r.x, r.y} > {1, 2})
+      |> select([r], r.x)
+      |> plan()
+
     assert all(query) == ~s{SELECT s0.x FROM schema AS s0 WHERE ((s0.x,s0.y) > (1,2))}
   end
 
@@ -411,42 +490,80 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
   end
 
   test "order by" do
-    query = Schema |> order_by([r], r.x) |> select([r], r.x) |> plan()
+    query =
+      Schema
+      |> order_by([r], r.x)
+      |> select([r], r.x)
+      |> plan()
+
     assert all(query) == ~s{SELECT s0.x FROM schema AS s0 ORDER BY s0.x}
 
-    query = Schema |> order_by([r], [r.x, r.y]) |> select([r], r.x) |> plan()
+    query =
+      Schema
+      |> order_by([r], [r.x, r.y])
+      |> select([r], r.x)
+      |> plan()
+
     assert all(query) == ~s{SELECT s0.x FROM schema AS s0 ORDER BY s0.x, s0.y}
 
-    query = Schema |> order_by([r], asc: r.x, desc: r.y) |> select([r], r.x) |> plan()
+    query =
+      Schema
+      |> order_by([r], asc: r.x, desc: r.y)
+      |> select([r], r.x)
+      |> plan()
+
     assert all(query) == ~s{SELECT s0.x FROM schema AS s0 ORDER BY s0.x, s0.y DESC}
 
-    query = Schema |> order_by([r], []) |> select([r], r.x) |> plan()
+    query =
+      Schema
+      |> order_by([r], [])
+      |> select([r], r.x)
+      |> plan()
+
     assert all(query) == ~s{SELECT s0.x FROM schema AS s0}
 
     for dir <- [:asc_nulls_first, :asc_nulls_last, :desc_nulls_first, :desc_nulls_last] do
-      assert_raise Ecto.QueryError,
-                   ~r"#{dir} is not supported in ORDER BY in SQLite3",
-                   fn ->
-                     Schema
-                     |> order_by([r], [{^dir, r.x}])
-                     |> select([r], r.x)
-                     |> plan()
-                     |> all()
-                   end
+      assert_raise(
+        Ecto.QueryError,
+        ~r"#{dir} is not supported in ORDER BY in SQLite3",
+        fn ->
+          Schema
+          |> order_by([r], [{^dir, r.x}])
+          |> select([r], r.x)
+          |> plan()
+          |> all()
+        end
+      )
     end
   end
 
   test "union and union all" do
     base_query =
-      Schema |> select([r], r.x) |> order_by(fragment("rand")) |> offset(10) |> limit(5)
+      Schema
+      |> select([r], r.x)
+      |> order_by(fragment("rand"))
+      |> offset(10)
+      |> limit(5)
 
     union_query1 =
-      Schema |> select([r], r.y) |> order_by([r], r.y) |> offset(20) |> limit(40)
+      Schema
+      |> select([r], r.y)
+      |> order_by([r], r.y)
+      |> offset(20)
+      |> limit(40)
 
     union_query2 =
-      Schema |> select([r], r.z) |> order_by([r], r.z) |> offset(30) |> limit(60)
+      Schema
+      |> select([r], r.z)
+      |> order_by([r], r.z)
+      |> offset(30)
+      |> limit(60)
 
-    query = base_query |> union(^union_query1) |> union(^union_query2) |> plan()
+    query =
+      base_query
+      |> union(^union_query1)
+      |> union(^union_query2)
+      |> plan()
 
     assert all(query) ==
              """
@@ -456,7 +573,11 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
              ORDER BY rand LIMIT 5 OFFSET 10\
              """
 
-    query = base_query |> union_all(^union_query1) |> union_all(^union_query2) |> plan()
+    query =
+      base_query
+      |> union_all(^union_query1)
+      |> union_all(^union_query2)
+      |> plan()
 
     assert all(query) ==
              """
@@ -469,15 +590,31 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
 
   test "except and except all" do
     base_query =
-      Schema |> select([r], r.x) |> order_by(fragment("rand")) |> offset(10) |> limit(5)
+      Schema
+      |> select([r], r.x)
+      |> order_by(fragment("rand"))
+      |> offset(10)
+      |> limit(5)
 
     except_query1 =
-      Schema |> select([r], r.y) |> order_by([r], r.y) |> offset(20) |> limit(40)
+      Schema
+      |> select([r], r.y)
+      |> order_by([r], r.y)
+      |> offset(20)
+      |> limit(40)
 
     except_query2 =
-      Schema |> select([r], r.z) |> order_by([r], r.z) |> offset(30) |> limit(60)
+      Schema
+      |> select([r], r.z)
+      |> order_by([r], r.z)
+      |> offset(30)
+      |> limit(60)
 
-    query = base_query |> except(^except_query1) |> except(^except_query2) |> plan()
+    query =
+      base_query
+      |> except(^except_query1)
+      |> except(^except_query2)
+      |> plan()
 
     assert all(query) ==
              """
@@ -488,7 +625,10 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
              """
 
     query =
-      base_query |> except_all(^except_query1) |> except_all(^except_query2) |> plan()
+      base_query
+      |> except_all(^except_query1)
+      |> except_all(^except_query2)
+      |> plan()
 
     assert all(query) ==
              """
@@ -501,13 +641,25 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
 
   test "intersect and intersect all" do
     base_query =
-      Schema |> select([r], r.x) |> order_by(fragment("rand")) |> offset(10) |> limit(5)
+      Schema
+      |> select([r], r.x)
+      |> order_by(fragment("rand"))
+      |> offset(10)
+      |> limit(5)
 
     intersect_query1 =
-      Schema |> select([r], r.y) |> order_by([r], r.y) |> offset(20) |> limit(40)
+      Schema
+      |> select([r], r.y)
+      |> order_by([r], r.y)
+      |> offset(20)
+      |> limit(40)
 
     intersect_query2 =
-      Schema |> select([r], r.z) |> order_by([r], r.z) |> offset(30) |> limit(60)
+      Schema
+      |> select([r], r.z)
+      |> order_by([r], r.z)
+      |> offset(30)
+      |> limit(60)
 
     query =
       base_query
@@ -539,13 +691,29 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
   end
 
   test "limit and offset" do
-    query = Schema |> limit([r], 3) |> select([], true) |> plan()
+    query =
+      Schema
+      |> limit([r], 3)
+      |> select([], true)
+      |> plan()
+
     assert all(query) == ~s{SELECT 1 FROM schema AS s0 LIMIT 3}
 
-    query = Schema |> offset([r], 5) |> select([], true) |> plan()
+    query =
+      Schema
+      |> offset([r], 5)
+      |> select([], true)
+      |> plan()
+
     assert all(query) == ~s{SELECT 1 FROM schema AS s0 OFFSET 5}
 
-    query = Schema |> offset([r], 5) |> limit([r], 3) |> select([], true) |> plan()
+    query =
+      Schema
+      |> offset([r], 5)
+      |> limit([r], 3)
+      |> select([], true)
+      |> plan()
+
     assert all(query) == ~s{SELECT 1 FROM schema AS s0 LIMIT 3 OFFSET 5}
   end
 
@@ -576,44 +744,94 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
   end
 
   test "string escape" do
-    query = "schema" |> where(foo: "'\\  ") |> select([], true) |> plan()
+    query =
+      "schema"
+      |> where(foo: "'\\  ")
+      |> select([], true)
+      |> plan()
+
     assert all(query) == ~s{SELECT 1 FROM schema AS s0 WHERE (s0.foo = '''\\\\  ')}
 
-    query = "schema" |> where(foo: "'") |> select([], true) |> plan()
+    query =
+      "schema"
+      |> where(foo: "'")
+      |> select([], true)
+      |> plan()
+
     assert all(query) == ~s{SELECT 1 FROM schema AS s0 WHERE (s0.foo = '''')}
   end
 
   test "binary ops" do
-    query = Schema |> select([r], r.x == 2) |> plan()
+    query =
+      Schema
+      |> select([r], r.x == 2)
+      |> plan()
+
     assert all(query) == ~s{SELECT s0.x = 2 FROM schema AS s0}
 
-    query = Schema |> select([r], r.x != 2) |> plan()
+    query =
+      Schema
+      |> select([r], r.x != 2)
+      |> plan()
+
     assert all(query) == ~s{SELECT s0.x != 2 FROM schema AS s0}
 
-    query = Schema |> select([r], r.x <= 2) |> plan()
+    query =
+      Schema
+      |> select([r], r.x <= 2)
+      |> plan()
+
     assert all(query) == ~s{SELECT s0.x <= 2 FROM schema AS s0}
 
-    query = Schema |> select([r], r.x >= 2) |> plan()
+    query =
+      Schema
+      |> select([r], r.x >= 2)
+      |> plan()
+
     assert all(query) == ~s{SELECT s0.x >= 2 FROM schema AS s0}
 
-    query = Schema |> select([r], r.x < 2) |> plan()
+    query =
+      Schema
+      |> select([r], r.x < 2)
+      |> plan()
+
     assert all(query) == ~s{SELECT s0.x < 2 FROM schema AS s0}
 
-    query = Schema |> select([r], r.x > 2) |> plan()
+    query =
+      Schema
+      |> select([r], r.x > 2)
+      |> plan()
+
     assert all(query) == ~s{SELECT s0.x > 2 FROM schema AS s0}
 
-    query = Schema |> select([r], r.x + 2) |> plan()
+    query =
+      Schema
+      |> select([r], r.x + 2)
+      |> plan()
+
     assert all(query) == ~s{SELECT s0.x + 2 FROM schema AS s0}
   end
 
   test "is_nil" do
-    query = Schema |> select([r], is_nil(r.x)) |> plan()
+    query =
+      Schema
+      |> select([r], is_nil(r.x))
+      |> plan()
+
     assert all(query) == ~s{SELECT s0.x IS NULL FROM schema AS s0}
 
-    query = Schema |> select([r], not is_nil(r.x)) |> plan()
+    query =
+      Schema
+      |> select([r], not is_nil(r.x))
+      |> plan()
+
     assert all(query) == ~s{SELECT NOT (s0.x IS NULL) FROM schema AS s0}
 
-    query = "schema" |> select([r], r.x == is_nil(r.y)) |> plan()
+    query =
+      "schema"
+      |> select([r], r.x == is_nil(r.y))
+      |> plan()
+
     assert all(query) == ~s{SELECT s0.x = (s0.y IS NULL) FROM schema AS s0}
   end
 
@@ -628,13 +846,25 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
   end
 
   test "fragments" do
-    query = Schema |> select([r], fragment("now")) |> plan()
+    query =
+      Schema
+      |> select([r], fragment("now"))
+      |> plan()
+
     assert all(query) == ~s{SELECT now FROM schema AS s0}
 
-    query = Schema |> select([r], fragment("fun(?)", r)) |> plan()
+    query =
+      Schema
+      |> select([r], fragment("fun(?)", r))
+      |> plan()
+
     assert all(query) == ~s{SELECT fun(s0) FROM schema AS s0}
 
-    query = Schema |> select([r], fragment("lcase(?)", r.x)) |> plan()
+    query =
+      Schema
+      |> select([r], fragment("lcase(?)", r.x))
+      |> plan()
+
     assert all(query) == ~s{SELECT lcase(s0.x) FROM schema AS s0}
 
     query =
@@ -646,30 +876,64 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
     assert all(query) == ~s|SELECT s0.x FROM schema AS s0 WHERE (? = "query?")|
 
     value = 13
-    query = Schema |> select([r], fragment("lcase(?, ?)", r.x, ^value)) |> plan()
+
+    query =
+      Schema
+      |> select([r], fragment("lcase(?, ?)", r.x, ^value))
+      |> plan()
+
     assert all(query) == ~s{SELECT lcase(s0.x, ?) FROM schema AS s0}
 
-    query = Schema |> select([], fragment(title: 2)) |> plan()
-
-    assert_raise Ecto.QueryError, fn ->
-      all(query)
-    end
+    assert_raise(
+      Ecto.QueryError,
+      fn ->
+        Schema
+        |> select([], fragment(title: 2))
+        |> plan()
+        |> all()
+      end
+    )
   end
 
   test "literals" do
-    query = "schema" |> where(foo: true) |> select([], true) |> plan()
+    query =
+      "schema"
+      |> where(foo: true)
+      |> select([], true)
+      |> plan()
+
     assert all(query) == ~s{SELECT 1 FROM schema AS s0 WHERE (s0.foo = 1)}
 
-    query = "schema" |> where(foo: false) |> select([], true) |> plan()
+    query =
+      "schema"
+      |> where(foo: false)
+      |> select([], true)
+      |> plan()
+
     assert all(query) == ~s{SELECT 1 FROM schema AS s0 WHERE (s0.foo = 0)}
 
-    query = "schema" |> where(foo: "abc") |> select([], true) |> plan()
+    query =
+      "schema"
+      |> where(foo: "abc")
+      |> select([], true)
+      |> plan()
+
     assert all(query) == ~s{SELECT 1 FROM schema AS s0 WHERE (s0.foo = 'abc')}
 
-    query = "schema" |> where(foo: 123) |> select([], true) |> plan()
+    query =
+      "schema"
+      |> where(foo: 123)
+      |> select([], true)
+      |> plan()
+
     assert all(query) == ~s{SELECT 1 FROM schema AS s0 WHERE (s0.foo = 123)}
 
-    query = "schema" |> where(foo: 123.0) |> select([], true) |> plan()
+    query =
+      "schema"
+      |> where(foo: 123.0)
+      |> select([], true)
+      |> plan()
+
     assert all(query) == ~s{SELECT 1 FROM schema AS s0 WHERE (s0.foo = (0 + 123.0))}
   end
 
@@ -685,7 +949,11 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
   end
 
   test "string type" do
-    query = Schema |> select([], type(^"test", :string)) |> plan()
+    query =
+      Schema
+      |> select([], type(^"test", :string))
+      |> plan()
+
     assert all(query) == ~s{SELECT CAST(? AS TEXT) FROM schema AS s0}
   end
 
@@ -707,39 +975,72 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
     z = 123
 
     query =
-      from(r in Schema, []) |> select([r], (r.x > 0 and r.y > ^(-z)) or true) |> plan()
+      (r in Schema)
+      |> from([])
+      |> select([r], (r.x > 0 and r.y > ^(-z)) or true)
+      |> plan()
 
-    assert all(query) ==
-             ~s{SELECT ((s0.x > 0) AND (s0.y > ?)) OR 1 FROM schema AS s0}
+    assert all(query) == ~s{SELECT ((s0.x > 0) AND (s0.y > ?)) OR 1 FROM schema AS s0}
   end
 
   test "in expression" do
-    query = Schema |> select([e], 1 in []) |> plan()
+    query =
+      Schema
+      |> select([e], 1 in [])
+      |> plan()
+
     assert all(query) == ~s{SELECT false FROM schema AS s0}
 
-    query = Schema |> select([e], 1 in [1, e.x, 3]) |> plan()
+    query =
+      Schema
+      |> select([e], 1 in [1, e.x, 3])
+      |> plan()
+
     assert all(query) == ~s{SELECT 1 IN (1,s0.x,3) FROM schema AS s0}
 
-    query = Schema |> select([e], 1 in ^[]) |> plan()
+    query =
+      Schema
+      |> select([e], 1 in ^[])
+      |> plan()
+
     assert all(query) == ~s{SELECT false FROM schema AS s0}
 
-    query = Schema |> select([e], 1 in ^[1, 2, 3]) |> plan()
+    query =
+      Schema
+      |> select([e], 1 in ^[1, 2, 3])
+      |> plan()
+
     assert all(query) == ~s{SELECT 1 IN (?,?,?) FROM schema AS s0}
 
-    query = Schema |> select([e], 1 in [1, ^2, 3]) |> plan()
+    query =
+      Schema
+      |> select([e], 1 in [1, ^2, 3])
+      |> plan()
+
     assert all(query) == ~s{SELECT 1 IN (1,?,3) FROM schema AS s0}
 
-    query = Schema |> select([e], 1 in fragment("foo")) |> plan()
+    query =
+      Schema
+      |> select([e], 1 in fragment("foo"))
+      |> plan()
+
     assert all(query) == ~s{SELECT 1 = ANY(foo) FROM schema AS s0}
 
-    query = Schema |> select([e], e.x == ^0 or e.x in ^[1, 2, 3] or e.x == ^4) |> plan()
+    query =
+      Schema
+      |> select([e], e.x == ^0 or e.x in ^[1, 2, 3] or e.x == ^4)
+      |> plan()
 
     assert all(query) ==
              ~s{SELECT ((s0.x = ?) OR s0.x IN (?,?,?)) OR (s0.x = ?) FROM schema AS s0}
   end
 
   test "in subquery" do
-    posts = subquery("posts" |> where(title: ^"hello") |> select([p], p.id))
+    posts =
+      "posts"
+      |> where(title: ^"hello")
+      |> select([p], p.id)
+      |> subquery()
 
     query =
       "comments"
@@ -754,11 +1055,10 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
              """
 
     posts =
-      subquery(
-        "posts"
-        |> where(title: parent_as(:comment).subtitle)
-        |> select([p], p.id)
-      )
+      "posts"
+      |> where(title: parent_as(:comment).subtitle)
+      |> select([p], p.id)
+      |> subquery()
 
     query =
       "comments"
@@ -775,7 +1075,12 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
   end
 
   test "having" do
-    query = Schema |> having([p], p.x == p.x) |> select([p], p.x) |> plan()
+    query =
+      Schema
+      |> having([p], p.x == p.x)
+      |> select([p], p.x)
+      |> plan()
+
     assert all(query) == ~s{SELECT s0.x FROM schema AS s0 HAVING (s0.x = s0.x)}
 
     query =
@@ -786,11 +1091,21 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
       |> plan()
 
     assert all(query) ==
-             ~s{SELECT s0.y, s0.x FROM schema AS s0 HAVING (s0.x = s0.x) AND (s0.y = s0.y)}
+             """
+             SELECT s0.y, s0.x \
+             FROM schema AS s0 \
+             HAVING (s0.x = s0.x) \
+             AND (s0.y = s0.y)\
+             """
   end
 
   test "or_having" do
-    query = Schema |> or_having([p], p.x == p.x) |> select([p], p.x) |> plan()
+    query =
+      Schema
+      |> or_having([p], p.x == p.x)
+      |> select([p], p.x)
+      |> plan()
+
     assert all(query) == ~s{SELECT s0.x FROM schema AS s0 HAVING (s0.x = s0.x)}
 
     query =
@@ -801,29 +1116,63 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
       |> plan()
 
     assert all(query) ==
-             ~s{SELECT s0.y, s0.x FROM schema AS s0 HAVING (s0.x = s0.x) OR (s0.y = s0.y)}
+             """
+             SELECT s0.y, s0.x \
+             FROM schema AS s0 \
+             HAVING (s0.x = s0.x) \
+             OR (s0.y = s0.y)\
+             """
   end
 
   test "group by" do
-    query = Schema |> group_by([r], r.x) |> select([r], r.x) |> plan()
+    query =
+      Schema
+      |> group_by([r], r.x)
+      |> select([r], r.x)
+      |> plan()
+
     assert all(query) == ~s{SELECT s0.x FROM schema AS s0 GROUP BY s0.x}
 
-    query = Schema |> group_by([r], 2) |> select([r], r.x) |> plan()
+    query =
+      Schema
+      |> group_by([r], 2)
+      |> select([r], r.x)
+      |> plan()
+
     assert all(query) == ~s{SELECT s0.x FROM schema AS s0 GROUP BY 2}
 
-    query = Schema |> group_by([r], [r.x, r.y]) |> select([r], r.x) |> plan()
+    query =
+      Schema
+      |> group_by([r], [r.x, r.y])
+      |> select([r], r.x)
+      |> plan()
+
     assert all(query) == ~s{SELECT s0.x FROM schema AS s0 GROUP BY s0.x, s0.y}
 
-    query = Schema |> group_by([r], []) |> select([r], r.x) |> plan()
+    query =
+      Schema
+      |> group_by([r], [])
+      |> select([r], r.x)
+      |> plan()
+
     assert all(query) == ~s{SELECT s0.x FROM schema AS s0}
   end
 
   test "interpolated values" do
     cte1 =
-      "schema1" |> select([m], %{id: m.id, smth: ^true}) |> where([], fragment("?", ^1))
+      "schema1"
+      |> select([m], %{id: m.id, smth: ^true})
+      |> where([], fragment("?", ^1))
 
-    union = "schema1" |> select([m], {m.id, ^true}) |> where([], fragment("?", ^5))
-    union_all = "schema2" |> select([m], {m.id, ^false}) |> where([], fragment("?", ^6))
+    union =
+      "schema1"
+      |> select([m], {m.id, ^true})
+      |> where([], fragment("?", ^5))
+
+    union_all =
+      "schema2"
+      |> select([m], {m.id, ^false})
+      |> where([], fragment("?", ^6))
 
     query =
       Schema
@@ -845,32 +1194,31 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
       |> offset([], ^9)
       |> plan()
 
-    result = """
-    WITH cte1 AS (SELECT s0.id AS id, ? AS smth FROM schema1 AS s0 WHERE (?)), \
-    cte2 AS (SELECT * FROM schema WHERE ?) \
-    SELECT s0.id, ? FROM schema AS s0 INNER JOIN schema2 AS s1 ON ? \
-    INNER JOIN schema2 AS s2 ON ? WHERE (?) AND (?) \
-    GROUP BY ?, ? HAVING (?) AND (?) \
-    UNION (SELECT s0.id, ? FROM schema1 AS s0 WHERE (?)) \
-    UNION ALL (SELECT s0.id, ? FROM schema2 AS s0 WHERE (?)) \
-    ORDER BY ? LIMIT ? OFFSET ?\
-    """
-
-    assert all(query) == String.trim(result)
+    assert all(query) ==
+             """
+             WITH cte1 AS (SELECT s0.id AS id, ? AS smth FROM schema1 AS s0 WHERE (?)), \
+             cte2 AS (SELECT * FROM schema WHERE ?) \
+             SELECT s0.id, ? FROM schema AS s0 INNER JOIN schema2 AS s1 ON ? \
+             INNER JOIN schema2 AS s2 ON ? WHERE (?) AND (?) \
+             GROUP BY ?, ? HAVING (?) AND (?) \
+             UNION (SELECT s0.id, ? FROM schema1 AS s0 WHERE (?)) \
+             UNION ALL (SELECT s0.id, ? FROM schema2 AS s0 WHERE (?)) \
+             ORDER BY ? LIMIT ? OFFSET ?\
+             """
   end
 
   test "fragments allow ? to be escaped with backslash" do
     query =
-      plan(
-        from(e in "schema",
-          where: fragment(~s|? = "query\\?"|, e.start_time),
-          select: true
-        )
+      (e in "schema")
+      |> from(
+        where: fragment(~s|? = "query\\?"|, e.start_time),
+        select: true
       )
+      |> plan()
 
     result = ~s|SELECT 1 FROM schema AS s0 WHERE (s0.start_time = "query?")|
 
-    assert all(query) == String.trim(result)
+    assert all(query) == result
   end
 
   ##
@@ -878,27 +1226,45 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
   ##
 
   test "update all" do
-    query = from(m in Schema, update: [set: [x: 0]]) |> plan(:update_all)
+    query =
+      (m in Schema)
+      |> from(update: [set: [x: 0]])
+      |> plan(:update_all)
 
-    assert update_all(query) ==
-             ~s{UPDATE schema AS s0 SET s0.x = 0}
+    assert update_all(query) == ~s{UPDATE schema AS s0 SET s0.x = 0}
 
     query =
-      from(m in Schema, update: [set: [x: 0], inc: [y: 1, z: -3]]) |> plan(:update_all)
+      (m in Schema)
+      |> from(update: [set: [x: 0], inc: [y: 1, z: -3]])
+      |> plan(:update_all)
 
     assert update_all(query) ==
-             ~s{UPDATE schema AS s0 SET s0.x = 0, s0.y = s0.y + 1, s0.z = s0.z + -3}
+             """
+             UPDATE schema AS s0 \
+             SET \
+             s0.x = 0, \
+             s0.y = s0.y + 1, \
+             s0.z = s0.z + -3\
+             """
 
     query =
-      from(e in Schema, where: e.x == 123, update: [set: [x: 0]]) |> plan(:update_all)
+      (e in Schema)
+      |> from(where: e.x == 123, update: [set: [x: 0]])
+      |> plan(:update_all)
 
     assert update_all(query) ==
-             ~s{UPDATE schema AS s0 SET s0.x = 0 WHERE (s0.x = 123)}
+             """
+             UPDATE schema AS s0 \
+             SET s0.x = 0 \
+             WHERE (s0.x = 123)\
+             """
 
-    query = from(m in Schema, update: [set: [x: ^0]]) |> plan(:update_all)
+    query =
+      (m in Schema)
+      |> from(update: [set: [x: ^0]])
+      |> plan(:update_all)
 
-    assert update_all(query) ==
-             ~s{UPDATE schema AS s0 SET s0.x = ?}
+    assert update_all(query) == ~s|UPDATE schema AS s0 SET s0.x = ?|
 
     query =
       Schema
@@ -906,10 +1272,17 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
       |> plan(:update_all)
 
     assert update_all(query) ==
-             ~s{UPDATE schema AS s0, schema2 AS s1 SET s0.x = 0 WHERE (s0.x = s1.z)}
+             """
+             UPDATE schema AS s0 \
+             SET \
+             s0.x = 0 \
+             FROM schema2 AS s1 \
+             WHERE (s0.x = s1.z)\
+             """
 
     query =
-      from(e in Schema,
+      (e in Schema)
+      |> from(
         where: e.x == 123,
         update: [set: [x: 0]],
         join: q in Schema2,
@@ -918,27 +1291,35 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
       |> plan(:update_all)
 
     assert update_all(query) ==
-             ~s{UPDATE schema AS s0, schema2 AS s1 } <>
-               ~s{SET s0.x = 0 WHERE (s0.x = s1.z) AND (s0.x = 123)}
+             """
+             UPDATE schema AS s0 \
+             SET s0.x = 0 \
+             FROM schema2 AS s1 \
+             WHERE (s0.x = s1.z) \
+             AND (s0.x = 123)\
+             """
 
-    assert_raise ArgumentError,
-                 ":select is not supported in update_all by SQLite3",
-                 fn ->
-                   query = from(e in Schema, where: e.x == 123, select: e.x)
-                   update_all(query)
-                 end
+    assert_raise(
+      ArgumentError,
+      ":select is not supported in update_all by SQLite3",
+      fn ->
+        from(e in Schema, where: e.x == 123, select: e.x) |> update_all()
+      end
+    )
   end
 
   test "update all with prefix" do
     query =
-      from(m in Schema, update: [set: [x: 0]])
+      (m in Schema)
+      |> from(update: [set: [x: 0]])
       |> Map.put(:prefix, "prefix")
       |> plan(:update_all)
 
     assert update_all(query) == ~s{UPDATE prefix.schema AS s0 SET s0.x = 0}
 
     query =
-      from(m in Schema, prefix: "first", update: [set: [x: 0]])
+      (m in Schema)
+      |> from(prefix: "first", update: [set: [x: 0]])
       |> Map.put(:prefix, "prefix")
       |> plan(:update_all)
 
@@ -953,24 +1334,37 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
 
     assert delete_all(query) == ~s{DELETE s0.* FROM schema AS s0}
 
-    query = from(e in Schema, where: e.x == 123) |> plan()
+    query =
+      (e in Schema)
+      |> from(where: e.x == 123)
+      |> plan()
 
-    assert delete_all(query) ==
-             ~s{DELETE s0.* FROM schema AS s0 WHERE (s0.x = 123)}
+    assert delete_all(query) == ~s{DELETE s0.* FROM schema AS s0 WHERE (s0.x = 123)}
 
-    assert_raise ArgumentError,
-                 ":select is not supported in delete_all by SQLite3",
-                 fn ->
-                   query = from(e in Schema, where: e.x == 123, select: e.x)
-                   delete_all(query)
-                 end
+    assert_raise(
+      ArgumentError,
+      ":select is not supported in delete_all by SQLite3",
+      fn ->
+        (e in Schema) |> from(where: e.x == 123, select: e.x) |> delete_all()
+      end
+    )
   end
 
   test "delete all with prefix" do
-    query = Schema |> Ecto.Queryable.to_query() |> Map.put(:prefix, "prefix") |> plan()
+    query =
+      Schema
+      |> Ecto.Queryable.to_query()
+      |> Map.put(:prefix, "prefix")
+      |> plan()
+
     assert delete_all(query) == ~s{DELETE s0.* FROM prefix.schema AS s0}
 
-    query = Schema |> from(prefix: "first") |> Map.put(:prefix, "prefix") |> plan()
+    query =
+      Schema
+      |> from(prefix: "first")
+      |> Map.put(:prefix, "prefix")
+      |> plan()
+
     assert delete_all(query) == ~s{DELETE s0.* FROM first.schema AS s0}
   end
 
@@ -1093,8 +1487,7 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
       query =
         Schema
         |> select([r], count(r.x) |> over(partition_by: [r.x, r.z], order_by: r.x))
-
-      query = query |> plan()
+        |> plan()
 
       assert all(query) ==
                """
@@ -1115,8 +1508,7 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
             frame: fragment("ROWS BETWEEN 2 PRECEDING AND 2 FOLLOWING")
           )
         )
-
-      query = query |> plan()
+        |> plan()
 
       assert all(query) ==
                """
@@ -1210,7 +1602,10 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
 
   test "join with subquery" do
     posts =
-      subquery("posts" |> where(title: ^"hello") |> select([r], %{x: r.x, y: r.y}))
+      "posts"
+      |> where(title: ^"hello")
+      |> select([r], %{x: r.x, y: r.y})
+      |> subquery()
 
     query =
       "comments"
@@ -1354,7 +1749,11 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
 
   test "join with query interpolation" do
     inner = Ecto.Queryable.to_query(Schema2)
-    query = from(p in Schema, left_join: c in ^inner, select: {p.id, c.id}) |> plan()
+
+    query =
+      (p in Schema)
+      |> from(left_join: c in ^inner, select: {p.id, c.id})
+      |> plan()
 
     assert all(query) ==
              """
@@ -1365,7 +1764,10 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
   end
 
   test "cross join" do
-    query = from(p in Schema, cross_join: c in Schema2, select: {p.id, c.id}) |> plan()
+    query =
+      (p in Schema)
+      |> from(cross_join: c in Schema2, select: {p.id, c.id})
+      |> plan()
 
     assert all(query) ==
              """
@@ -1400,9 +1802,12 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
         |> all()
 
       assert query ==
-               ~s{SELECT s0.x, s0.y FROM schema AS s0 INNER JOIN } <>
-                 ~s{(SELECT ss0.x AS x, ss0.y AS y FROM schema AS ss0) } <>
-                 ~s{AS s1 ON 1}
+               """
+               SELECT s0.x, s0.y \
+               FROM schema AS s0 \
+               INNER JOIN (SELECT ss0.x AS x, ss0.y AS y FROM schema AS ss0) \
+               AS s1 ON 1\
+               """
     end
 
     test "self join on subquery with fragment" do
@@ -1415,9 +1820,12 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
         |> all()
 
       assert query ==
-               ~s{SELECT downcase(?) FROM schema AS s0 INNER JOIN } <>
-                 ~s{(SELECT downcase(?) AS string FROM schema AS ss0) } <>
-                 ~s{AS s1 ON 1}
+               """
+               SELECT downcase(?) \
+               FROM schema AS s0 \
+               INNER JOIN (SELECT downcase(?) AS string FROM schema AS ss0) \
+               AS s1 ON 1\
+               """
     end
 
     test "join on subquery with simple select" do
@@ -1432,9 +1840,12 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
         |> all()
 
       assert query ==
-               ~s{SELECT ? FROM schema AS s0 INNER JOIN } <>
-                 ~s{(SELECT ? AS x, ? AS w FROM schema AS ss0) AS s1 ON 1 } <>
-                 ~s{WHERE (s0.x = ?)}
+               """
+               SELECT ? \
+               FROM schema AS s0 \
+               INNER JOIN (SELECT ? AS x, ? AS w FROM schema AS ss0) AS s1 ON 1 \
+               WHERE (s0.x = ?)\
+               """
     end
   end
 
@@ -1495,18 +1906,20 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
     query = insert(nil, "schema", [:x, :y], [[:x, :y]], {:raise, [], []}, [])
     assert query == ~s{INSERT INTO schema (x,y) VALUES (?,?)}
 
-    assert_raise ArgumentError,
-                 "Cell-wise default values are not supported on INSERT statements by SQLite3",
-                 fn ->
-                   insert(
-                     nil,
-                     "schema",
-                     [:x, :y],
-                     [[:x, :y], [nil, :z]],
-                     {:raise, [], []},
-                     []
-                   )
-                 end
+    assert_raise(
+      ArgumentError,
+      "Cell-wise default values are not supported on INSERT statements by SQLite3",
+      fn ->
+        insert(
+          nil,
+          "schema",
+          [:x, :y],
+          [[:x, :y], [nil, :z]],
+          {:raise, [], []},
+          []
+        )
+      end
+    )
 
     query = insert(nil, "schema", [], [[]], {:raise, [], []}, [])
     assert query == ~s{INSERT INTO schema () VALUES ()}
@@ -1514,14 +1927,20 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
     query = insert("prefix", "schema", [], [[]], {:raise, [], []}, [])
     assert query == ~s{INSERT INTO prefix.schema () VALUES ()}
 
-    assert_raise ArgumentError,
-                 ":returning is not supported in insert/6 by SQLite3",
-                 fn ->
-                   insert(nil, "schema", [:x, :y], [[:x, :y]], {:raise, [], []}, [
-                     :x,
-                     :y
-                   ])
-                 end
+    assert_raise(
+      ArgumentError,
+      ":returning is not supported in insert/6 by SQLite3",
+      fn ->
+        insert(
+          nil,
+          "schema",
+          [:x, :y],
+          [[:x, :y]],
+          {:raise, [], []},
+          [:x, :y]
+        )
+      end
+    )
   end
 
   test "insert with on conflict" do
@@ -1529,12 +1948,22 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
 
     # For :nothing
     query = insert(nil, "schema", [:x, :y], [[:x, :y]], {:nothing, [], []}, [])
-    assert query == ~s{INSERT INTO schema (x,y) VALUES (?,?) ON CONFLICT DO NOTHING}
+
+    assert query ==
+             """
+             INSERT INTO schema (x,y) \
+             VALUES (?,?) \
+             ON CONFLICT DO NOTHING\
+             """
 
     query = insert(nil, "schema", [:x, :y], [[:x, :y]], {:nothing, [], [:x, :y]}, [])
 
     assert query ==
-             ~s{INSERT INTO schema (x,y) VALUES (?,?) ON CONFLICT (x,y) DO NOTHING}
+             """
+             INSERT INTO schema (x,y) \
+             VALUES (?,?) \
+             ON CONFLICT (x,y) DO NOTHING\
+             """
 
     # For :update
     # update =
@@ -1566,36 +1995,47 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
     # assert query = ~s{INSERT INTO schema (x,y) VALUES (?,?) ON CONFLICT (x,y) DO UPDATE SET z = ? WHERE (schema.w = 1)}
 
     # For :replace_all
-    assert_raise ArgumentError, "Upsert in SQLite3 requires :conflict_target", fn ->
-      conflict_target = []
+    assert_raise(
+      ArgumentError,
+      "Upsert in SQLite3 requires :conflict_target",
+      fn ->
+        conflict_target = []
 
-      insert(
-        nil,
-        "schema",
-        [:x, :y],
-        [[:x, :y]],
-        {:replace_all, [], conflict_target},
-        []
-      )
-    end
+        insert(
+          nil,
+          "schema",
+          [:x, :y],
+          [[:x, :y]],
+          {:replace_all, [], conflict_target},
+          []
+        )
+      end
+    )
 
-    assert_raise ArgumentError,
-                 "Upsert in SQLite3 does not support ON CONSTRAINT",
-                 fn ->
-                   insert(
-                     nil,
-                     "schema",
-                     [:x, :y],
-                     [[:x, :y]],
-                     {:replace_all, [], {:constraint, :foo}},
-                     []
-                   )
-                 end
+    assert_raise(
+      ArgumentError,
+      "Upsert in SQLite3 does not support ON CONSTRAINT",
+      fn ->
+        insert(
+          nil,
+          "schema",
+          [:x, :y],
+          [[:x, :y]],
+          {:replace_all, [], {:constraint, :foo}},
+          []
+        )
+      end
+    )
 
     query = insert(nil, "schema", [:x, :y], [[:x, :y]], {:replace_all, [], [:id]}, [])
 
     assert query ==
-             ~s{INSERT INTO schema (x,y) VALUES (?,?) ON CONFLICT (id) DO UPDATE SET x = EXCLUDED.x,y = EXCLUDED.y}
+             """
+             INSERT INTO schema (x,y) \
+             VALUES (?,?) \
+             ON CONFLICT (id) \
+             DO UPDATE SET x = EXCLUDED.x,y = EXCLUDED.y\
+             """
   end
 
   test "insert with query" do
@@ -1661,20 +2101,19 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
          {:add, :is_active, :boolean, [default: true]}
        ]}
 
-    assert execute_ddl(create) ==
-             [
-               """
-               CREATE TABLE posts (\
-               name TEXT DEFAULT 'Untitled' NOT NULL, \
-               token BLOB NOT NULL, \
-               price NUMERIC DEFAULT expr, \
-               on_hand INTEGER DEFAULT 0 NULL, \
-               likes INTEGER DEFAULT 0 NOT NULL, \
-               published_at DATETIME NULL, \
-               is_active BOOLEAN DEFAULT true\
-               )\
-               """
-             ]
+    assert execute_ddl(create) == [
+             """
+             CREATE TABLE posts (\
+             name TEXT DEFAULT 'Untitled' NOT NULL, \
+             token BLOB NOT NULL, \
+             price NUMERIC DEFAULT expr, \
+             on_hand INTEGER DEFAULT 0 NULL, \
+             likes INTEGER DEFAULT 0 NOT NULL, \
+             published_at DATETIME NULL, \
+             is_active BOOLEAN DEFAULT true\
+             )\
+             """
+           ]
   end
 
   test "create empty table" do
@@ -1733,15 +2172,13 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
   end
 
   test "create table with options" do
-    create =
-      {:create, table(:posts, options: "WITH FOO=BAR"),
-       [{:add, :id, :serial, [primary_key: true]}, {:add, :created_at, :datetime, []}]}
-
     assert_raise(
       ArgumentError,
       "SQLite3 adapter does not support :options",
       fn ->
-        execute_ddl(create)
+        {:create, table(:posts, options: "WITH FOO=BAR"),
+         [{:add, :id, :serial, [primary_key: true]}, {:add, :created_at, :datetime, []}]}
+        |> execute_ddl()
       end
     )
   end
@@ -1828,13 +2265,17 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
   end
 
   test "create table with an unsupported type" do
-    create =
-      {:create, table(:posts),
-       [
-         {:add, :a, {:a, :b, :c}, [default: %{}]}
-       ]}
-
-    assert_raise(ArgumentError, "argument error", fn -> execute_ddl(create) end)
+    assert_raise(
+      ArgumentError,
+      "argument error",
+      fn ->
+        {:create, table(:posts),
+         [
+           {:add, :a, {:a, :b, :c}, [default: %{}]}
+         ]}
+        |> execute_ddl()
+      end
+    )
   end
 
   test "drop table" do
@@ -1936,21 +2377,31 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
   end
 
   test "alter column errors for :modify column" do
-    alter =
-      {:alter, table(:posts), [{:modify, :price, :numeric, [precision: 8, scale: 2]}]}
-
-    assert_raise ArgumentError, "ALTER COLUMN not supported by SQLite3", fn ->
-      execute_ddl(alter)
-    end
+    assert_raise(
+      ArgumentError,
+      "ALTER COLUMN not supported by SQLite3",
+      fn ->
+        {:alter, table(:posts),
+         [
+           {:modify, :price, :numeric, [precision: 8, scale: 2]}
+         ]}
+        |> execute_ddl()
+      end
+    )
   end
 
   test "alter column errors for :remove column" do
-    alter =
-      {:alter, table(:posts), [{:remove, :price, :numeric, [precision: 8, scale: 2]}]}
-
-    assert_raise ArgumentError, "ALTER COLUMN not supported by SQLite3", fn ->
-      execute_ddl(alter)
-    end
+    assert_raise(
+      ArgumentError,
+      "ALTER COLUMN not supported by SQLite3",
+      fn ->
+        {:alter, table(:posts),
+         [
+           {:remove, :price, :numeric, [precision: 8, scale: 2]}
+         ]}
+        |> execute_ddl()
+      end
+    )
   end
 
   test "alter table with primary key" do
@@ -1977,12 +2428,11 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
 
     create = {:create, index(:posts, ["lower(permalink)"], name: "posts$main")}
 
-    assert execute_ddl(create) ==
-             [
-               """
-               CREATE INDEX posts$main ON posts (lower(permalink))\
-               """
-             ]
+    assert execute_ddl(create) == [
+             """
+             CREATE INDEX posts$main ON posts (lower(permalink))\
+             """
+           ]
   end
 
   test "create index if not exists" do
@@ -2000,23 +2450,21 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
   test "create index with prefix" do
     create = {:create, index(:posts, [:category_id, :permalink], prefix: :foo)}
 
-    assert execute_ddl(create) ==
-             [
-               """
-               CREATE INDEX posts_category_id_permalink_index \
-               ON foo.posts (category_id, permalink)\
-               """
-             ]
+    assert execute_ddl(create) == [
+             """
+             CREATE INDEX posts_category_id_permalink_index \
+             ON foo.posts (category_id, permalink)\
+             """
+           ]
 
     create =
       {:create, index(:posts, ["lower(permalink)"], name: "posts$main", prefix: :foo)}
 
-    assert execute_ddl(create) ==
-             [
-               """
-               CREATE INDEX posts$main ON foo.posts (lower(permalink))\
-               """
-             ]
+    assert execute_ddl(create) == [
+             """
+             CREATE INDEX posts$main ON foo.posts (lower(permalink))\
+             """
+           ]
   end
 
   test "create index with comment" do
@@ -2037,13 +2485,12 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
   test "create unique index" do
     create = {:create, index(:posts, [:permalink], unique: true)}
 
-    assert execute_ddl(create) ==
-             [
-               """
-               CREATE UNIQUE INDEX posts_permalink_index \
-               ON posts (permalink)\
-               """
-             ]
+    assert execute_ddl(create) == [
+             """
+             CREATE UNIQUE INDEX posts_permalink_index \
+             ON posts (permalink)\
+             """
+           ]
   end
 
   test "create unique index if not exists" do
@@ -2061,47 +2508,48 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
   test "create unique index with condition" do
     create = {:create, index(:posts, [:permalink], unique: true, where: "public IS 1")}
 
-    assert execute_ddl(create) ==
-             [
-               """
-               CREATE UNIQUE INDEX posts_permalink_index \
-               ON posts (permalink) WHERE public IS 1\
-               """
-             ]
+    assert execute_ddl(create) == [
+             """
+             CREATE UNIQUE INDEX posts_permalink_index \
+             ON posts (permalink) WHERE public IS 1\
+             """
+           ]
 
     create = {:create, index(:posts, [:permalink], unique: true, where: :public)}
 
-    assert execute_ddl(create) ==
-             [
-               """
-               CREATE UNIQUE INDEX posts_permalink_index \
-               ON posts (permalink) WHERE public\
-               """
-             ]
+    assert execute_ddl(create) == [
+             """
+             CREATE UNIQUE INDEX posts_permalink_index \
+             ON posts (permalink) WHERE public\
+             """
+           ]
   end
 
   test "create index concurrently" do
     # NOTE: SQLite doesn't support CONCURRENTLY, so this isn't included in generated SQL.
     create = {:create, index(:posts, [:permalink], concurrently: true)}
 
-    assert execute_ddl(create) ==
-             [~s|CREATE INDEX posts_permalink_index ON posts (permalink)|]
+    assert execute_ddl(create) == [
+             ~s|CREATE INDEX posts_permalink_index ON posts (permalink)|
+           ]
   end
 
   test "create unique index concurrently" do
     # NOTE: SQLite doesn't support CONCURRENTLY, so this isn't included in generated SQL.
     create = {:create, index(:posts, [:permalink], concurrently: true, unique: true)}
 
-    assert execute_ddl(create) ==
-             [~s|CREATE UNIQUE INDEX posts_permalink_index ON posts (permalink)|]
+    assert execute_ddl(create) == [
+             ~s|CREATE UNIQUE INDEX posts_permalink_index ON posts (permalink)|
+           ]
   end
 
   test "create an index using a different type" do
     # NOTE: SQLite doesn't support USING, so this isn't included in generated SQL.
     create = {:create, index(:posts, [:permalink], using: :hash)}
 
-    assert execute_ddl(create) ==
-             [~s|CREATE INDEX posts_permalink_index ON posts (permalink)|]
+    assert execute_ddl(create) == [
+             ~s|CREATE INDEX posts_permalink_index ON posts (permalink)|
+           ]
   end
 
   test "drop index" do
@@ -2127,36 +2575,40 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
 
   test "create check constraint" do
     create =
-      {:create, constraint(:products, "price_must_be_positive", check: "price > 0")}
+      assert_raise(
+        ArgumentError,
+        "ALTER TABLE with constraints not supported by SQLite3",
+        fn ->
+          {:create, constraint(:products, "price_must_be_positive", check: "price > 0")}
+          |> execute_ddl()
+        end
+      )
 
     assert_raise(
       ArgumentError,
       "ALTER TABLE with constraints not supported by SQLite3",
-      fn -> execute_ddl(create) end
-    )
-
-    create =
-      {:create,
-       constraint(:products, "price_must_be_positive", check: "price > 0", prefix: "foo")}
-
-    assert_raise(
-      ArgumentError,
-      "ALTER TABLE with constraints not supported by SQLite3",
-      fn -> execute_ddl(create) end
+      fn ->
+        {:create,
+         constraint(:products, "price_must_be_positive",
+           check: "price > 0",
+           prefix: "foo"
+         )}
+        |> execute_ddl()
+      end
     )
   end
 
   test "create exclusion constraint" do
-    create =
-      {:create,
-       constraint(:products, "price_must_be_positive",
-         exclude: ~s|gist (int4range("from", "to", '[]') WITH &&)|
-       )}
-
     assert_raise(
       ArgumentError,
       "ALTER TABLE with constraints not supported by SQLite3",
-      fn -> execute_ddl(create) end
+      fn ->
+        {:create,
+         constraint(:products, "price_must_be_positive",
+           exclude: ~s|gist (int4range("from", "to", '[]') WITH &&)|
+         )}
+        |> execute_ddl()
+      end
     )
   end
 
@@ -2178,12 +2630,18 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
 
   test "rename table" do
     rename = {:rename, table(:posts), table(:new_posts)}
-    assert execute_ddl(rename) == [~s|ALTER TABLE posts RENAME TO new_posts|]
+
+    assert execute_ddl(rename) == [
+             ~s|ALTER TABLE posts RENAME TO new_posts|
+           ]
   end
 
   test "rename table with prefix" do
     rename = {:rename, table(:posts, prefix: :foo), table(:new_posts, prefix: :foo)}
-    assert execute_ddl(rename) == [~s|ALTER TABLE foo.posts RENAME TO new_posts|]
+
+    assert execute_ddl(rename) == [
+             ~s|ALTER TABLE foo.posts RENAME TO new_posts|
+           ]
   end
 
   test "rename column" do
@@ -2203,12 +2661,13 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
   end
 
   test "drop column errors" do
-    alter = {:alter, table(:posts), [{:remove, :summary}]}
-
     assert_raise(
       ArgumentError,
       "DROP COLUMN not supported by SQLite3",
-      fn -> execute_ddl(alter) end
+      fn ->
+        {:alter, table(:posts), [{:remove, :summary}]}
+        |> execute_ddl()
+      end
     )
   end
 
