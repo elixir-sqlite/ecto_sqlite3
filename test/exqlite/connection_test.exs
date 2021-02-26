@@ -57,7 +57,10 @@ defmodule Exqlite.ConnectionTest do
       path = Temp.path!()
 
       {:ok, db} = Sqlite3.open(path)
-      :ok = Sqlite3.execute(db, "create table users (id integer primary key, name text)")
+
+      :ok =
+        Sqlite3.execute(db, "create table users (id integer primary key, name text)")
+
       :ok = Sqlite3.execute(db, "insert into users (id, name) values (1, 'Jim')")
       :ok = Sqlite3.execute(db, "insert into users (id, name) values (2, 'Bob')")
       :ok = Sqlite3.execute(db, "insert into users (id, name) values (3, 'Dave')")
@@ -65,6 +68,7 @@ defmodule Exqlite.ConnectionTest do
       Sqlite3.close(db)
 
       {:ok, conn} = Connection.connect(database: path)
+
       {:ok, result, conn} =
         %Query{statement: "select * from users where id < ?"}
         |> Connection.handle_execute([4], [], conn)

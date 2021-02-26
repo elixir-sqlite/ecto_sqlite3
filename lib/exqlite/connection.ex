@@ -265,7 +265,7 @@ defmodule Exqlite.Connection do
         %Result{
           columns: columns,
           rows: rows,
-          command: call,
+          command: call
         },
         state
       }
