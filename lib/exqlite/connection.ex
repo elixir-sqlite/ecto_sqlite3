@@ -297,7 +297,8 @@ defmodule Exqlite.Connection do
         %Result{
           columns: columns,
           rows: rows,
-          command: call
+          command: call,
+          num_rows: Enum.count(rows)
         },
         state
       }
