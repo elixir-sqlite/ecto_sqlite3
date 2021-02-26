@@ -6,13 +6,13 @@ Application.put_env(:ecto, :async_integration_tests, false)
 ecto = Mix.Project.deps_paths()[:ecto]
 Code.require_file("#{ecto}/integration_test/support/schemas.exs", __DIR__)
 
-Application.put_env(:ecto_sql, Ecto.Integration.TestRepo,
+Application.put_env(:exqlite, Ecto.Integration.TestRepo,
   database: "/tmp/exqlite_sandbox_test.db",
   pool: Ecto.Adapters.SQL.Sandbox,
   show_sensitive_data_on_connection_error: true
 )
 
-Application.put_env(:ecto_sql, Ecto.Integration.PoolRepo,
+Application.put_env(:exqlite, Ecto.Integration.PoolRepo,
   adapter: Ecto.Adapters.Exqlite,
   database: "/tmp/exqlite_pool_test.db",
   pool_size: 10,

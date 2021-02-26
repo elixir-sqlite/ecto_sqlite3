@@ -23,7 +23,7 @@ defmodule Ecto.Integration.Repo do
 end
 
 defmodule Ecto.Integration.TestRepo do
-  use Ecto.Integration.Repo, otp_app: :ecto_sql, adapter: Ecto.Adapters.Exqlite
+  use Ecto.Integration.Repo, otp_app: :exqlite, adapter: Ecto.Adapters.Exqlite
 
   def create_prefix(prefix) do
     "create database #{prefix}"
@@ -39,5 +39,5 @@ defmodule Ecto.Integration.TestRepo do
 end
 
 defmodule Ecto.Integration.PoolRepo do
-  use Ecto.Integration.Repo, otp_app: :ecto_sql, adapter: Ecto.Adapters.Exqlite
+  use Ecto.Integration.Repo, otp_app: :exqlite, adapter: Ecto.Adapters.Exqlite
 end
