@@ -24,7 +24,7 @@ defmodule Ecto.Adapters.Exqlite.Connection do
   def prepare_execute(conn, name, sql, params, opts) do
     query = %Exqlite.Query{name: name, statement: sql}
 
-    case DBConnection.prepare_execute(conn, query, map_params(params), opts) do
+    case DBConnection.prepare_execute(conn, query, params, opts) do
       {:ok, _, _} = ok -> ok
       {:error, %Exqlite.Error{}} = error -> error
       {:error, err} -> raise err
@@ -40,7 +40,7 @@ defmodule Ecto.Adapters.Exqlite.Connection do
   def execute(conn, sql, params, opts) when is_binary(sql) or is_list(sql) do
     query = %Exqlite.Query{name: "", statement: IO.iodata_to_binary(sql)}
 
-    case DBConnection.prepare_execute(conn, query, map_params(params), opts) do
+    case DBConnection.prepare_execute(conn, query, params, opts) do
       {:ok, %Exqlite.Query{}, result} -> {:ok, result}
       {:error, %Exqlite.Error{}} = error -> error
       {:error, err} -> raise err
@@ -49,7 +49,7 @@ defmodule Ecto.Adapters.Exqlite.Connection do
 
   @impl true
   def execute(conn, query, params, opts) do
-    case DBConnection.execute(conn, query, map_params(params), opts) do
+    case DBConnection.execute(conn, query, params, opts) do
       {:ok, _} = ok -> ok
       {:error, %ArgumentError{} = err} -> {:reset, err}
       {:error, %Exqlite.Error{}} = error -> error
@@ -533,23 +533,6 @@ defmodule Ecto.Adapters.Exqlite.Connection do
   @impl true
   def table_exists_query(table) do
     {"SELECT name FROM sqlite_master WHERE type='table' AND name=? LIMIT 1", [table]}
-  end
-
-  defp map_params(params) do
-    Enum.map(params, fn
-      %{__struct__: _} = data_type ->
-        {:ok, value} = Ecto.DataType.dump(data_type)
-        value
-
-      %{} = value ->
-        Ecto.Adapter.json_library().encode!(value)
-
-      value when is_list(value) ->
-        Ecto.Adapter.json_library().encode!(value)
-
-      value ->
-        value
-    end)
   end
 
   def build_explain_query(query) do
