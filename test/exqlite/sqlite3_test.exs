@@ -28,9 +28,9 @@ defmodule Exqlite.Sqlite3Test do
       {:ok, conn} = Sqlite3.open(":memory:")
 
       :ok =
-        Sqlite3.execute(conn, "create table test (id integer primary key, stuff text);")
+        Sqlite3.execute(conn, "create table test (id integer primary key, stuff text)")
 
-      :ok = Sqlite3.execute(conn, "insert into test (stuff) values ('This is a test');")
+      :ok = Sqlite3.execute(conn, "insert into test (stuff) values ('This is a test')")
       {:ok, 1} = Sqlite3.last_insert_rowid(conn)
       {:ok, 1} = Sqlite3.changes(conn)
       :ok = Sqlite3.close(conn)
@@ -42,7 +42,7 @@ defmodule Exqlite.Sqlite3Test do
       {:error, ~s|near "a": syntax error|} =
         Sqlite3.execute(
           conn,
-          "create a dumb table test (id integer primary key, stuff text);"
+          "create a dumb table test (id integer primary key, stuff text)"
         )
 
       {:ok, 0} = Sqlite3.changes(conn)
@@ -84,7 +84,7 @@ defmodule Exqlite.Sqlite3Test do
       {:ok, conn} = Sqlite3.open(":memory:")
 
       :ok =
-        Sqlite3.execute(conn, "create table test (id integer primary key, stuff text);")
+        Sqlite3.execute(conn, "create table test (id integer primary key, stuff text)")
 
       {:ok, statement} = Sqlite3.prepare(conn, "insert into test (stuff) values (?1)")
 
@@ -97,7 +97,7 @@ defmodule Exqlite.Sqlite3Test do
       {:ok, conn} = Sqlite3.open(":memory:")
 
       :ok =
-        Sqlite3.execute(conn, "create table test (id integer primary key, stuff text);")
+        Sqlite3.execute(conn, "create table test (id integer primary key, stuff text)")
 
       {:ok, statement} = Sqlite3.prepare(conn, "insert into test (stuff) values (?1)")
       :ok = Sqlite3.bind(conn, statement, ["testing"])
@@ -107,7 +107,7 @@ defmodule Exqlite.Sqlite3Test do
       {:ok, conn} = Sqlite3.open(":memory:")
 
       :ok =
-        Sqlite3.execute(conn, "create table test (id integer primary key, stuff text);")
+        Sqlite3.execute(conn, "create table test (id integer primary key, stuff text)")
 
       {:ok, statement} = Sqlite3.prepare(conn, "insert into test (stuff) values (?1)")
       {:error, :arguments_wrong_length} = Sqlite3.bind(conn, statement, [])
@@ -117,7 +117,7 @@ defmodule Exqlite.Sqlite3Test do
       {:ok, conn} = Sqlite3.open(":memory:")
 
       :ok =
-        Sqlite3.execute(conn, "create table test (id integer primary key, stuff text);")
+        Sqlite3.execute(conn, "create table test (id integer primary key, stuff text)")
 
       {:ok, statement} = Sqlite3.prepare(conn, "insert into test (stuff) values (?1)")
       :ok = Sqlite3.bind(conn, statement, [DateTime.utc_now()])
@@ -127,7 +127,7 @@ defmodule Exqlite.Sqlite3Test do
       {:ok, conn} = Sqlite3.open(":memory:")
 
       :ok =
-        Sqlite3.execute(conn, "create table test (id integer primary key, stuff text);")
+        Sqlite3.execute(conn, "create table test (id integer primary key, stuff text)")
 
       {:ok, statement} = Sqlite3.prepare(conn, "insert into test (stuff) values (?1)")
       :ok = Sqlite3.bind(conn, statement, [Date.utc_today()])
@@ -139,7 +139,7 @@ defmodule Exqlite.Sqlite3Test do
       {:ok, conn} = Sqlite3.open(":memory:")
 
       :ok =
-        Sqlite3.execute(conn, "create table test (id integer primary key, stuff text);")
+        Sqlite3.execute(conn, "create table test (id integer primary key, stuff text)")
 
       {:ok, statement} = Sqlite3.prepare(conn, "select id, stuff from test")
 
@@ -154,11 +154,11 @@ defmodule Exqlite.Sqlite3Test do
       {:ok, conn} = Sqlite3.open(":memory:")
 
       :ok =
-        Sqlite3.execute(conn, "create table test (id integer primary key, stuff text);")
+        Sqlite3.execute(conn, "create table test (id integer primary key, stuff text)")
 
-      :ok = Sqlite3.execute(conn, "insert into test (stuff) values ('This is a test');")
+      :ok = Sqlite3.execute(conn, "insert into test (stuff) values ('This is a test')")
       {:ok, 1} = Sqlite3.last_insert_rowid(conn)
-      :ok = Sqlite3.execute(conn, "insert into test (stuff) values ('Another test');")
+      :ok = Sqlite3.execute(conn, "insert into test (stuff) values ('Another test')")
       {:ok, 2} = Sqlite3.last_insert_rowid(conn)
 
       {:ok, statement} = Sqlite3.prepare(conn, "select id, stuff from test")
@@ -180,7 +180,7 @@ defmodule Exqlite.Sqlite3Test do
       {:ok, conn} = Sqlite3.open(":memory:")
 
       :ok =
-        Sqlite3.execute(conn, "create table test (id integer primary key, stuff text);")
+        Sqlite3.execute(conn, "create table test (id integer primary key, stuff text)")
 
       {:ok, statement} = Sqlite3.prepare(conn, "select id, stuff from test")
       assert :done = Sqlite3.step(conn, statement)
@@ -190,7 +190,7 @@ defmodule Exqlite.Sqlite3Test do
       {:ok, conn} = Sqlite3.open(":memory:")
 
       :ok =
-        Sqlite3.execute(conn, "create table test (id integer primary key, stuff text);")
+        Sqlite3.execute(conn, "create table test (id integer primary key, stuff text)")
 
       {:ok, statement} = Sqlite3.prepare(conn, "insert into test (stuff) values (?1)")
       :ok = Sqlite3.bind(conn, statement, ["this is a test"])
