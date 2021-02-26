@@ -81,6 +81,35 @@ defmodule Exqlite.ConnectionTest do
     end
   end
 
+  describe ".handle_prepare/3" do
+    test "returns a prepared query" do
+      {:ok, conn} = Connection.connect(database: :memory)
+
+      {:ok, _, conn} =
+        %Query{statement: "create table users (id integer primary key, name text)"}
+        |> Connection.handle_execute([], [], conn)
+
+      {:ok, query, conn} =
+        %Query{statement: "select * from users where id < ?"}
+        |> Connection.handle_prepare([], conn)
+
+      assert conn
+      assert query
+      assert query.ref
+      assert query.statement
+    end
+
+    test "users table does not exist" do
+      {:ok, conn} = Connection.connect(database: :memory)
+
+      {:error, error} =
+        %Query{statement: "select * from users where id < ?"}
+        |> Connection.handle_prepare([], conn)
+
+        assert error.message == "no such table: users"
+    end
+  end
+
   describe ".checkin/1" do
     test "returns the state passed unchanged" do
       {:ok, conn} = Connection.connect(database: :memory)
