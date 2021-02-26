@@ -3,8 +3,7 @@ defmodule Exqlite.Result do
           command: atom,
           columns: [String.t()] | nil,
           rows: [[term] | term] | nil,
-          num_rows: integer
         }
 
-  defstruct command: nil, columns: [], rows: [], num_rows: 0
+  defstruct command: nil, columns: [], rows: []
 end
