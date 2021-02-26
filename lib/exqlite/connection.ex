@@ -186,28 +186,45 @@ defmodule Exqlite.Connection do
   This callback is called in the client process.
   """
   @impl true
-  def handle_close(_query, _opts, state) do
+  def handle_close(query, _opts, state) do
+    if query.name do
+      # If the query was named, it will be cached more than likely, and we just
+      # need to make sure it has the reference removed so it can be garbage
+      # collected
+      Queries.delete(state.queries, query.name)
+    end
+
     {:ok, nil, state}
   end
 
   @impl true
-  def handle_declare(_query, _cursor, _opts, state) do
-    # TODO: Explore building cursor like support
-    #
-    # IDEA: SQLite3 does not support cursors. HOWEVER, prepared statements are
-    #       similar since we have to step through them. Perhaps we can implement
-    #       it that way.
-    {:error, %Error{message: "cursors not supported"}, state}
+  def handle_declare(%Query{} = query, params, _opts, state) do
+    with {:ok, query} <- prepare_no_cache(query, state),
+         {:ok, query} <- bind_params(query, params, state) do
+      {:ok, query, query.ref, state}
+    end
   end
 
   @impl true
-  def handle_deallocate(_query, _cursor, _opts, state) do
-    {:error, %Error{message: "cursors not supported"}, state}
+  def handle_deallocate(%Query{} = _query, _cursor, _opts, state) do
+    # We actually don't need to do anything about the cursor. Since it is a
+    # prepared statement, it will be garbage collected by erlang when it loses
+    # references.
+    {:ok, nil, state}
   end
 
   @impl true
-  def handle_fetch(_query, _cursor, _opts, state) do
-    {:error, %Error{message: "cursors not supported"}, state}
+  def handle_fetch(%Query{} = _query, cursor, _opts, state) do
+    case Sqlite3.step(state.db, cursor) do
+      :done ->
+        {:halt, [], state}
+      {:row, row} ->
+        {:cont, row, state}
+      :busy ->
+        {:error, %Error{message: "Database busy"}, state}
+      {:error, reason} ->
+        {:error, %Error{message: reason}, state}
+    end
   end
 
   @impl true
@@ -238,7 +255,7 @@ defmodule Exqlite.Connection do
 
   # Attempt to retrieve the cached query, if it doesn't exist, we'll prepare one
   # and cache it for later.
-  defp prepare(%Query{statement: statement} = query, state) do
+  defp prepare(%Query{statement: statement, ref: nil} = query, state) do
     case Queries.get(state.queries, query) do
       nil ->
         case Sqlite3.prepare(state.db, statement) do
@@ -253,6 +270,21 @@ defmodule Exqlite.Connection do
 
       cached_query ->
         {:ok, cached_query, state}
+    end
+  end
+
+  defp prepare(%Query{ref: ref} = query, state) when ref != nil do
+    {:ok, query, state}
+  end
+
+  # Prepare a query and do not cache it.
+  defp prepare_no_cache(%Query{statement: statement} = query, state) do
+    case Sqlite3.prepare(state.db, statement) do
+      {:ok, ref} ->
+        {:ok, %{query | ref: ref}, state}
+
+      {:error, reason} ->
+        {:error, %Error{message: reason}}
     end
   end
 
@@ -274,7 +306,7 @@ defmodule Exqlite.Connection do
     end
   end
 
-  defp bind_params(%Query{ref: ref} = query, params, state) do
+  defp bind_params(%Query{ref: ref} = query, params, state) when ref != nil do
     # TODO:
     #    - Add parameter translation to sqlite types. See e.g.
     #      https://github.com/elixir-sqlite/sqlitex/blob/master/lib/sqlitex/statement.ex#L274
@@ -294,7 +326,9 @@ defmodule Exqlite.Connection do
     case Sqlite3.execute(state.db, statement) do
       :ok ->
         result = %Result{
-          command: call
+          command: call,
+          rows: [],
+          columns: [],
         }
 
         # TODO: if we track transactions, update state here

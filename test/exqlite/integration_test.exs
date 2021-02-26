@@ -16,7 +16,7 @@ defmodule Exqlite.IntegrationTest do
       %Exqlite.Query{statement: "SELECT * FROM test WHERE id = :id"}
       |> Connection.handle_prepare([2], conn)
 
-    {:ok, result} = Connection.handle_execute(query, [2], [], conn)
+    {:ok, result, conn} = Connection.handle_execute(query, [2], [], conn)
     assert result
 
     {:ok, _, conn} = Connection.handle_close(query, [], conn)

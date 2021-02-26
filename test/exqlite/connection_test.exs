@@ -80,4 +80,28 @@ defmodule Exqlite.ConnectionTest do
       File.rm(path)
     end
   end
+
+  describe ".checkin/1" do
+    test "returns the state passed unchanged" do
+      {:ok, conn} = Connection.connect(database: :memory)
+
+      assert {:ok, conn} == Connection.checkin(conn)
+    end
+  end
+
+  describe ".checkout/1" do
+    test "returns the state passed unchanged" do
+      {:ok, conn} = Connection.connect(database: :memory)
+
+      assert {:ok, conn} == Connection.checkout(conn)
+    end
+  end
+
+  describe ".ping/1" do
+    test "returns the state passed unchanged" do
+      {:ok, conn} = Connection.connect(database: :memory)
+
+      assert {:ok, conn} == Connection.ping(conn)
+    end
+  end
 end
