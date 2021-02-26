@@ -1,4 +1,4 @@
-defmodule Ecto.Integration.Migration do
+defmodule Ecto.Integration.InitialMigration do
   use Ecto.Migration
 
   def change do
@@ -94,13 +94,13 @@ defmodule Ecto.Integration.Migration do
       add(:permalink_id, references(:permalinks))
     end
 
-    unless :array_type in ExUnit.configuration()[:exclude] do
-      create table(:tags) do
-        add(:ints, {:array, :integer})
-        add(:uuids, {:array, :uuid}, default: [])
-        add(:items, {:array, :map})
-      end
-    end
+    # unless :array_type in ExUnit.configuration()[:exclude] do
+    #   create table(:tags) do
+    #     add(:ints, {:array, :integer})
+    #     add(:uuids, {:array, :uuid}, default: [])
+    #     add(:items, {:array, :map})
+    #   end
+    # end
 
     create table(:composite_pk, primary_key: false) do
       add(:a, :integer, primary_key: true)

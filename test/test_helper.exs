@@ -7,15 +7,9 @@ ecto = Mix.Project.deps_paths()[:ecto]
 Code.require_file("#{ecto}/integration_test/support/schemas.exs", __DIR__)
 
 Application.put_env(:exqlite, Ecto.Integration.TestRepo,
-  database: "/tmp/exqlite_sandbox_test.db",
-  pool: Ecto.Adapters.SQL.Sandbox,
-  show_sensitive_data_on_connection_error: true
-)
-
-Application.put_env(:exqlite, Ecto.Integration.PoolRepo,
   adapter: Ecto.Adapters.Exqlite,
-  database: "/tmp/exqlite_pool_test.db",
-  pool_size: 10,
+  database: "/tmp/exqlite_sandbox_test.db",
+  pool_size: 1,
   show_sensitive_data_on_connection_error: true
 )
 
@@ -29,11 +23,14 @@ Application.put_env(:exqlite, Ecto.Integration.PoolRepo,
 _ = Ecto.Adapters.Exqlite.storage_down(Ecto.Integration.TestRepo.config())
 :ok = Ecto.Adapters.Exqlite.storage_up(Ecto.Integration.TestRepo.config())
 
-{:ok, _pid} = Ecto.Integration.TestRepo.start_link()
-{:ok, _pid} = Ecto.Integration.PoolRepo.start_link()
+{:ok, _} = Ecto.Integration.TestRepo.start_link()
 
-:ok = Ecto.Migrator.up(Ecto.Integration.TestRepo, 0, Ecto.Integration.Migration, log: false)
-Ecto.Adapters.SQL.Sandbox.mode(Ecto.Integration.TestRepo, :manual)
+:ok =
+  Ecto.Migrator.up(Ecto.Integration.TestRepo, 0, Ecto.Integration.InitialMigration,
+    log: false
+  )
+
+# Ecto.Adapters.SQL.Sandbox.mode(Ecto.Integration.TestRepo, :manual)
 Process.flag(:trap_exit, true)
 
 ExUnit.start()

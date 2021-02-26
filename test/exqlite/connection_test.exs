@@ -106,7 +106,7 @@ defmodule Exqlite.ConnectionTest do
         %Query{statement: "select * from users where id < ?"}
         |> Connection.handle_prepare([], conn)
 
-        assert error.message == "no such table: users"
+      assert error.message == "no such table: users"
     end
   end
 

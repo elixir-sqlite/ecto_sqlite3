@@ -98,7 +98,9 @@ defmodule Exqlite.Connection do
   ##
 
   @impl true
-  def handle_prepare(%Query{} = query, _opts, state), do: prepare(query, state)
+  def handle_prepare(%Query{} = query, _opts, state) do
+    prepare(query, state)
+  end
 
   @impl true
   def handle_execute(%Query{} = query, params, _opts, state) do
@@ -126,7 +128,6 @@ defmodule Exqlite.Connection do
     # append level on the savepoint. Instead the rollbacks would just completely
     # revert the issues when it may be desirable to fix something while in the
     # transaction and then commit.
-    #
     case Keyword.get(options, :mode, :deferred) do
       :deferred when transaction_status == :idle ->
         handle_transaction(:begin, "BEGIN TRANSACTION", state)
@@ -218,10 +219,13 @@ defmodule Exqlite.Connection do
     case Sqlite3.step(state.db, cursor) do
       :done ->
         {:halt, [], state}
+
       {:row, row} ->
         {:cont, row, state}
+
       :busy ->
         {:error, %Error{message: "Database busy"}, state}
+
       {:error, reason} ->
         {:error, %Error{message: reason}, state}
     end
@@ -334,7 +338,7 @@ defmodule Exqlite.Connection do
         result = %Result{
           command: call,
           rows: [],
-          columns: [],
+          columns: []
         }
 
         {:ok, result, %{state| transaction_status: :transaction}}

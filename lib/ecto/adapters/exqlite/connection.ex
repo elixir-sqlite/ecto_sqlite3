@@ -37,7 +37,12 @@ defmodule Ecto.Adapters.Exqlite.Connection do
   end
 
   @impl true
-  def execute(conn, %Exqlite.Query{statement: statement, ref: nil} = cached, params, opts) do
+  def execute(
+        conn,
+        %Exqlite.Query{statement: statement, ref: nil} = cached,
+        params,
+        opts
+      ) do
     execute(conn, statement, params, opts)
   end
 
@@ -65,6 +70,7 @@ defmodule Ecto.Adapters.Exqlite.Connection do
   @impl true
   def query(conn, sql, params, opts) do
     query = %Exqlite.Query{statement: sql}
+
     case DBConnection.execute(conn, query, params, opts) do
       {:ok, _, result} -> {:ok, result}
       other -> other
