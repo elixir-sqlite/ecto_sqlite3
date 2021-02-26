@@ -24,219 +24,6 @@ typedef struct statement
 } statement_t;
 
 static const char*
-get_sqlite3_return_code_msg(int rc)
-{
-    switch (rc) {
-        case SQLITE_OK:
-            return "ok";
-        case SQLITE_ERROR:
-            return "sqlite_error";
-        case SQLITE_INTERNAL:
-            return "internal";
-        case SQLITE_PERM:
-            return "perm";
-        case SQLITE_ABORT:
-            return "abort";
-        case SQLITE_BUSY:
-            return "busy";
-        case SQLITE_LOCKED:
-            return "locked";
-        case SQLITE_NOMEM:
-            return "nomem";
-        case SQLITE_READONLY:
-            return "readonly";
-        case SQLITE_INTERRUPT:
-            return "interrupt";
-        case SQLITE_IOERR:
-            return "ioerr";
-        case SQLITE_CORRUPT:
-            return "corrupt";
-        case SQLITE_NOTFOUND:
-            return "notfound";
-        case SQLITE_FULL:
-            return "full";
-        case SQLITE_CANTOPEN:
-            return "cantopen";
-        case SQLITE_PROTOCOL:
-            return "protocol";
-        case SQLITE_EMPTY:
-            return "empty";
-        case SQLITE_SCHEMA:
-            return "schema";
-        case SQLITE_TOOBIG:
-            return "toobig";
-        case SQLITE_CONSTRAINT:
-            return "constraint";
-        case SQLITE_MISMATCH:
-            return "mismatch";
-        case SQLITE_MISUSE:
-            return "misuse";
-        case SQLITE_NOLFS:
-            return "nolfs";
-        case SQLITE_AUTH:
-            return "auth";
-        case SQLITE_FORMAT:
-            return "format";
-        case SQLITE_RANGE:
-            return "range";
-        case SQLITE_NOTADB:
-            return "notadb";
-        case SQLITE_NOTICE:
-            return "notice";
-        case SQLITE_WARNING:
-            return "warning";
-        case SQLITE_ROW:
-            return "row";
-        case SQLITE_DONE:
-            return "done";
-        case SQLITE_ERROR_MISSING_COLLSEQ:
-            return "error_missing_collseq";
-        case SQLITE_ERROR_RETRY:
-            return "error_retry";
-        case SQLITE_ERROR_SNAPSHOT:
-            return "error_snapshot";
-        case SQLITE_IOERR_READ:
-            return "ioerr_read";
-        case SQLITE_IOERR_SHORT_READ:
-            return "ioerr_short_read";
-        case SQLITE_IOERR_WRITE:
-            return "ioerr_write";
-        case SQLITE_IOERR_FSYNC:
-            return "ioerr_fsync";
-        case SQLITE_IOERR_DIR_FSYNC:
-            return "ioerr_dir_fsync";
-        case SQLITE_IOERR_TRUNCATE:
-            return "ioerr_truncate";
-        case SQLITE_IOERR_FSTAT:
-            return "ioerr_fstat";
-        case SQLITE_IOERR_UNLOCK:
-            return "ioerr_unlock";
-        case SQLITE_IOERR_RDLOCK:
-            return "ioerr_rdlock";
-        case SQLITE_IOERR_DELETE:
-            return "ioerr_delete";
-        case SQLITE_IOERR_BLOCKED:
-            return "ioerr_blocked";
-        case SQLITE_IOERR_NOMEM:
-            return "ioerr_nomem";
-        case SQLITE_IOERR_ACCESS:
-            return "ioerr_access";
-        case SQLITE_IOERR_CHECKRESERVEDLOCK:
-            return "ioerr_checkreservedlock";
-        case SQLITE_IOERR_LOCK:
-            return "ioerr_lock";
-        case SQLITE_IOERR_CLOSE:
-            return "ioerr_close";
-        case SQLITE_IOERR_DIR_CLOSE:
-            return "ioerr_dir_close";
-        case SQLITE_IOERR_SHMOPEN:
-            return "ioerr_shmopen";
-        case SQLITE_IOERR_SHMSIZE:
-            return "ioerr_shmsize";
-        case SQLITE_IOERR_SHMLOCK:
-            return "ioerr_shmlock";
-        case SQLITE_IOERR_SHMMAP:
-            return "ioerr_shmmap";
-        case SQLITE_IOERR_SEEK:
-            return "ioerr_seek";
-        case SQLITE_IOERR_DELETE_NOENT:
-            return "ioerr_delete_noent";
-        case SQLITE_IOERR_MMAP:
-            return "ioerr_mmap";
-        case SQLITE_IOERR_GETTEMPPATH:
-            return "ioerr_gettemppath";
-        case SQLITE_IOERR_CONVPATH:
-            return "ioerr_convpath";
-        case SQLITE_IOERR_VNODE:
-            return "ioerr_vnode";
-        case SQLITE_IOERR_AUTH:
-            return "ioerr_auth";
-        case SQLITE_IOERR_BEGIN_ATOMIC:
-            return "ioerr_begin_atomic";
-        case SQLITE_IOERR_COMMIT_ATOMIC:
-            return "ioerr_commit_atomic";
-        case SQLITE_IOERR_ROLLBACK_ATOMIC:
-            return "ioerr_rollback_atomic";
-        case SQLITE_IOERR_DATA:
-            return "ioerr_data";
-        case SQLITE_IOERR_CORRUPTFS:
-            return "ioerr_corruptfs";
-        case SQLITE_LOCKED_SHAREDCACHE:
-            return "locked_sharedcache";
-        case SQLITE_LOCKED_VTAB:
-            return "locked_vtab";
-        case SQLITE_BUSY_RECOVERY:
-            return "busy_recovery";
-        case SQLITE_BUSY_SNAPSHOT:
-            return "busy_snapshot";
-        case SQLITE_BUSY_TIMEOUT:
-            return "busy_timeout";
-        case SQLITE_CANTOPEN_NOTEMPDIR:
-            return "cantopen_notempdir";
-        case SQLITE_CANTOPEN_ISDIR:
-            return "cantopen_isdir";
-        case SQLITE_CANTOPEN_FULLPATH:
-            return "cantopen_fullpath";
-        case SQLITE_CANTOPEN_CONVPATH:
-            return "cantopen_convpath";
-        case SQLITE_CANTOPEN_DIRTYWAL:
-            return "cantopen_dirtywal";
-        case SQLITE_CANTOPEN_SYMLINK:
-            return "cantopen_symlink";
-        case SQLITE_CORRUPT_VTAB:
-            return "corrupt_vtab";
-        case SQLITE_CORRUPT_SEQUENCE:
-            return "corrupt_sequence";
-        case SQLITE_CORRUPT_INDEX:
-            return "corrupt_index";
-        case SQLITE_READONLY_RECOVERY:
-            return "readonly_recovery";
-        case SQLITE_READONLY_CANTLOCK:
-            return "readonly_cantlock";
-        case SQLITE_READONLY_ROLLBACK:
-            return "readonly_rollback";
-        case SQLITE_READONLY_DBMOVED:
-            return "readonly_dbmoved";
-        case SQLITE_READONLY_CANTINIT:
-            return "readonly_cantinit";
-        case SQLITE_READONLY_DIRECTORY:
-            return "readonly_directory";
-        case SQLITE_ABORT_ROLLBACK:
-            return "abort_rollback";
-        case SQLITE_CONSTRAINT_CHECK:
-            return "constraint_check";
-        case SQLITE_CONSTRAINT_COMMITHOOK:
-            return "constraint_commithook";
-        case SQLITE_CONSTRAINT_FOREIGNKEY:
-            return "constraint_foreignkey";
-        case SQLITE_CONSTRAINT_FUNCTION:
-            return "constraint_function";
-        case SQLITE_CONSTRAINT_NOTNULL:
-            return "constraint_notnull";
-        case SQLITE_CONSTRAINT_PRIMARYKEY:
-            return "constraint_primarykey";
-        case SQLITE_CONSTRAINT_TRIGGER:
-            return "constraint_trigger";
-        case SQLITE_CONSTRAINT_UNIQUE:
-            return "constraint_unique";
-        case SQLITE_CONSTRAINT_VTAB:
-            return "constraint_vtab";
-        case SQLITE_CONSTRAINT_ROWID:
-            return "constraint_rowid";
-        case SQLITE_CONSTRAINT_PINNED:
-            return "constraint_pinned";
-        case SQLITE_NOTICE_RECOVER_WAL:
-            return "notice_recover_wal";
-        case SQLITE_NOTICE_RECOVER_ROLLBACK:
-            return "notice_recover_rollback";
-        case SQLITE_WARNING_AUTOINDEX:
-            return "warning_autoindex";
-        default:
-            return "unknown";
-    }
-}
-
-static const char*
 get_sqlite3_error_msg(int rc, sqlite3* db)
 {
     if (rc == SQLITE_MISUSE) {
@@ -284,18 +71,33 @@ make_error_tuple(ErlNifEnv* env, const char* reason)
 }
 
 static ERL_NIF_TERM
+make_binary(ErlNifEnv* env, const void* bytes, unsigned int size)
+{
+    ErlNifBinary blob;
+    ERL_NIF_TERM term;
+
+    if (!enif_alloc_binary(size, &blob)) {
+        return make_atom(env, "out_of_memory");
+    }
+
+    memcpy(blob.data, bytes, size);
+    term = enif_make_binary(env, &blob);
+    enif_release_binary(&blob);
+
+    return term;
+}
+
+static ERL_NIF_TERM
 make_sqlite3_error_tuple(ErlNifEnv* env, int rc, sqlite3* db)
 {
-    const char* error_code_msg = get_sqlite3_return_code_msg(rc);
-    const char* msg            = get_sqlite3_error_msg(rc, db);
+    const char* msg = get_sqlite3_error_msg(rc, db);
+    size_t len      = utf8len(msg);
 
     return enif_make_tuple2(
-      env,
-      make_atom(env, "error"),
-      enif_make_tuple2(
         env,
-        make_atom(env, error_code_msg),
-        enif_make_string(env, msg, ERL_NIF_LATIN1)));
+        make_atom(env, "error"),
+        make_binary(env, msg, len)
+    );
 }
 
 static ERL_NIF_TERM
@@ -574,23 +376,6 @@ exqlite_bind(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
     }
 
     return make_atom(env, "ok");
-}
-
-static ERL_NIF_TERM
-make_binary(ErlNifEnv* env, const void* bytes, unsigned int size)
-{
-    ErlNifBinary blob;
-    ERL_NIF_TERM term;
-
-    if (!enif_alloc_binary(size, &blob)) {
-        return make_atom(env, "out_of_memory");
-    }
-
-    memcpy(blob.data, bytes, size);
-    term = enif_make_binary(env, &blob);
-    enif_release_binary(&blob);
-
-    return term;
 }
 
 static ERL_NIF_TERM

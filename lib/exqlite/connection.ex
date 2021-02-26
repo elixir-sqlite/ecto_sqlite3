@@ -302,7 +302,8 @@ defmodule Exqlite.Connection do
         state
       }
     else
-      {:error, reason} -> {:error, %Error{message: reason}}
+      {:error, reason} ->
+        {:error, %Error{message: reason}}
     end
   end
 

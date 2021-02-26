@@ -39,7 +39,7 @@ defmodule Exqlite.Sqlite3Test do
     test "handles incorrect syntax" do
       {:ok, conn} = Sqlite3.open(":memory:")
 
-      {:error, {:sqlite_error, "near \"a\": syntax error"}} =
+      {:error, ~s|near "a": syntax error|} =
         Sqlite3.execute(
           conn,
           "create a dumb table test (id integer primary key, stuff text);"
@@ -209,8 +209,10 @@ defmodule Exqlite.Sqlite3Test do
       :ok = Sqlite3.close(conn)
       :ok = Sqlite3.bind(conn, statement, ["this is a test"])
 
-      {:error, {:misuse, _message}} =
-        Sqlite3.execute(conn, "create table test (id integer primary key, stuff text);")
+      {:error, message} =
+        Sqlite3.execute(conn, "create table test (id integer primary key, stuff text)")
+
+      assert message == "Sqlite3 was invoked incorrectly."
 
       assert :done == Sqlite3.step(conn, statement)
     end

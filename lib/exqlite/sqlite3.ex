@@ -43,15 +43,9 @@ defmodule Exqlite.Sqlite3 do
   @spec execute(db(), String.t()) :: :ok | {:error, {atom(), reason()}}
   def execute(conn, sql) do
     case Sqlite3NIF.execute(conn, String.to_charlist(sql)) do
-      :ok ->
-        :ok
-
-      {:error, {code, reason}} ->
-        {:error, {code, String.Chars.to_string(reason)}}
-
-      _ ->
-        # This should never happen, but just to be safe
-        {:error, {:unknown, "unhandled error"}}
+      :ok -> :ok
+      {:error, reason} -> {:error, reason}
+      _ -> {:error, "unhandled error"}
     end
   end
 
