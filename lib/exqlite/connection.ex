@@ -237,17 +237,21 @@ defmodule Exqlite.Connection do
   ### ----------------------------------
 
   defp do_connect(path) do
-    case Sqlite3.open(path) do
-      {:ok, db} ->
-        state = %__MODULE__{
-          db: db,
-          path: path,
-          transaction_status: :idle,
-          queries: Queries.new(__MODULE__)
-        }
+    with {:ok, db} <- Sqlite3.open(path),
+         # TODO: These values should be configurable via options
+         :ok <- Sqlite3.execute(db, "PRAGMA journal_mode = 'WAL'"),
+         :ok <- Sqlite3.execute(db, "PRAGMA temp_store = 2"),
+         :ok <- Sqlite3.execute(db, "PRAGMA synchronous = 1"),
+         :ok <- Sqlite3.execute(db, "PRAGMA cache_size = -64000") do
+      state = %__MODULE__{
+        db: db,
+        path: path,
+        transaction_status: :idle,
+        queries: Queries.new(__MODULE__)
+      }
 
-        {:ok, state}
-
+      {:ok, state}
+    else
       {:error, reason} ->
         {:error, %Exqlite.Error{message: reason}}
     end
