@@ -60,8 +60,10 @@ defmodule Exqlite.Connection do
       nil ->
         {:error,
          %Error{
-           message:
-             ~s{You must provide a :database to the database. Example: connect(database: "./") or connect(database: :memory)}
+           message: """
+           You must provide a :database to the database. \
+           Example: connect(database: "./") or connect(database: :memory)\
+           """
          }}
 
       :memory ->
@@ -91,9 +93,9 @@ defmodule Exqlite.Connection do
   @impl true
   def ping(state), do: {:ok, state}
 
-  ### ----------------------------------
-  #   handle_* implementations
-  ### ----------------------------------
+  ##
+  ## Handlers
+  ##
 
   @impl true
   def handle_prepare(%Query{} = query, _opts, state), do: prepare(query, state)
@@ -101,7 +103,7 @@ defmodule Exqlite.Connection do
   @impl true
   def handle_execute(%Query{} = query, params, _opts, state) do
     with {:ok, query, state} <- prepare(query, state) do
-      execute(query, params, state)
+      execute(:execute, query, params, state)
     end
   end
 
@@ -237,43 +239,53 @@ defmodule Exqlite.Connection do
   # Attempt to retrieve the cached query, if it doesn't exist, we'll prepare one
   # and cache it for later.
   defp prepare(%Query{statement: statement} = query, state) do
-    if cached_query = Queries.get(state.queries, query) do
-      {:ok, cached_query, state}
-    else
-      case Sqlite3.prepare(state.db, statement) do
-        {:ok, ref} ->
-          query = %{query | ref: ref}
-          Queries.put(state.queries, query)
-          {:ok, query, state}
+    case Queries.get(state.queries, query) do
+      nil ->
+        case Sqlite3.prepare(state.db, statement) do
+          {:ok, ref} ->
+            query = %{query | ref: ref}
+            Queries.put(state.queries, query)
+            {:ok, query, state}
 
-        {:error, reason} ->
-          {:error, %Error{message: reason}}
-      end
+          {:error, reason} ->
+            {:error, %Error{message: reason}}
+        end
+
+      cached_query ->
+        {:ok, cached_query, state}
     end
   end
 
-  defp execute(%Query{} = query, params, state) do
+  defp execute(call, %Query{} = query, params, state) do
     with {:ok, query} <- bind_params(query, params, state) do
-      do_execute(query, state, %Result{})
+      do_execute(call, query, state, %Result{})
     end
   end
 
-  defp do_execute(%Query{ref: ref} = query, state, %Result{} = result) do
+  defp do_execute(call, %Query{ref: ref} = query, state, %Result{} = result) do
     case Sqlite3.step(state.db, query.ref) do
       :done ->
-        # TODO: this query may fail, we need to properly propagate this
-        {:ok, columns} = Sqlite3.columns(state.db, ref)
-
-        # TODO: this may fail, we need to properly propagate this
-        Sqlite3.close(ref)
-        {:ok, %{result | columns: columns}}
+        case Sqlite3.columns(state.db, ref) do
+          {:ok, columns} -> {:ok, %{result | columns: columns}, state}
+          {:error, reason} -> {:error, %Error{message: reason}}
+        end
 
       {:row, row} ->
-        # TODO: we need something better than simply appending rows
-        do_execute(query, state, %{result | rows: result.rows ++ [row]})
+        # TODO: we need something better than simply appending rows. Maybe.
+        # Ideally we do not want to block all of the dirty nif threads so
+        # iterative fetching will work fine here.
+        do_execute(
+          call,
+          query,
+          state,
+          %{result | rows: result.rows ++ [row], command: call}
+        )
 
       :busy ->
         {:error, %Error{message: "Database busy"}}
+
+      {:error, reason} ->
+        {:error, %Error{message: reason}}
     end
   end
 
