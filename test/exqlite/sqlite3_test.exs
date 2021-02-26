@@ -164,15 +164,15 @@ defmodule Exqlite.Sqlite3Test do
       {:ok, statement} = Sqlite3.prepare(conn, "select id, stuff from test")
 
       {:row, columns} = Sqlite3.step(conn, statement)
-      assert [1, {:text, "This is a test"}] == columns
+      assert [1, "This is a test"] == columns
       {:row, columns} = Sqlite3.step(conn, statement)
-      assert [2, {:text, "Another test"}] == columns
+      assert [2, "Another test"] == columns
       assert :done = Sqlite3.step(conn, statement)
 
       {:row, columns} = Sqlite3.step(conn, statement)
-      assert [1, {:text, "This is a test"}] == columns
+      assert [1, "This is a test"] == columns
       {:row, columns} = Sqlite3.step(conn, statement)
-      assert [2, {:text, "Another test"}] == columns
+      assert [2, "Another test"] == columns
       assert :done = Sqlite3.step(conn, statement)
     end
 

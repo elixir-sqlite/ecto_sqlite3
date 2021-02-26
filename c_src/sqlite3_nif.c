@@ -610,17 +610,11 @@ make_cell(ErlNifEnv* env, sqlite3_stmt* statement, unsigned int i)
 
         case SQLITE_BLOB:
             len = sqlite3_column_bytes(statement, i);
-            return enif_make_tuple2(
-              env,
-              make_atom(env, "blob"),
-              make_binary(env, sqlite3_column_blob(statement, i), len));
+            return make_binary(env, sqlite3_column_blob(statement, i), len);
 
         case SQLITE_TEXT:
             len = sqlite3_column_bytes(statement, i);
-            return enif_make_tuple2(
-              env,
-              make_atom(env, "text"),
-              make_binary(env, sqlite3_column_text(statement, i), len));
+            return make_binary(env, sqlite3_column_text(statement, i), len);
 
         default:
             return make_atom(env, "unsupported");
