@@ -12,9 +12,9 @@ defmodule Exqlite.Queries do
 
   alias Exqlite.Query
 
-  @type cache :: :ets.tid()
+  @type t :: :ets.tid()
 
-  @spec new(atom()) :: cache()
+  @spec new(atom()) :: t()
   def new(name) do
     # TODO: Should this be set to :private?
     #
@@ -23,16 +23,16 @@ defmodule Exqlite.Queries do
     :ets.new(name, [:set, :public])
   end
 
-  @spec put(cache(), Query.t()) :: :error
+  @spec put(t(), Query.t()) :: :error
   def put(_cache, %Query{name: ""}), do: :error
 
-  @spec put(cache(), Query.t()) :: :error
+  @spec put(t(), Query.t()) :: :error
   def put(_cache, %Query{name: nil}), do: :error
 
-  @spec put(cache(), Query.t()) :: :error
+  @spec put(t(), Query.t()) :: :error
   def put(_cache, %Query{ref: nil}), do: :error
 
-  @spec put(cache(), Query.t()) :: :ok | :error
+  @spec put(t(), Query.t()) :: :ok | :error
   def put(cache, %Query{name: query_name, ref: ref}) do
     try do
       :ets.insert(cache, {query_name, {ref}})
@@ -46,19 +46,19 @@ defmodule Exqlite.Queries do
   @spec delete(nil) :: :ok
   def delete(nil), do: :ok
 
-  @spec delete(cache()) :: :ok
+  @spec delete(t()) :: :ok
   def delete(cache) do
     :ets.delete(cache)
     :ok
   end
 
-  @spec delete(cache(), Query.t()) :: :error
+  @spec delete(t(), Query.t()) :: :error
   def delete(_cache, %Query{name: nil}), do: :error
 
-  @spec delete(cache(), Query.t()) :: :error
+  @spec delete(t(), Query.t()) :: :error
   def delete(_cache, %Query{name: ""}), do: :error
 
-  @spec delete(cache(), Query.t()) :: :ok | :error
+  @spec delete(t(), Query.t()) :: :ok | :error
   def delete(cache, %Query{name: query_name}) do
     try do
       :ets.delete(cache, query_name)
@@ -69,21 +69,21 @@ defmodule Exqlite.Queries do
     end
   end
 
-  @spec get(cache(), Query.t()) :: nil
+  @spec get(t(), Query.t()) :: nil
   def get(_cache, %Query{name: nil}), do: nil
 
-  @spec get(cache(), Query.t()) :: nil
+  @spec get(t(), Query.t()) :: nil
   def get(_cache, %Query{name: ""}), do: nil
 
   @doc """
   Gets an existing prepared query if it exists. Otherwise `nil` is returned.
   """
-  @spec get(cache(), Query.t()) :: Query.t() | nil
+  @spec get(t(), Query.t()) :: Query.t() | nil
   def get(cache, %Query{name: query_name} = query) do
     try do
       :ets.lookup_element(cache, query_name, 2)
     rescue
-      ArgumentError -> {:error, :not_found}
+      ArgumentError -> nil
     else
       {ref} ->
         %{query | ref: ref}
@@ -93,7 +93,7 @@ defmodule Exqlite.Queries do
   @doc """
   Clears the entire prepared query cache.
   """
-  @spec clear(cache()) :: :ok
+  @spec clear(t()) :: :ok
   def clear(cache) do
     :ets.delete_all_objects(cache)
     :ok
@@ -102,7 +102,7 @@ defmodule Exqlite.Queries do
   @spec size(nil) :: integer()
   def size(nil), do: 0
 
-  @spec size(cache()) :: integer()
+  @spec size(t()) :: integer()
   def size(cache) do
     :ets.info(cache) |> Keyword.get(:size, 0)
   end
