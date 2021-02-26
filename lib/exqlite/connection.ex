@@ -332,8 +332,7 @@ defmodule Exqlite.Connection do
           columns: [],
         }
 
-        # TODO: if we track transactions, update state here
-        {:ok, statement, result, state}
+        {:ok, result, state}
 
       {:error, {code, reason}} ->
         {:error, %Error{message: "#{reason}. Code: #{code}"}}
