@@ -100,26 +100,67 @@ defmodule Ecto.Adapters.Exqlite do
   ## Loaders
   ##
 
-  @impl true
-  def loaders(:boolean, type), do: [&bool_decode/1, type]
-  def loaders(:binary_id, type), do: [Ecto.UUID, type]
-  def loaders(:utc_datetime, type), do: [&date_decode/1, type]
-  def loaders(:naive_datetime, type), do: [&date_decode/1, type]
+  @impl Ecto.Adapter
+  def loaders(:boolean, type) do
+    [&bool_decode/1, type]
+  end
 
-  def loaders({:embed, _} = type, _),
-    do: [&json_decode/1, &Ecto.Adapters.SQL.load_embed(type, &1)]
+  @impl Ecto.Adapter
+  def loaders(:binary_id, type) do
+    [Ecto.UUID, type]
+  end
 
-  def loaders(:map, type), do: [&json_decode/1, type]
-  def loaders({:map, _}, type), do: [&json_decode/1, type]
-  def loaders({:array, _}, type), do: [&json_decode/1, type]
-  def loaders(:float, type), do: [&float_decode/1, type]
+  @impl Ecto.Adapter
+  def loaders(:utc_datetime, type) do
+    [&date_decode/1, type]
+  end
 
-  def loaders(_primitive, type) do
+  @impl Ecto.Adapter
+  def loaders(:naive_datetime, type) do
+    [&date_decode/1, type]
+  end
+
+  @impl Ecto.Adapter
+  def loaders(:datetime, type) do
+    [&date_decode/1, type]
+  end
+
+  @impl Ecto.Adapter
+  def loaders({:embed, _} = type, _) do
+    [&json_decode/1, &Ecto.Type.embedded_load(type, &1, :json)]
+  end
+
+  @impl Ecto.Adapter
+  def loaders({:map, _}, type) do
+    [&json_decode/1, &Ecto.Type.embedded_load(type, &1, :json)]
+  end
+
+  @impl Ecto.Adapter
+  def loaders({:array, _}, type) do
+    [&json_decode/1, type]
+  end
+
+  @impl Ecto.Adapter
+  def loaders(:map, type) do
+    [&json_decode/1, type]
+  end
+
+  @impl Ecto.Adapter
+  def loaders(:float, type) do
+    [&float_decode/1, type]
+  end
+
+  @impl Ecto.Adapter
+  def loaders(_, type) do
     [type]
   end
 
   defp bool_decode(0), do: {:ok, false}
+  defp bool_decode("0"), do: {:ok, false}
+  defp bool_decode("FALSE"), do: {:ok, false}
   defp bool_decode(1), do: {:ok, true}
+  defp bool_decode("1"), do: {:ok, true}
+  defp bool_decode("TRUE"), do: {:ok, true}
   defp bool_decode(x), do: {:ok, x}
 
   defp date_decode(
@@ -154,14 +195,45 @@ defmodule Ecto.Adapters.Exqlite do
   ## Dumpers
   ##
 
-  @impl true
-  def dumpers(:binary, type), do: [type, &blob_encode/1]
-  def dumpers(:binary_id, type), do: [type, Ecto.UUID]
-  def dumpers(:boolean, type), do: [type, &bool_encode/1]
-  def dumpers({:embed, _} = type, _), do: [&Ecto.Adapters.SQL.dump_embed(type, &1)]
-  def dumpers(:time, type), do: [type, &time_encode/1]
-  def dumpers(:naive_datetime, type), do: [type, &naive_datetime_encode/1]
-  def dumpers(_primitive, type), do: [type]
+  @impl Ecto.Adapter
+  def dumpers(:binary, type) do
+    [type, &blob_encode/1]
+  end
+
+  @impl Ecto.Adapter
+  def dumpers(:binary_id, type) do
+    [type, Ecto.UUID]
+  end
+
+  @impl Ecto.Adapter
+  def dumpers(:boolean, type) do
+    [type, &bool_encode/1]
+  end
+
+  @impl Ecto.Adapter
+  def dumpers({:embed, _} = type, _) do
+    [&Ecto.Type.embedded_dump(type, &1, :json)]
+  end
+
+  @impl Ecto.Adapter
+  def dumpers(:time, type) do
+    [type, &time_encode/1]
+  end
+
+  @impl Ecto.Adapter
+  def dumpers(:naive_datetime, type) do
+    [type, &naive_datetime_encode/1]
+  end
+
+  @impl Ecto.Adapter
+  def dumpers({:in, sub}, {:in, sub}) do
+    [{:array, sub}]
+  end
+
+  @impl Ecto.Adapter
+  def dumpers(_primitive, type) do
+    [type]
+  end
 
   defp blob_encode(value), do: {:ok, {:blob, value}}
 
