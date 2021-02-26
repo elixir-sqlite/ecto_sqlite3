@@ -11,6 +11,9 @@ defmodule Exqlite.Sqlite3 do
   #       Will need to add a test for this and think of possible solution.
   #
 
+  # TODO: Need to figure out if we can just stream results where we use this
+  #       module as a sink.
+
   alias Exqlite.Sqlite3NIF
 
   @type db() :: reference()
