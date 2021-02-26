@@ -37,6 +37,13 @@ defmodule Exqlite.Connection do
     :queries
   ]
 
+  @type t() :: %__MODULE__{
+          db: Sqlite3.db(),
+          path: String.t(),
+          transaction_status: :idle | :transaction,
+          queries: Queries.t()
+        }
+
   @impl true
   @doc """
   Initializes the Ecto Exqlite adapter.
