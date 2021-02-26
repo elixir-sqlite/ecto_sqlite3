@@ -294,6 +294,7 @@ defmodule Exqlite.Connection do
          {:ok, rows} <- Sqlite3.fetch_all(state.db, query.ref) do
       {
         :ok,
+        query,
         %Result{
           columns: columns,
           rows: rows,

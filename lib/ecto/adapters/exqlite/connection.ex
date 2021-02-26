@@ -65,7 +65,10 @@ defmodule Ecto.Adapters.Exqlite.Connection do
   @impl true
   def query(conn, sql, params, opts) do
     query = %Exqlite.Query{statement: sql}
-    DBConnection.execute(conn, query, params, opts)
+    case DBConnection.execute(conn, query, params, opts) do
+      {:ok, _, result} -> {:ok, result}
+      other -> other
+    end
   end
 
   @impl true
