@@ -733,7 +733,8 @@ exqlite_columns(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
             type = "nil";
         }
 
-        columns[i] = enif_make_tuple2(env, make_atom(env, name), make_atom(env, type));
+        size_t len = utf8len(type);
+        columns[i] = enif_make_tuple2(env, make_atom(env, name), make_binary(env, type, len));
     }
 
     result = enif_make_list_from_array(env, columns, size);
