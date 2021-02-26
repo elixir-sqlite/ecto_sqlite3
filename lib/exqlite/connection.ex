@@ -333,7 +333,7 @@ defmodule Exqlite.Connection do
           columns: [],
         }
 
-        {:ok, result, state}
+        {:ok, result, %{state| transaction_status: :transaction}}
 
       {:error, reason} ->
         {:error, %Error{message: reason}}
