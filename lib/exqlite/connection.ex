@@ -258,7 +258,7 @@ defmodule Exqlite.Connection do
   defp prepare(%Query{statement: statement, ref: nil} = query, state) do
     case Queries.get(state.queries, query) do
       nil ->
-        case Sqlite3.prepare(state.db, statement) do
+        case Sqlite3.prepare(state.db, IO.iodata_to_binary(statement)) do
           {:ok, ref} ->
             query = %{query | ref: ref}
             Queries.put(state.queries, query)
