@@ -84,8 +84,7 @@ defmodule Exqlite.Connection do
       `:incremental`. Depending on the database size, `:incremental` may be
       beneficial.
     * `:locking_mode` - Defaults to `:normal`. Allowed values are `:normal` or
-      `:exclusive`. See https://www.sqlite.org/pragma.html#pragma_locking_mode
-      for more information.
+      `:exclusive`. See [sqlite documenation][1] for more information.
     * `:secure_delete` - Defaults to `:off`. If enabled, it will cause SQLite3
       to overwrite records that were deleted with zeros.
     * `:wal_auto_check_point` - Sets the write-ahead log auto-checkpoint
@@ -93,7 +92,9 @@ defmodule Exqlite.Connection do
       negative value turns auto-checkpointing off.
 
 
-  For more information about the options above, see https://www.sqlite.org/pragma.html
+  For more information about the options above, see [sqlite documenation][1]
+
+  [1]: https://www.sqlite.org/pragma.html
   """
   def connect(options) do
     database = Keyword.get(options, :database)
