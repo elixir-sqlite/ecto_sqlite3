@@ -83,6 +83,15 @@ defmodule Exqlite.Sqlite3 do
   @spec last_insert_rowid(db()) :: {:ok, integer()}
   def last_insert_rowid(conn), do: Sqlite3NIF.last_insert_rowid(conn)
 
+  @doc """
+  Causes the database connection to free as much memory as it can. This is
+  useful if you are on a memory restricted system.
+  """
+  @spec shrink_memory(db()) :: :ok | {:error, reason()}
+  def shrink_memory(conn) do
+    Sqlite3NIF.execute(conn, String.to_charlist("PRAGMA shrink_memory"))
+  end
+
   @spec fetch_all(db(), statement()) :: {:ok, []} | {:error, reason()}
   def fetch_all(conn, statement) do
     # TODO: Should this be done in the NIF? It can be _much_ faster to build a
