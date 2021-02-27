@@ -24,11 +24,12 @@ defmodule Exqlite.Connection do
   """
 
   use DBConnection
-  alias Exqlite.Sqlite3
   alias Exqlite.Error
-  alias Exqlite.Result
-  alias Exqlite.Query
+  alias Exqlite.Pragma
   alias Exqlite.Queries
+  alias Exqlite.Query
+  alias Exqlite.Result
+  alias Exqlite.Sqlite3
 
   defstruct [
     :db,
@@ -50,13 +51,52 @@ defmodule Exqlite.Connection do
   @doc """
   Initializes the Ecto Exqlite adapter.
 
+  For connection configurations we use the defaults that come with SQLite3, but
+  we recommend which options to choose. We do not default to the recommended
+  because we don't know what your environment is like.
+
   Allowed options:
 
-    - `database` - The database to the database. In memory databses are allowed. Use
-      `:memory` or `":memory:"`.
+    * `:database` - The path to the database. In memory is allowed. You can use
+      `:memory` or `":memory:"` to designate that.
+    * `:journal_mode` - Sets the journal mode for the sqlite connection. Can be
+      one of the following `:delete`, `:truncate`, `:persist`, `:memory`,
+      `:wal`, or `:off`. Defaults to `:delete`. It is recommended that you use
+      `:wal` due to support for concurrent reads. Note: `:wal` does not mean
+      concurrent writes.
+    * `:temp_store` - Sets the storage used for temporary tables. Default is
+      `:default`. Allowed values are `:default`, `:file`, `:memory`. It is
+      recommended that you use `:memory` for storage.
+    * `:synchronous` - Can be `:extra`, `:full`, `:normal`, or `:off`. Defaults
+      to `:normal`.
+    * `:foreign_keys` - Sets if foreign key checks should be enforced or not.
+      Can be `:on` or `:off`. Default is `:on`.
+    * `:cache_size` - Sets the cache size to be used for the connection. This is
+      an odd setting as a positive value is the number of pages in memory to use
+      and a negative value is the size in kilobytes to use. Default is `-2000`.
+      It is recommended that you use `-64000`.
+    * `:cache_spill` - The cache_spill pragma enables or disables the ability of
+      the pager to spill dirty cache pages to the database file in the middle of
+      a transaction. By default it is `:on`, and for most applications, it
+      should remain so.
+    * `:case_sensitive_like`
+    * `:auto_vacuum` - Defaults to `:none`. Can be `:none`, `:full` or
+      `:incremental`. Depending on the database size, `:incremental` may be
+      beneficial.
+    * `:locking_mode` - Defaults to `:normal`. Allowed values are `:normal` or
+      `:exclusive`. See https://www.sqlite.org/pragma.html#pragma_locking_mode
+      for more information.
+    * `:secure_delete` - Defaults to `:off`. If enabled, it will cause SQLite3
+      to overwrite records that were deleted with zeros.
+    * `:wal_auto_check_point` - Sets the write-ahead log auto-checkpoint
+      interval. Default is `1000`. Setting the auto-checkpoint size to zero or a
+      negative value turns auto-checkpointing off.
+
+
+  For more information about the options above, see https://www.sqlite.org/pragma.html
   """
-  def connect(opts) do
-    database = Keyword.get(opts, :database)
+  def connect(options) do
+    database = Keyword.get(options, :database)
 
     case database do
       nil ->
@@ -69,10 +109,10 @@ defmodule Exqlite.Connection do
          }}
 
       :memory ->
-        do_connect(":memory:")
+        do_connect(":memory:", options)
 
       _ ->
-        do_connect(database)
+        do_connect(database, options)
     end
   end
 
@@ -254,14 +294,63 @@ defmodule Exqlite.Connection do
   #     Internal functions and helpers
   ### ----------------------------------
 
-  defp do_connect(path) do
+  defp set_journal_mode(db, options) do
+    Sqlite3.execute(db, "PRAGMA journal_mode = '#{Pragma.journal_mode(options)}'")
+  end
+
+  defp set_temp_store(db, options) do
+    Sqlite3.execute(db, "PRAGMA temp_store = #{Pragma.temp_store(options)}")
+  end
+
+  defp set_synchronous(db, options) do
+    Sqlite3.execute(db, "PRAGMA synchronous = #{Pragma.synchronous(options)}")
+  end
+
+  defp set_foreign_keys(db, options) do
+    Sqlite3.execute(db, "PRAGMA foreign_keys = #{Pragma.foreign_keys(options)}")
+  end
+
+  defp set_cache_size(db, options) do
+    Sqlite3.execute(db, "PRAGMA cache_size = #{Pragma.cache_size(options)}")
+  end
+
+  defp set_cache_spill(db, options) do
+    Sqlite3.execute(db, "PRAGMA cache_spill = #{Pragma.cache_spill(options)}")
+  end
+
+  defp set_case_sensitive_like(db, options) do
+    Sqlite3.execute(db, "PRAGMA case_sensitive_like = #{Pragma.case_sensitive_like(options)}")
+  end
+
+  defp set_auto_vacuum(db, options) do
+    Sqlite3.execute(db, "PRAGMA auto_vacuum = #{Pragma.auto_vacuum(options)}")
+  end
+
+  defp set_locking_mode(db, options) do
+    Sqlite3.execute(db, "PRAGMA locking_mode = #{Pragma.locking_mode(options)}")
+  end
+
+  defp set_secure_delete(db, options) do
+    Sqlite3.execute(db, "PRAGMA secure_delete = #{Pragma.secure_delete(options)}")
+  end
+
+  defp set_wal_auto_check_point(db, options) do
+    Sqlite3.execute(db, "PRAGMA wal_autocheckpoint = #{Pragma.wal_auto_check_point(options)}")
+  end
+
+  defp do_connect(path, options) do
     with {:ok, db} <- Sqlite3.open(path),
-         # TODO: These values should be configurable via options
-         :ok <- Sqlite3.execute(db, "PRAGMA journal_mode = 'WAL'"),
-         :ok <- Sqlite3.execute(db, "PRAGMA temp_store = 2"),
-         :ok <- Sqlite3.execute(db, "PRAGMA synchronous = 1"),
-         :ok <- Sqlite3.execute(db, "PRAGMA foreign_keys = ON"),
-         :ok <- Sqlite3.execute(db, "PRAGMA cache_size = -64000") do
+         :ok <- set_journal_mode(db, options),
+         :ok <- set_temp_store(db, options),
+         :ok <- set_synchronous(db, options),
+         :ok <- set_foreign_keys(db, options),
+         :ok <- set_cache_size(db, options),
+         :ok <- set_cache_spill(db, options),
+         :ok <- set_auto_vacuum(db, options),
+         :ok <- set_locking_mode(db, options),
+         :ok <- set_secure_delete(db, options),
+         :ok <- set_wal_auto_check_point(db, options),
+         :ok <- set_case_sensitive_like(db, options) do
       state = %__MODULE__{
         db: db,
         path: path,

@@ -5,7 +5,12 @@ defmodule Ecto.Integration.CrudTest do
   alias Ecto.Integration.User
 
   test "create user" do
-    {:ok, changeset} = TestRepo.insert(%User{name: "John"}, [])
-    assert changeset
+    {:ok, user1} = TestRepo.insert(%User{name: "John"}, [])
+    assert user1
+
+    {:ok, user2} = TestRepo.insert(%User{name: "James"}, [])
+    assert user2
+
+    assert user1.id != user2.id
   end
 end
