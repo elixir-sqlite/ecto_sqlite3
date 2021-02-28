@@ -95,6 +95,10 @@ some point I also wanted to use this with a nerves project on an embedded device
 that would be resiliant to power outages and still maintain some state that
 `ets` can not afford.
 
+## TODO
+
+- [ ] Setting up a way for testing to be sandboxed for applications to test
+  without fear of tests leaking into other tests.
 
 ## Under The Hood
 
