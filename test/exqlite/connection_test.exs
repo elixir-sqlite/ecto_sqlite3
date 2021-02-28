@@ -69,7 +69,7 @@ defmodule Exqlite.ConnectionTest do
 
       {:ok, conn} = Connection.connect(database: path)
 
-      {:ok, _query, result, conn} =
+      {:ok, _query, result, _conn} =
         %Query{statement: "select * from users where id < ?"}
         |> Connection.handle_execute([4], [], conn)
 
