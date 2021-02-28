@@ -107,22 +107,22 @@ defmodule Ecto.Adapters.Exqlite do
 
   @impl Ecto.Adapter
   def loaders(:utc_datetime, type) do
-    [&DateTime.from_iso8601/1, type]
+    [&datetime_decode/1, type]
   end
 
   @impl Ecto.Adapter
   def loaders(:naive_datetime, type) do
-    [&NaiveDateTime.from_iso8601/1, type]
+    [&naive_datetime_decode/1, type]
   end
 
   @impl Ecto.Adapter
   def loaders(:datetime, type) do
-    [&DateTime.from_iso8601/1, type]
+    [&datetime_decode/1, type]
   end
 
   @impl Ecto.Adapter
   def loaders(:date, type) do
-    [&Date.from_iso8601/1, type]
+    [&date_decode/1, type]
   end
 
   @impl Ecto.Adapter
@@ -171,6 +171,33 @@ defmodule Ecto.Adapters.Exqlite do
 
   defp float_decode(x) when is_integer(x), do: {:ok, x / 1}
   defp float_decode(x), do: {:ok, x}
+
+  defp datetime_decode(val) do
+    # TODO: Should we be preserving the timezone? SQLite3 stores everything
+    #       shifted to UTC. sqlite_ecto2 used a custom field type "TEXT_DATETIME"
+    #       to preserve the original string inserted. But I don't know if that
+    #       is desirable or not.
+    #
+    #       @warmwaffles 2021-02-28
+    case DateTime.from_iso8601(val) do
+      {:ok, dt, _offset} -> {:ok, dt}
+      _ -> :error
+    end
+  end
+
+  defp naive_datetime_decode(val) do
+    case NaiveDateTime.from_iso8601(val) do
+      {:ok, dt} -> {:ok, dt}
+      _ -> :error
+    end
+  end
+
+  defp date_decode(val) do
+    case Date.from_iso8601(val) do
+      {:ok, d} -> {:ok, d}
+      _ -> :error
+    end
+  end
 
   ##
   ## Dumpers
