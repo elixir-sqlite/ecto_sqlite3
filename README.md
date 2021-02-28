@@ -17,7 +17,7 @@ end
 
 ## Usage
 
-It's fairly straight forward.
+The `Exqlite.Sqlite3` module usage is fairly straight forward.
 
 ```elixir
 # We'll just keep it in memory right now
@@ -43,9 +43,58 @@ It's fairly straight forward.
 :done = Exqlite.Sqlite3.step(conn, statement)
 ```
 
-## TODO
+## Ecto
 
-- [ ] An Ecto adapter
+Define your repo similar to this.
+
+```elixir
+defmodule MyApp.Repo do
+  use Ecto.Repo, otp_app: :my_app, adapter: Ecto.Adapters.Exqlite
+end
+```
+
+Configure your repository similar to the following. If you want to know more
+about the possible options to pass the repository, checkout the documentation
+for `Exqlite.Connection.connect/1`. It will have more information on what is
+configurable.
+
+```elixir
+config :my_app,
+  ecto_repos: [MyApp.Repo]
+
+config :my_app, MyApp.Repo,
+  database: "path/to/my/database.db",
+  show_sensitive_data_on_connection_error: false,
+  journal_mode: :wal,
+  cache_size: -64000,
+  temp_store: :memory,
+  pool_size: 1
+```
+
+### Note
+
+* Pool size is set to `1` but can be increased to `4`. When set to `10` there
+  was a lot of database busy errors. Currently this is a known issue and is
+  being looked in to.
+
+* Cache size is a negative number because that is how SQLite3 defines the cache
+  size in kilobytes. If you make it positive, that is the number of pages in
+  memory to use. Both have their pros and cons. Check the documentation out for
+  [SQLite3][2].
+
+
+## Why SQLite3
+
+I needed an Ecto3 adapter to store time series data for a personal project. I
+didn't want to go through the hassle of trying to setup a postgres database or
+mysql database when I was just wanting to explore data ingestion and some map
+reduce problems.
+
+I also noticed that other SQLite3 implementations didn't really fit my needs. At
+some point I also wanted to use this with a nerves project on an embedded device
+that would be resiliant to power outages and still maintain some state that
+`ets` can not afford.
+
 
 ## Under The Hood
 
@@ -58,3 +107,4 @@ complicated and error prone.
 Feel free to check the project out and submit pull requests.
 
 [1]: <https://github.com/mmzeeman/esqlite>
+[2]: <https://www.sqlite.org/pragma.html>
