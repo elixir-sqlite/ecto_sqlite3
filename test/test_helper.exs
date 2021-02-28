@@ -9,6 +9,9 @@ Code.require_file("#{ecto}/integration_test/support/schemas.exs", __DIR__)
 Application.put_env(:exqlite, Ecto.Integration.TestRepo,
   adapter: Ecto.Adapters.Exqlite,
   database: "/tmp/exqlite_sandbox_test.db",
+  journal_mode: :wal,
+  cache_size: -64000,
+  temp_store: :memory,
   pool_size: 1,
   show_sensitive_data_on_connection_error: true
 )
