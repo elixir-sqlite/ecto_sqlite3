@@ -107,17 +107,22 @@ defmodule Ecto.Adapters.Exqlite do
 
   @impl Ecto.Adapter
   def loaders(:utc_datetime, type) do
-    [&date_decode/1, type]
+    [&DateTime.from_iso8601/1, type]
   end
 
   @impl Ecto.Adapter
   def loaders(:naive_datetime, type) do
-    [&date_decode/1, type]
+    [&NaiveDateTime.from_iso8601/1, type]
   end
 
   @impl Ecto.Adapter
   def loaders(:datetime, type) do
-    [&date_decode/1, type]
+    [&DateTime.from_iso8601/1, type]
+  end
+
+  @impl Ecto.Adapter
+  def loaders(:date, type) do
+    [&Date.from_iso8601/1, type]
   end
 
   @impl Ecto.Adapter
@@ -157,25 +162,6 @@ defmodule Ecto.Adapters.Exqlite do
   defp bool_decode("1"), do: {:ok, true}
   defp bool_decode("TRUE"), do: {:ok, true}
   defp bool_decode(x), do: {:ok, x}
-
-  defp date_decode(
-         <<year::binary-size(4), "-", month::binary-size(2), "-", day::binary-size(2)>>
-       ) do
-    {:ok, {to_integer(year), to_integer(month), to_integer(day)}}
-  end
-
-  defp date_decode(
-         <<year::binary-size(4), "-", month::binary-size(2), "-", day::binary-size(2),
-           " ", hour::binary-size(2), ":", minute::binary-size(2), ":",
-           second::binary-size(2), ".", microsecond::binary-size(6)>>
-       ) do
-    {:ok,
-     {{to_integer(year), to_integer(month), to_integer(day)},
-      {to_integer(hour), to_integer(minute), to_integer(second),
-       to_integer(microsecond)}}}
-  end
-
-  defp date_decode(x), do: {:ok, x}
 
   defp json_decode(x) when is_binary(x),
     do: {:ok, Application.get_env(:ecto, :json_library).decode!(x)}
