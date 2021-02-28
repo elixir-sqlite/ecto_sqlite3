@@ -2560,15 +2560,14 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
   end
 
   test "create check constraint" do
-    create =
-      assert_raise(
-        ArgumentError,
-        "ALTER TABLE with constraints not supported by SQLite3",
-        fn ->
-          {:create, constraint(:products, "price_must_be_positive", check: "price > 0")}
-          |> execute_ddl()
-        end
-      )
+    assert_raise(
+      ArgumentError,
+      "ALTER TABLE with constraints not supported by SQLite3",
+      fn ->
+        {:create, constraint(:products, "price_must_be_positive", check: "price > 0")}
+        |> execute_ddl()
+      end
+    )
 
     assert_raise(
       ArgumentError,
