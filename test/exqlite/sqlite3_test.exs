@@ -6,13 +6,17 @@ defmodule Exqlite.Sqlite3Test do
   describe ".open/1" do
     test "opens a database in memory" do
       {:ok, conn} = Sqlite3.open(":memory:")
+
       assert conn
     end
 
     test "opens a database on disk" do
       {:ok, path} = Temp.path()
       {:ok, conn} = Sqlite3.open(path)
+
       assert conn
+
+      File.rm(path)
     end
   end
 

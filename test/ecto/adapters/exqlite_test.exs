@@ -6,15 +6,20 @@ defmodule Ecto.Adapters.ExqliteTest do
   describe ".storage_up/1" do
     test "create database" do
       opts = [database: Temp.path!()]
+
       assert Exqlite.storage_up(opts) == :ok
       assert File.exists?(opts[:database])
+
+      File.rm(opts[:database])
     end
 
     test "does not fail on second call" do
       opts = [database: Temp.path!()]
+
       assert Exqlite.storage_up(opts) == :ok
       assert File.exists?(opts[:database])
       assert Exqlite.storage_up(opts) == {:error, :already_up}
+
       File.rm(opts[:database])
     end
 
@@ -37,10 +42,13 @@ defmodule Ecto.Adapters.ExqliteTest do
   describe ".storage_down/2" do
     test "storage down (twice)" do
       opts = [database: Temp.path!()]
+
       assert Exqlite.storage_up(opts) == :ok
       assert Exqlite.storage_down(opts) == :ok
       refute File.exists?(opts[:database])
       assert Exqlite.storage_down(opts) == {:error, :already_down}
+
+      File.rm(opts[:database])
     end
   end
 end
