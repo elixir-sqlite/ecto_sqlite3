@@ -54,14 +54,6 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
     query
   end
 
-  defp normalize(query, operation \\ :all, counter \\ 0) do
-    {query, _params, _key} =
-      Ecto.Query.Planner.prepare(query, operation, Exqlite, counter)
-
-    {query, _} = Ecto.Query.Planner.normalize(query, operation, Exqlite, counter)
-    query
-  end
-
   defp all(query) do
     query
     |> Connection.all()
@@ -89,12 +81,6 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
   defp insert(prefix, table, header, rows, on_conflict, returning) do
     prefix
     |> Connection.insert(table, header, rows, on_conflict, returning, [])
-    |> IO.iodata_to_binary()
-  end
-
-  defp update(prefix, table, fields, filter, returning) do
-    prefix
-    |> Connection.update(table, fields, filter, returning)
     |> IO.iodata_to_binary()
   end
 
