@@ -32,7 +32,7 @@ _ = Ecto.Adapters.Exqlite.storage_down(Ecto.Integration.TestRepo.config())
   Ecto.Migrator.up(
     Ecto.Integration.TestRepo,
     0,
-    Ecto.Integration.InitialMigration,
+    Exqlite.Integration.Migration,
     log: false
   )
 
