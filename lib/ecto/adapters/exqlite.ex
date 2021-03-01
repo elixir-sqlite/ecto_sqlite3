@@ -40,26 +40,26 @@ defmodule Ecto.Adapters.Exqlite do
   def supports_ddl_transaction?(), do: false
 
   @impl Ecto.Adapter.Structure
-  def structure_dump(_default, _config) do
-    # table = config[:migration_source] || "schema_migrations"
-    # path  = config[:dump_path] || Path.join(default, "structure.sql")
-    #
-    # TODO: dump the database and select the migration versions
-    #
-    # with {:ok, versions} <- select_versions(table, config),
-    #      {:ok, contents} <- dump(config),
-    #      {:ok, contents} <- append_versions(table, versions, contents) do
-    #   File.mkdir_p!(Path.dirname(path))
-    #   File.write!(path, contents)
-    #   {:ok, path}
-    # end
-    {:error, :not_implemented}
+  def structure_dump(default, config) do
+    path = config[:dump_path] || Path.join(default, "structure.sql")
+
+    with {:ok, contents} <- dump_schema(config),
+         {:ok, versions} <- dump_versions(config) do
+      File.mkdir_p!(Path.dirname(path))
+      File.write!(path, contents <> versions)
+      {:ok, path}
+    else
+      err -> err
+    end
   end
 
   @impl Ecto.Adapter.Structure
-  def structure_load(_default, _config) do
-    # load the structure.sql file
-    {:error, :not_implemented}
+  def structure_load(default, config) do
+    path = config[:dump_path] || Path.join(default, "structure.sql")
+    case run_with_cmd("sqlite3", [config[:database], ".read #{path}"]) do
+      {output, 0} -> {:ok, path}
+      {output, _} -> {:error, output}
+    end
   end
 
   @impl Ecto.Adapter.Schema
@@ -298,5 +298,37 @@ defmodule Ecto.Adapters.Exqlite do
       {:ok, db} = Exqlite.Sqlite3.open(db_path)
       :ok = Exqlite.Sqlite3.close(db)
     end
+  end
+
+  defp dump_versions(config) do
+    table = config[:migration_source] || "schema_migrations"
+
+    # `.dump` command also returns CREATE TABLE which will clash with CREATE we already run in dump_schema
+    # So we set mode to insert which makes every SELECT statement to issue the result
+    # as the INSERT statements instead of pure text data.
+    case run_with_cmd("sqlite3", [
+           config[:database],
+           ".mode insert #{table}",
+           "SELECT * FROM #{table}"
+         ]) do
+      {output, 0} -> {:ok, output}
+      {output, _} -> {:error, output}
+    end
+  end
+
+  defp dump_schema(config) do
+    case run_with_cmd("sqlite3", [config[:database], ".schema"]) do
+      {output, 0} -> {:ok, output}
+      {output, _} -> {:error, output}
+    end
+  end
+
+  defp run_with_cmd(cmd, args) do
+    unless System.find_executable(cmd) do
+      raise "could not find executable `#{cmd}` in path, " <>
+              "please guarantee it is available before running ecto commands"
+    end
+
+    System.cmd(cmd, args, stderr_to_stdout: true)
   end
 end
