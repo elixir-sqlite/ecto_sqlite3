@@ -1225,13 +1225,16 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
       |> from(update: [set: [x: 0], inc: [y: 1, z: -3]])
       |> plan(:update_all)
 
+    # TODO: should probably be "y = s0.y + 1"
+    # table-name.column-name is not allowed on the left hand side of SET
+    # but is allowed on right hand side, and we should err towards being more explicit
     assert update_all(query) ==
              """
              UPDATE schema AS s0 \
              SET \
              x = 0, \
-             y = s0.y + 1, \
-             z = s0.z + -3\
+             y = y + 1, \
+             z = z + -3\
              """
 
     query =
@@ -1255,6 +1258,7 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
 
     query =
       Schema
+      |> join(:inner, [p], q in Schema2, on: p.x == q.z)
       |> update([_], set: [x: 0])
       |> plan(:update_all)
 
@@ -1262,7 +1266,7 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
              """
              UPDATE schema AS s0 \
              SET \
-             s0.x = 0 \
+             x = 0 \
              FROM schema2 AS s1 \
              WHERE (s0.x = s1.z)\
              """
