@@ -255,8 +255,10 @@ defmodule Exqlite.Connection do
 
   @impl true
   def handle_declare(%Query{} = query, params, opts, state) do
-    with {:ok, query} <- prepare_no_cache(query, opts, state),
-         {:ok, query} <- bind_params(query, params, state) do
+    # We emulate cursor functionality by just using a prepared statement and
+    # step through it. Thus we just return the query ref as the cursor.
+    with {:ok, query, state} <- prepare_no_cache(query, opts, state),
+         {:ok, query, state} <- bind_params(query, params, state) do
       {:ok, query, query.ref, state}
     end
   end
@@ -273,10 +275,28 @@ defmodule Exqlite.Connection do
   def handle_fetch(%Query{} = _query, cursor, _opts, state) do
     case Sqlite3.step(state.db, cursor) do
       :done ->
-        {:halt, [], state}
+        {
+          :halt,
+          %Result{
+            rows: [],
+            command: :fetch,
+            num_rows: 0,
+            last_insert_id: nil
+          },
+          state
+        }
 
       {:row, row} ->
-        {:cont, row, state}
+        {
+          :cont,
+          %Result{
+            rows: [row],
+            command: :fetch,
+            num_rows: 1,
+            last_insert_id: nil
+          },
+          state
+        }
 
       :busy ->
         {:error, %Error{message: "Database busy"}, state}
@@ -417,10 +437,11 @@ defmodule Exqlite.Connection do
       _ -> nil
     end
   end
+
   defp maybe_last_insert_id(_, _), do: nil
 
   defp execute(call, %Query{} = query, params, state) do
-    with {:ok, query} <- bind_params(query, params, state),
+    with {:ok, query, state} <- bind_params(query, params, state),
          {:ok, columns} <- Sqlite3.columns(state.db, query.ref),
          {:ok, rows} <- Sqlite3.fetch_all(state.db, query.ref),
          last_insert_id <- maybe_last_insert_id(state.db, query) do
@@ -432,7 +453,7 @@ defmodule Exqlite.Connection do
           rows: rows,
           command: call,
           num_rows: Enum.count(rows),
-          last_insert_id: last_insert_id,
+          last_insert_id: last_insert_id
         },
         state
       }
@@ -452,7 +473,7 @@ defmodule Exqlite.Connection do
     #      that binds values to named params. We can look up their indices via
     #      https://www.sqlite.org/c3ref/bind_parameter_index.html
     case Sqlite3.bind(state.db, ref, params) do
-      :ok -> {:ok, query}
+      :ok -> {:ok, query, state}
       {:error, reason} -> {:error, %Error{message: reason}}
     end
   end
@@ -465,7 +486,7 @@ defmodule Exqlite.Connection do
           rows: [],
           columns: [],
           last_insert_id: nil,
-          num_rows: 0,
+          num_rows: 0
         }
 
         case call do
