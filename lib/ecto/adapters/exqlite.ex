@@ -2,8 +2,6 @@ defmodule Ecto.Adapters.Exqlite do
   use Ecto.Adapters.SQL,
     driver: :exqlite
 
-  import String, only: [to_integer: 1]
-
   @behaviour Ecto.Adapter.Storage
   @behaviour Ecto.Adapter.Structure
 
