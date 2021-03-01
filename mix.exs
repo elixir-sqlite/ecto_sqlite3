@@ -47,6 +47,7 @@ defmodule Exqlite.MixProject do
 
   defp package do
     [
+      files: ~w(lib .formatter.exs mix.exs README.md LICENSE .clang-format c_src Makefile* sqlite3),
       name: "exqlite",
       licenses: ["MIT"],
       links: %{
