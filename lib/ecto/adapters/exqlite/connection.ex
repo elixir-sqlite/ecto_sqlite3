@@ -747,16 +747,7 @@ defmodule Ecto.Adapters.Exqlite.Connection do
     Enum.intersperse(fields, ", ")
   end
 
-  defp update_key(:update, key, %{from: from} = query, sources) do
-    {_from, name} = get_source(query, sources, 0, from)
-
-    [
-      name,
-      ?. | quote_name(key)
-    ]
-  end
-
-  defp update_key(:on_conflict, key, _query, _sources) do
+  defp update_key(_kind, key, _query, _sources) do
     quote_name(key)
   end
 

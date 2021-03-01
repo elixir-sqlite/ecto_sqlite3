@@ -306,7 +306,7 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
              WITH target_rows AS \
              (SELECT s0.id AS id FROM schema AS s0 ORDER BY s0.id LIMIT 10) \
              UPDATE schema AS s0 \
-             SET s0.x = 123 \
+             SET x = 123 \
              FROM target_rows AS t1 \
              WHERE (t1.id = s0.id)\
              """
@@ -1218,7 +1218,7 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
       |> from(update: [set: [x: 0]])
       |> plan(:update_all)
 
-    assert update_all(query) == ~s{UPDATE schema AS s0 SET s0.x = 0}
+    assert update_all(query) == ~s{UPDATE schema AS s0 SET x = 0}
 
     query =
       (m in Schema)
@@ -1229,9 +1229,9 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
              """
              UPDATE schema AS s0 \
              SET \
-             s0.x = 0, \
-             s0.y = s0.y + 1, \
-             s0.z = s0.z + -3\
+             x = 0, \
+             y = s0.y + 1, \
+             z = s0.z + -3\
              """
 
     query =
@@ -1242,7 +1242,7 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
     assert update_all(query) ==
              """
              UPDATE schema AS s0 \
-             SET s0.x = 0 \
+             SET x = 0 \
              WHERE (s0.x = 123)\
              """
 
@@ -1251,7 +1251,7 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
       |> from(update: [set: [x: ^0]])
       |> plan(:update_all)
 
-    assert update_all(query) == ~s|UPDATE schema AS s0 SET s0.x = ?|
+    assert update_all(query) == ~s|UPDATE schema AS s0 SET x = ?|
 
     query =
       Schema
@@ -1280,7 +1280,7 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
     assert update_all(query) ==
              """
              UPDATE schema AS s0 \
-             SET s0.x = 0 \
+             SET x = 0 \
              FROM schema2 AS s1 \
              WHERE (s0.x = s1.z) \
              AND (s0.x = 123)\
@@ -1302,7 +1302,7 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
       |> Map.put(:prefix, "prefix")
       |> plan(:update_all)
 
-    assert update_all(query) == ~s{UPDATE prefix.schema AS s0 SET s0.x = 0}
+    assert update_all(query) == ~s{UPDATE prefix.schema AS s0 SET x = 0}
 
     query =
       (m in Schema)
@@ -1310,7 +1310,7 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
       |> Map.put(:prefix, "prefix")
       |> plan(:update_all)
 
-    assert update_all(query) == ~s{UPDATE first.schema AS s0 SET s0.x = 0}
+    assert update_all(query) == ~s{UPDATE first.schema AS s0 SET x = 0}
   end
 
   test "delete all" do
