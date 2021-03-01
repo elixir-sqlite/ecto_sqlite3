@@ -15,7 +15,7 @@ defmodule Exqlite.PragmaTest do
 
     assert_raise(
       ArgumentError,
-      ":journal_mode can only be :delete, :truncate, :persist, :memory, :wal, or :off",
+      "invalid :journal_mode",
       fn ->
         Pragma.journal_mode(journal_mode: :invalid)
       end
@@ -23,7 +23,7 @@ defmodule Exqlite.PragmaTest do
 
     assert_raise(
       ArgumentError,
-      ":journal_mode can only be :delete, :truncate, :persist, :memory, :wal, or :off",
+      "invalid :journal_mode",
       fn ->
         Pragma.journal_mode(journal_mode: "WAL")
       end
@@ -39,7 +39,7 @@ defmodule Exqlite.PragmaTest do
 
     assert_raise(
       ArgumentError,
-      ":temp_store can only be :memory, :file, or :default",
+      "invalid :temp_store",
       fn ->
         Pragma.temp_store(temp_store: :invalid)
       end
@@ -63,7 +63,7 @@ defmodule Exqlite.PragmaTest do
 
     assert_raise(
       ArgumentError,
-      "synchronous can only be :off, :full, :extra, or :normal",
+      "invalid :synchronous",
       fn ->
         Pragma.synchronous(synchronous: :invalid)
       end
@@ -78,7 +78,7 @@ defmodule Exqlite.PragmaTest do
 
     assert_raise(
       ArgumentError,
-      ":foreign_keys can only be :on or :off",
+      "invalid :foreign_keys",
       fn ->
         Pragma.foreign_keys(foreign_keys: :invalid)
       end
@@ -99,7 +99,7 @@ defmodule Exqlite.PragmaTest do
 
     assert_raise(
       ArgumentError,
-      ":cache_spill can only be :on or :off",
+      "invalid :cache_spill",
       fn ->
         Pragma.cache_spill(cache_spill: :invalid)
       end
@@ -114,7 +114,7 @@ defmodule Exqlite.PragmaTest do
 
     assert_raise(
       ArgumentError,
-      ":case_sensitive_like can only be :on or :off",
+      "invalid :case_sensitive_like",
       fn ->
         Pragma.case_sensitive_like(case_sensitive_like: :invalid)
       end
