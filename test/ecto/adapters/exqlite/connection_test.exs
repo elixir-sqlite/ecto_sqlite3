@@ -297,6 +297,7 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
     query =
       Schema
       |> with_cte("target_rows", as: ^cte_query)
+      |> join(:inner, [row], target in "target_rows", on: target.id == row.id)
       |> update(set: [x: 123])
       |> plan(:update_all)
 

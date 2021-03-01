@@ -148,7 +148,7 @@ defmodule Ecto.Adapters.Exqlite.Connection do
         update_fields(:update, query, sources)
       end
 
-    {join, wheres} = using_join(query, :update_all, sources)
+    {join, wheres} = using_join(query, :update_all, "FROM", sources)
     prefix = prefix || ["UPDATE ", from, " AS ", name, " SET "]
     where = where(%{query | wheres: wheres ++ query.wheres}, sources)
 
@@ -782,9 +782,9 @@ defmodule Ecto.Adapters.Exqlite.Connection do
       message: "Unknown update operation #{inspect(command)} for SQLite3"
   end
 
-  defp using_join(%{joins: []}, _kind, _sources), do: {[], []}
+  defp using_join(%{joins: []}, _kind, _prefix, _sources), do: {[], []}
 
-  defp using_join(%{joins: joins} = query, _kind, sources) do
+  defp using_join(%{joins: joins} = query, _kind, prefix, sources) do
     froms =
       intersperse_map(joins, ", ", fn
         %JoinExpr{qual: _qual, ix: ix, source: source} ->
@@ -806,7 +806,7 @@ defmodule Ecto.Adapters.Exqlite.Connection do
           value != true,
           do: query_expr |> Map.put(:__struct__, BooleanExpr) |> Map.put(:op, :and)
 
-    {[?,, ?\s | froms], wheres}
+    {[?\s, prefix, ?\s | froms], wheres}
   end
 
   def join(%{joins: []}, _sources), do: []
