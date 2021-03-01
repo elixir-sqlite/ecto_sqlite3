@@ -39,7 +39,10 @@ defmodule Ecto.Integration.CrudTest do
           User.changeset(%User{}, %{name: "Bob"})
         end)
         |> Ecto.Multi.insert(:account_user, fn %{account: account, user: user} ->
-          AccountUser.changeset(%AccountUser{}, %{account_id: account.id, user_id: user.id})
+          AccountUser.changeset(%AccountUser{}, %{
+            account_id: account.id,
+            user_id: user.id
+          })
         end)
         |> TestRepo.transaction()
     end
@@ -54,7 +57,10 @@ defmodule Ecto.Integration.CrudTest do
           User.changeset(%User{}, %{name: "Bob"})
         end)
         |> Ecto.Multi.insert(:account_user, fn %{account: account, user: user} ->
-          AccountUser.changeset(%AccountUser{}, %{account_id: account.id, user_id: user.id})
+          AccountUser.changeset(%AccountUser{}, %{
+            account_id: account.id,
+            user_id: user.id
+          })
         end)
         |> TestRepo.transaction()
     end
@@ -69,7 +75,10 @@ defmodule Ecto.Integration.CrudTest do
           User.changeset(%User{}, %{name: nil})
         end)
         |> Ecto.Multi.insert(:account_user, fn %{account: account, user: user} ->
-          AccountUser.changeset(%AccountUser{}, %{account_id: account.id, user_id: user.id})
+          AccountUser.changeset(%AccountUser{}, %{
+            account_id: account.id,
+            user_id: user.id
+          })
         end)
         |> TestRepo.transaction()
     end
