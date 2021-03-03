@@ -77,9 +77,12 @@ defmodule Exqlite.Integration.Product do
     field(:name, :string)
     field(:description, :string)
     field(:external_id, Ecto.UUID)
-    field(:tags, {:array, :string})
+    field(:tags, {:array, :string}, default: [])
+    field(:approved_at, :naive_datetime)
 
     belongs_to(:account, Account)
+
+    timestamps()
   end
 
   def changeset(struct, attrs) do

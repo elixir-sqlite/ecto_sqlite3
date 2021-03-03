@@ -381,8 +381,6 @@ exqlite_bind(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
 static ERL_NIF_TERM
 make_cell(ErlNifEnv* env, sqlite3_stmt* statement, unsigned int i)
 {
-    size_t len = 0;
-
     switch (sqlite3_column_type(statement, i)) {
         case SQLITE_INTEGER:
             return enif_make_int64(env, sqlite3_column_int64(statement, i));
@@ -391,15 +389,25 @@ make_cell(ErlNifEnv* env, sqlite3_stmt* statement, unsigned int i)
             return enif_make_double(env, sqlite3_column_double(statement, i));
 
         case SQLITE_NULL:
-            return make_atom(env, "undefined");
+            return make_atom(env, "nil");
 
         case SQLITE_BLOB:
-            len = sqlite3_column_bytes(statement, i);
-            return make_binary(env, sqlite3_column_blob(statement, i), len);
+            return enif_make_tuple2(
+                env,
+                make_atom(env, "blob"),
+                make_binary(
+                    env,
+                    sqlite3_column_blob(statement, i),
+                    sqlite3_column_bytes(statement, i)
+                )
+            );
 
         case SQLITE_TEXT:
-            len = sqlite3_column_bytes(statement, i);
-            return make_binary(env, sqlite3_column_text(statement, i), len);
+            return make_binary(
+                env,
+                sqlite3_column_text(statement, i),
+                sqlite3_column_bytes(statement, i)
+            );
 
         default:
             return make_atom(env, "unsupported");

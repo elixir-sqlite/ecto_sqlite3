@@ -1,5 +1,6 @@
 Logger.configure(level: :info)
 
+Application.put_env(:ecto, :json_library, Jason)
 Application.put_env(:ecto, :primary_key_type, :id)
 Application.put_env(:ecto, :async_integration_tests, false)
 

@@ -21,11 +21,12 @@ defmodule Exqlite.Integration.Migration do
     end
 
     create table(:products) do
-      add(:account_id, references(:account))
+      add(:account_id, references(:accounts))
       add(:name, :string)
       add(:description, :text)
       add(:external_id, :uuid)
       add(:tags, {:array, :string})
+      add(:approved_at, :naive_datetime)
       timestamps()
     end
   end

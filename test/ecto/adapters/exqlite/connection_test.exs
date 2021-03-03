@@ -973,13 +973,6 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
   test "in expression" do
     query =
       Schema
-      |> select([e], 1 in [])
-      |> plan()
-
-    assert all(query) == ~s{SELECT false FROM schema AS s0}
-
-    query =
-      Schema
       |> select([e], 1 in [1, e.x, 3])
       |> plan()
 
@@ -990,7 +983,7 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
       |> select([e], 1 in ^[])
       |> plan()
 
-    assert all(query) == ~s{SELECT false FROM schema AS s0}
+    assert all(query) == ~s{SELECT 0 FROM schema AS s0}
 
     query =
       Schema
@@ -1005,13 +998,6 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
       |> plan()
 
     assert all(query) == ~s{SELECT 1 IN (1,?,3) FROM schema AS s0}
-
-    query =
-      Schema
-      |> select([e], 1 in fragment("foo"))
-      |> plan()
-
-    assert all(query) == ~s{SELECT 1 = ANY(foo) FROM schema AS s0}
 
     query =
       Schema

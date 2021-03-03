@@ -5,6 +5,7 @@ defmodule Ecto.Integration.CrudTest do
   alias Exqlite.Integration.Account
   alias Exqlite.Integration.User
   alias Exqlite.Integration.AccountUser
+  alias Exqlite.Integration.Product
 
   import Ecto.Query
 
@@ -25,6 +26,26 @@ defmodule Ecto.Integration.CrudTest do
         |> TestRepo.one()
 
       assert user.name == "John"
+    end
+
+    test "handles nulls when querying correctly" do
+      {:ok, account} =
+        %Account{name: "Something"}
+        |> TestRepo.insert()
+      {:ok, product} =
+        %Product{
+          name: "Thing",
+          account_id: account.id,
+          approved_at: nil,
+        }
+        |> TestRepo.insert()
+
+      found = TestRepo.get(Product, product.id)
+      assert found.id == product.id
+      assert found.approved_at == nil
+      assert found.description == nil
+      assert found.name == "Thing"
+      assert found.tags == []
     end
   end
 

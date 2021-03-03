@@ -161,11 +161,11 @@ defmodule Ecto.Adapters.Exqlite do
   defp bool_decode("TRUE"), do: {:ok, true}
   defp bool_decode(x), do: {:ok, x}
 
-  defp json_decode(x) when is_binary(x),
-    do: {:ok, Application.get_env(:ecto, :json_library).decode!(x)}
+  defp json_decode(x) when is_binary(x) do
+    Application.get_env(:ecto, :json_library).decode(x)
+  end
 
-  defp json_decode(x),
-    do: {:ok, x}
+  defp json_decode(x), do: x
 
   defp float_decode(x) when is_integer(x), do: {:ok, x / 1}
   defp float_decode(x), do: {:ok, x}
@@ -237,8 +237,22 @@ defmodule Ecto.Adapters.Exqlite do
   end
 
   @impl Ecto.Adapter
+  def dumpers({:array, _} = primitive, type) do
+    [type, &json_encode/1]
+  end
+
+  @impl Ecto.Adapter
+  def dumpers({:map, _}, type) do
+    [type, &json_encode/1]
+  end
+
+  @impl Ecto.Adapter
   def dumpers(_primitive, type) do
     [type]
+  end
+
+  defp json_encode(value) do
+    Application.get_env(:ecto, :json_library).encode(value)
   end
 
   defp blob_encode(value), do: {:ok, {:blob, value}}
