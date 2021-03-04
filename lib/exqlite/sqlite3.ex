@@ -40,7 +40,7 @@ defmodule Exqlite.Sqlite3 do
   @doc """
   Executes an sql script. Multiple stanzas can be passed at once.
   """
-  @spec execute(db(), String.t()) :: :ok | {:error, {atom(), reason()}}
+  @spec execute(db(), String.t()) :: :ok | {:error, reason()}
   def execute(conn, sql) do
     case Sqlite3NIF.execute(conn, String.to_charlist(sql)) do
       :ok -> :ok
@@ -64,12 +64,10 @@ defmodule Exqlite.Sqlite3 do
     Sqlite3NIF.prepare(conn, String.to_charlist(sql))
   end
 
-  @spec bind(db(), statement(), nil) ::
-          :ok | {:error, reason()} | {:error, {atom(), any()}}
+  @spec bind(db(), statement(), nil) :: :ok | {:error, reason()}
   def bind(conn, statement, nil), do: bind(conn, statement, [])
 
-  @spec bind(db(), statement(), []) ::
-          :ok | {:error, reason()} | {:error, {atom(), any()}}
+  @spec bind(db(), statement(), []) :: :ok | {:error, reason()}
   def bind(conn, statement, args) do
     Sqlite3NIF.bind(conn, statement, Enum.map(args, &convert/1))
   end
