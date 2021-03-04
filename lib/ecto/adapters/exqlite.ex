@@ -56,8 +56,9 @@ defmodule Ecto.Adapters.Exqlite do
   @impl Ecto.Adapter.Structure
   def structure_load(default, config) do
     path = config[:dump_path] || Path.join(default, "structure.sql")
+
     case run_with_cmd("sqlite3", [config[:database], ".read #{path}"]) do
-      {output, 0} -> {:ok, path}
+      {_output, 0} -> {:ok, path}
       {output, _} -> {:error, output}
     end
   end
@@ -237,7 +238,7 @@ defmodule Ecto.Adapters.Exqlite do
   end
 
   @impl Ecto.Adapter
-  def dumpers({:array, _} = primitive, type) do
+  def dumpers({:array, _}, type) do
     [type, &json_encode/1]
   end
 

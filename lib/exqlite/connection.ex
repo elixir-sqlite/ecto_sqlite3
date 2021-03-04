@@ -119,10 +119,10 @@ defmodule Exqlite.Connection do
 
   @impl true
   def disconnect(_err, %__MODULE__{db: db, queries: queries}) do
-    Queries.delete(queries)
-
-    case Sqlite3.close(db) do
-      :ok -> :ok
+    with :ok <- Queries.destroy(queries),
+         :ok <- Sqlite3.close(db) do
+      :ok
+    else
       {:error, reason} -> {:error, %Error{message: reason}}
     end
   end
@@ -380,7 +380,7 @@ defmodule Exqlite.Connection do
         db: db,
         path: path,
         transaction_status: :idle,
-        queries: Queries.new(__MODULE__),
+        queries: Queries.new(Keyword.get(options, :prepared_statement_limit, 50)),
         status: :idle
       }
 
@@ -398,18 +398,18 @@ defmodule Exqlite.Connection do
     query = %{query | command: command}
 
     case Queries.get(state.queries, query) do
-      nil ->
-        case Sqlite3.prepare(state.db, IO.iodata_to_binary(statement)) do
-          {:ok, ref} ->
-            query = %{query | ref: ref}
-            Queries.put(state.queries, query)
-            {:ok, query, state}
-
+      {:ok, nil} ->
+        with {:ok, ref} <- Sqlite3.prepare(state.db, IO.iodata_to_binary(statement)),
+             query <- %{query | ref: ref},
+             {:ok, queries} <- Queries.put(state.queries, query),
+             state <- %{state | queries: queries} do
+          {:ok, query, state}
+        else
           {:error, reason} ->
             {:error, %Error{message: reason}}
         end
 
-      cached_query ->
+      {:ok, cached_query} ->
         {:ok, cached_query, state}
     end
   end

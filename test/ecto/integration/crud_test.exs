@@ -32,11 +32,12 @@ defmodule Ecto.Integration.CrudTest do
       {:ok, account} =
         %Account{name: "Something"}
         |> TestRepo.insert()
+
       {:ok, product} =
         %Product{
           name: "Thing",
           account_id: account.id,
-          approved_at: nil,
+          approved_at: nil
         }
         |> TestRepo.insert()
 
