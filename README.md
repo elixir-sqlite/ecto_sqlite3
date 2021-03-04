@@ -1,11 +1,17 @@
 # Exqlite
 
-An SQLite3 library. Similar to [esqlite][1] but there are some differences.
+An SQLite3 library with an Ecto adapter implementation.
 
-  * Prepared statements are not cached.
-  * Prepared statements are not immutable. You must be careful when manipulating
-    statements and binding values to statements.
-  * All calls are run through the Dirty NIF scheduler.
+
+## Caveats
+
+* When using the Ecto adapter, all prepared statements are cached using an LRU
+  cache.
+* Prepared statements are not immutable. You must be careful when manipulating
+  statements and binding values to statements. Do not try to manipulate the
+  statements concurrently. Keep it isolated to one process.
+* All native calls are run through the Dirty NIF scheduler.
+
 
 ## Installation
 
@@ -15,7 +21,8 @@ defp deps do
 end
 ```
 
-## Usage
+
+## Usage Without Ecto
 
 The `Exqlite.Sqlite3` module usage is fairly straight forward.
 
@@ -43,7 +50,8 @@ The `Exqlite.Sqlite3` module usage is fairly straight forward.
 :done = Exqlite.Sqlite3.step(conn, statement)
 ```
 
-## Ecto
+
+## Usage With Ecto
 
 Define your repo similar to this.
 
@@ -71,6 +79,7 @@ config :my_app, MyApp.Repo,
   pool_size: 1
 ```
 
+
 ### Note
 
 * Pool size is set to `1` but can be increased to `4`. When set to `10` there
@@ -95,16 +104,13 @@ some point I also wanted to use this with a nerves project on an embedded device
 that would be resiliant to power outages and still maintain some state that
 `ets` can not afford.
 
-## TODO
-
-- [ ] Setting up a way for testing to be sandboxed for applications to test
-  without fear of tests leaking into other tests.
 
 ## Under The Hood
 
 We are using the Dirty NIF scheduler to execute the sqlite calls. The rationale
 behind this is that maintaining each sqlite's connection command pool is
 complicated and error prone.
+
 
 ## Contributing
 
