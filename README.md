@@ -11,6 +11,11 @@ An SQLite3 library with an Ecto adapter implementation.
   statements and binding values to statements. Do not try to manipulate the
   statements concurrently. Keep it isolated to one process.
 * All native calls are run through the Dirty NIF scheduler.
+* Datetimes are stored without offsets. This is due to how SQLite3 handles date
+  and times. If you would like to store a timezone, you will need to create a
+  second column somewhere storing the timezone name and shifting it when you
+  get it from the database. This is more reliable than storing the offset as
+  `+03:00` as it does not respect daylight savings time.
 
 
 ## Installation
