@@ -394,11 +394,17 @@ defmodule Exqlite.Connection do
     end
   end
 
+  def maybe_put_command(query, options) do
+    case Keyword.get(options, :command) do
+      nil -> query
+      command -> %{query | command: command}
+    end
+  end
+
   # Attempt to retrieve the cached query, if it doesn't exist, we'll prepare one
   # and cache it for later.
   defp prepare(%Query{statement: statement, ref: nil} = query, options, state) do
-    command = Keyword.get(options, :command)
-    query = %{query | command: command}
+    query = maybe_put_command(query, options)
 
     case Queries.get(state.queries, query) do
       {:ok, nil} ->
@@ -418,16 +424,12 @@ defmodule Exqlite.Connection do
   end
 
   defp prepare(%Query{ref: ref} = query, options, state) when ref != nil do
-    command = Keyword.get(options, :command)
-    query = %{query | command: command}
-
-    {:ok, query, state}
+    {:ok, maybe_put_command(query, options), state}
   end
 
   # Prepare a query and do not cache it.
   defp prepare_no_cache(%Query{statement: statement} = query, options, state) do
-    command = Keyword.get(options, :command)
-    query = %{query | command: command}
+    query = maybe_put_command(query, options)
 
     case Sqlite3.prepare(state.db, statement) do
       {:ok, ref} ->
@@ -447,23 +449,49 @@ defmodule Exqlite.Connection do
 
   defp maybe_last_insert_id(_, _), do: nil
 
+  defp maybe_changes(db, %Query{command: command})
+       when command in [:update, :insert, :delete] do
+    case Sqlite3.changes(db) do
+      {:ok, total} -> total
+      _ -> nil
+    end
+  end
+
+  defp maybe_changes(_, _), do: nil
+
   defp execute(call, %Query{} = query, params, state) do
     with {:ok, query, state} <- bind_params(query, params, state),
          {:ok, columns} <- Sqlite3.columns(state.db, query.ref),
          {:ok, rows} <- Sqlite3.fetch_all(state.db, query.ref),
-         last_insert_id <- maybe_last_insert_id(state.db, query) do
-      {
-        :ok,
-        query,
-        %Result{
-          columns: columns,
-          rows: rows,
-          command: call,
-          num_rows: Enum.count(rows),
-          last_insert_id: last_insert_id
-        },
-        state
-      }
+         last_insert_id <- maybe_last_insert_id(state.db, query),
+         changes <- maybe_changes(state.db, query) do
+      case query.command do
+        command when command in [:delete, :update] ->
+          {
+            :ok,
+            query,
+            Result.new(
+              command: call,
+              rows: nil,
+              num_rows: changes
+            ),
+            state
+          }
+
+        _ ->
+          {
+            :ok,
+            query,
+            Result.new(
+              command: call,
+              columns: columns,
+              rows: rows,
+              num_rows: Enum.count(rows),
+              last_insert_id: last_insert_id
+            ),
+            state
+          }
+      end
     else
       {:error, reason} ->
         {:error, %Error{message: reason}, state}

@@ -14,6 +14,36 @@ defmodule Exqlite.Query do
             ref: nil,
             command: nil
 
+  def build(options) do
+    statement = Keyword.get(options, :statement)
+    name = Keyword.get(options, :name)
+    ref = Keyword.get(options, :ref)
+
+    command =
+      case Keyword.get(options, :command) do
+        nil -> extract_command(statement)
+        value -> value
+      end
+
+    %__MODULE__{
+      statement: statement,
+      name: name,
+      ref: ref,
+      command: command
+    }
+  end
+
+  defp extract_command(nil), do: nil
+
+  defp extract_command(statement) do
+    cond do
+      String.contains?(statement, "INSERT") -> :insert
+      String.contains?(statement, "DELETE") -> :delete
+      String.contains?(statement, "UPDATE") -> :update
+      true -> nil
+    end
+  end
+
   defimpl DBConnection.Query do
     def parse(query, _opts) do
       query

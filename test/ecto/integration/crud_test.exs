@@ -50,6 +50,44 @@ defmodule Ecto.Integration.CrudTest do
     end
   end
 
+  describe "delete" do
+    test "deletes user" do
+      {:ok, user} = TestRepo.insert(%User{name: "John"}, [])
+
+      {:ok, _} = TestRepo.delete(user)
+    end
+
+    test "delete_all deletes one product" do
+      TestRepo.insert!(%Product{name: "hello"})
+
+      # we have to do this because the tests are not isolated from one another.
+      # @kevinlang is working on rectifying that problem
+      assert {total, _} = TestRepo.delete_all(Product)
+      assert total >= 1
+    end
+
+    test "delete_all deletes all products" do
+      TestRepo.insert!(%Product{name: "hello"})
+      TestRepo.insert!(%Product{name: "hello again"})
+
+      # we have to do this because the tests are not isolated from one another.
+      # @kevinlang is working on rectifying that problem
+      assert {total, _} = TestRepo.delete_all(Product)
+      assert total >= 2
+    end
+  end
+
+  describe "update" do
+    test "updates user" do
+      {:ok, user} = TestRepo.insert(%User{name: "John"}, [])
+      changeset = User.changeset(user, %{name: "Bob"})
+
+      {:ok, changed} = TestRepo.update(changeset)
+
+      assert changed.name == "Bob"
+    end
+  end
+
   describe "transaction" do
     test "successful user and account creation" do
       {:ok, _} =
