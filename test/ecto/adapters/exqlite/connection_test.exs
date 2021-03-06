@@ -326,7 +326,7 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
              """
              WITH target_rows AS \
              (SELECT s0.id AS id FROM schema AS s0 ORDER BY s0.id LIMIT 10) \
-             DELETE s0.* \
+             DELETE \
              FROM schema AS s0\
              """
   end
@@ -1309,14 +1309,14 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
       |> Ecto.Queryable.to_query()
       |> plan()
 
-    assert delete_all(query) == ~s{DELETE s0.* FROM schema AS s0}
+    assert delete_all(query) == ~s{DELETE FROM schema AS s0}
 
     query =
       (e in Schema)
       |> from(where: e.x == 123)
       |> plan()
 
-    assert delete_all(query) == ~s{DELETE s0.* FROM schema AS s0 WHERE (s0.x = 123)}
+    assert delete_all(query) == ~s{DELETE FROM schema AS s0 WHERE (s0.x = 123)}
 
     assert_raise(
       ArgumentError,
@@ -1334,7 +1334,7 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
       |> Map.put(:prefix, "prefix")
       |> plan()
 
-    assert delete_all(query) == ~s{DELETE s0.* FROM prefix.schema AS s0}
+    assert delete_all(query) == ~s{DELETE FROM prefix.schema AS s0}
 
     query =
       Schema
@@ -1342,7 +1342,7 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
       |> Map.put(:prefix, "prefix")
       |> plan()
 
-    assert delete_all(query) == ~s{DELETE s0.* FROM first.schema AS s0}
+    assert delete_all(query) == ~s{DELETE FROM first.schema AS s0}
   end
 
   ##

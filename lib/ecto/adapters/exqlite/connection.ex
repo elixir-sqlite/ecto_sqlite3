@@ -174,7 +174,7 @@ defmodule Ecto.Adapters.Exqlite.Connection do
     from = from(query, sources)
     where = where(query, sources)
 
-    [cte, "DELETE ", name, ".*", from, where]
+    [cte, "DELETE", from, where]
   end
 
   @impl true
