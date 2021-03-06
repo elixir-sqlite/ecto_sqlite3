@@ -102,7 +102,7 @@ defmodule Exqlite.ConnectionTest do
     test "users table does not exist" do
       {:ok, conn} = Connection.connect(database: :memory)
 
-      {:error, error} =
+      {:error, error, _state} =
         %Query{statement: "select * from users where id < ?"}
         |> Connection.handle_prepare([], conn)
 

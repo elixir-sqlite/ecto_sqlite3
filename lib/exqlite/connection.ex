@@ -409,7 +409,7 @@ defmodule Exqlite.Connection do
           {:ok, query, state}
         else
           {:error, reason} ->
-            {:error, %Error{message: reason}}
+            {:error, %Error{message: reason}, state}
         end
 
       {:ok, cached_query} ->
@@ -434,7 +434,7 @@ defmodule Exqlite.Connection do
         {:ok, %{query | ref: ref}, state}
 
       {:error, reason} ->
-        {:error, %Error{message: reason}}
+        {:error, %Error{message: reason}, state}
     end
   end
 
@@ -466,7 +466,7 @@ defmodule Exqlite.Connection do
       }
     else
       {:error, reason} ->
-        {:error, %Error{message: reason}}
+        {:error, %Error{message: reason}, state}
     end
   end
 
@@ -481,7 +481,7 @@ defmodule Exqlite.Connection do
     #      https://www.sqlite.org/c3ref/bind_parameter_index.html
     case Sqlite3.bind(state.db, ref, params) do
       :ok -> {:ok, query, state}
-      {:error, reason} -> {:error, %Error{message: reason}}
+      {:error, reason} -> {:error, %Error{message: reason}, state}
     end
   end
 
@@ -505,7 +505,7 @@ defmodule Exqlite.Connection do
         end
 
       {:error, reason} ->
-        {:error, %Error{message: reason}}
+        {:error, %Error{message: reason}, state}
     end
   end
 end
