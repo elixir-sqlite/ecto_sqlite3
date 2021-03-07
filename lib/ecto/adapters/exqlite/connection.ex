@@ -13,10 +13,29 @@ defmodule Ecto.Adapters.Exqlite.Connection do
   import Ecto.Adapters.Exqlite.DataType
 
   @parent_as __MODULE__
+  @connect_buffer 50
+
+  def sleep(opts) do
+    :timer.sleep(:rand.uniform(@connect_buffer))
+    opts
+  end
+
+  defp default_opts(opts) do
+    # todo: we may want to consider wrapping any provided :configure
+    # with our custom connection buffering logic
+    opts
+    |> Keyword.put_new(:configure, {__MODULE__, :sleep, []})
+  end
+
+  def start_link(opts) do
+    opts = default_opts(opts)
+    DBConnection.start_link(Exqlite.Connection, opts)
+  end
 
   @impl true
   def child_spec(options) do
     {:ok, _} = Application.ensure_all_started(:db_connection)
+    options = default_opts(options)
     DBConnection.child_spec(Exqlite.Connection, options)
   end
 

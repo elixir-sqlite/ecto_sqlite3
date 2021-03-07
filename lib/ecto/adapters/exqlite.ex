@@ -39,6 +39,11 @@ defmodule Ecto.Adapters.Exqlite do
   @impl true
   def supports_ddl_transaction?(), do: false
 
+  @impl true
+  def lock_for_migrations(_meta, _opts, fun) do
+    fun.()
+  end
+
   @impl Ecto.Adapter.Structure
   def structure_dump(default, config) do
     path = config[:dump_path] || Path.join(default, "structure.sql")
