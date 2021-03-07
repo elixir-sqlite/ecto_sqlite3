@@ -40,8 +40,8 @@ defmodule Ecto.Adapters.Exqlite do
   def supports_ddl_transaction?(), do: false
 
   @impl Ecto.Adapter.Migration
-  def lock_for_migrations(_meta, _query, _options, fun) do
-    fun.()
+  def lock_for_migrations(_meta, query, _options, fun) do
+    fun.(query)
   end
 
   @impl Ecto.Adapter.Structure
