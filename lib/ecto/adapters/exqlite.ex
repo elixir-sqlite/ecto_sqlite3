@@ -36,11 +36,11 @@ defmodule Ecto.Adapters.Exqlite do
     |> storage_up_with_path()
   end
 
-  @impl true
+  @impl Ecto.Adapter.Migration
   def supports_ddl_transaction?(), do: false
 
-  @impl true
-  def lock_for_migrations(_meta, _opts, fun) do
+  @impl Ecto.Adapter.Migration
+  def lock_for_migrations(_meta, _query, _options, fun) do
     fun.()
   end
 
