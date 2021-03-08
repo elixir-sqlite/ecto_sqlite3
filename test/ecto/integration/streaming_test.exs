@@ -1,5 +1,5 @@
 defmodule Ecto.Integration.StreamingTest do
-  use ExUnit.Case
+  use Ecto.Integration.Case
 
   alias Ecto.Integration.TestRepo
   alias Exqlite.Integration.User

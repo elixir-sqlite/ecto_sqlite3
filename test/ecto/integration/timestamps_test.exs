@@ -1,5 +1,5 @@
 defmodule Ecto.Integration.TimestampsTest do
-  use ExUnit.Case
+  use Ecto.Integration.Case
 
   alias Ecto.Integration.TestRepo
 

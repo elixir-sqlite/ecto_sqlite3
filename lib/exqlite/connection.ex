@@ -230,8 +230,7 @@ defmodule Exqlite.Connection do
         end
 
       mode
-      when mode in [:deferred, :immediate, :exclusive, :transaction] and
-             transaction_status == :transaction ->
+      when mode in [:deferred, :immediate, :exclusive, :transaction] -> 
         handle_transaction(:rollback, "ROLLBACK TRANSACTION", state)
     end
   end
