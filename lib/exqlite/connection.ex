@@ -7,7 +7,6 @@ defmodule Exqlite.Connection do
   - `db` - The sqlite3 database reference.
   - `path` - The path that was used to open.
   - `transaction_status` - The status of the connection. Can be `:idle` or `:transaction`.
-  - `queries` - The `:ets` cache of prepared queries.
 
   ## Unknowns
 
@@ -26,7 +25,6 @@ defmodule Exqlite.Connection do
   use DBConnection
   alias Exqlite.Error
   alias Exqlite.Pragma
-  alias Exqlite.Queries
   alias Exqlite.Query
   alias Exqlite.Result
   alias Exqlite.Sqlite3
@@ -35,7 +33,6 @@ defmodule Exqlite.Connection do
     :db,
     :path,
     :transaction_status,
-    :queries,
     :status
   ]
 
@@ -43,7 +40,6 @@ defmodule Exqlite.Connection do
           db: Sqlite3.db(),
           path: String.t(),
           transaction_status: :idle | :transaction,
-          queries: Queries.t(),
           status: :idle | :busy
         }
 
@@ -118,9 +114,8 @@ defmodule Exqlite.Connection do
   end
 
   @impl true
-  def disconnect(_err, %__MODULE__{db: db, queries: queries}) do
-    with :ok <- Queries.destroy(queries),
-         :ok <- Sqlite3.close(db) do
+  def disconnect(_err, %__MODULE__{db: db}) do
+    with :ok <- Sqlite3.close(db) do
       :ok
     else
       {:error, reason} -> {:error, %Error{message: reason}}
@@ -230,7 +225,7 @@ defmodule Exqlite.Connection do
         end
 
       mode
-      when mode in [:deferred, :immediate, :exclusive, :transaction] -> 
+      when mode in [:deferred, :immediate, :exclusive, :transaction] ->
         handle_transaction(:rollback, "ROLLBACK TRANSACTION", state)
     end
   end
@@ -244,14 +239,7 @@ defmodule Exqlite.Connection do
   This callback is called in the client process.
   """
   @impl true
-  def handle_close(query, _opts, state) do
-    if query.name do
-      # If the query was named, it will be cached more than likely, and we just
-      # need to make sure it has the reference removed so it can be garbage
-      # collected
-      Queries.delete(state.queries, query.name)
-    end
-
+  def handle_close(_query, _opts, state) do
     {:ok, nil, state}
   end
 
@@ -382,7 +370,6 @@ defmodule Exqlite.Connection do
         db: db,
         path: path,
         transaction_status: :idle,
-        queries: Queries.new(Keyword.get(options, :prepared_statement_limit, 50)),
         status: :idle
       }
 
@@ -405,20 +392,12 @@ defmodule Exqlite.Connection do
   defp prepare(%Query{statement: statement, ref: nil} = query, options, state) do
     query = maybe_put_command(query, options)
 
-    case Queries.get(state.queries, query) do
-      {:ok, nil} ->
-        with {:ok, ref} <- Sqlite3.prepare(state.db, IO.iodata_to_binary(statement)),
-             query <- %{query | ref: ref},
-             {:ok, queries} <- Queries.put(state.queries, query),
-             state <- %{state | queries: queries} do
-          {:ok, query, state}
-        else
-          {:error, reason} ->
-            {:error, %Error{message: reason}, state}
-        end
-
-      {:ok, cached_query} ->
-        {:ok, cached_query, state}
+    with {:ok, ref} <- Sqlite3.prepare(state.db, IO.iodata_to_binary(statement)),
+         query <- %{query | ref: ref} do
+      {:ok, query, state}
+    else
+      {:error, reason} ->
+        {:error, %Error{message: reason}, state}
     end
   end
 

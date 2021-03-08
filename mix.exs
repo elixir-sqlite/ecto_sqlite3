@@ -34,7 +34,6 @@ defmodule Exqlite.MixProject do
       {:decimal, "~> 2.0"},
       {:ecto_sql, "~> 3.5.4"},
       {:ecto, "~> 3.5.8"},
-      {:ets, "~> 0.8.1"},
       {:elixir_make, "~> 0.6", runtime: false},
       {:ex_doc, "~> 0.23.0", only: [:dev], runtime: false},
       {:jason, ">= 0.0.0", only: [:test, :docs]},
