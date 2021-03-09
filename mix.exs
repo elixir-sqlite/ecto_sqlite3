@@ -15,7 +15,7 @@ defmodule Exqlite.MixProject do
       deps: deps(),
       package: package(),
       description: description(),
-      test_paths: test_paths(),
+      test_paths: test_paths(System.get_env("EXQLITE_INTEGRATION")),
       elixirc_paths: elixirc_paths(Mix.env())
     ]
   end
@@ -70,5 +70,6 @@ defmodule Exqlite.MixProject do
   defp elixirc_paths(:test), do: ["lib", "test/support"]
   defp elixirc_paths(_), do: ["lib"]
 
-  defp test_paths, do: ["test"]
+  defp test_paths(nil), do: ["test"]
+  defp test_paths(_any), do: ["integration_test/exqlite"]
 end

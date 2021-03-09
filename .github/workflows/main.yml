@@ -21,3 +21,4 @@ jobs:
           mix deps.get
 
       - run: mix test
+      - run: EXQLITE_INTEGRATION=true mix test
