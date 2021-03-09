@@ -103,7 +103,27 @@ defmodule Ecto.Adapters.Exqlite.Connection do
     DBConnection.stream(conn, query, params, options)
   end
 
+  # we want to return the name of the underlying index that caused
+  # the constraint error, but in SQLite as far as I can tell there
+  # is no way to do this, so we name the index according to ecto
+  # convention, even if technically it _could_ have a different name
+  defp constraint_name_hack(constraint) do
+    if String.contains?(constraint, ",") do
+      # todo: support multiple column constraint?
+      constraint
+    else
+      constraint
+      |> String.split(".")
+      |> Enum.concat(["index"])
+      |> Enum.join("_")
+    end
+  end
+
   @impl true
+  def to_constraints(%Exqlite.Error{message: "UNIQUE constraint failed: " <> constraint}, _opts) do
+    [unique: constraint_name_hack(constraint)]
+  end
+
   def to_constraints(_, _), do: []
 
   ##

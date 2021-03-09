@@ -1,5 +1,9 @@
 ecto = Mix.Project.deps_paths()[:ecto]
+
+# currently _slowly_ onboarding this one - kcl
 # Code.require_file "#{ecto}/integration_test/cases/assoc.exs", __DIR__
+
+
 # Code.require_file "#{ecto}/integration_test/cases/interval.exs", __DIR__
 # Code.require_file "#{ecto}/integration_test/cases/joins.exs", __DIR__
 # Code.require_file "#{ecto}/integration_test/cases/preload.exs", __DIR__
