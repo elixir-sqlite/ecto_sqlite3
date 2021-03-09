@@ -82,10 +82,15 @@ defmodule Exqlite.IntegrationTest do
       )
 
     {:ok, _result, conn1} = Connection.handle_begin([mode: :immediate], conn1)
+    assert conn1.transaction_status == :transaction
     {:error, _err, conn2} = Connection.handle_begin([mode: :immediate], conn2)
+    assert conn2.transaction_status == :idle
     {:ok, _result, conn1} = Connection.handle_commit([mode: :immediate], conn1)
+    assert conn1.transaction_status == :idle
     {:ok, _result, conn2} = Connection.handle_begin([mode: :immediate], conn2)
+    assert conn2.transaction_status == :transaction
     {:ok, _result, conn2} = Connection.handle_commit([mode: :immediate], conn2)
+    assert conn2.transaction_status == :idle
 
     Connection.disconnect(nil, conn1)
     Connection.disconnect(nil, conn2)

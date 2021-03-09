@@ -506,6 +506,9 @@ defmodule Exqlite.Connection do
           :rollback ->
             {:ok, result, %{state | transaction_status: :idle}}
 
+          :commit ->
+            {:ok, result, %{state | transaction_status: :idle}}
+
           _ ->
             {:ok, result, %{state | transaction_status: :transaction}}
         end
