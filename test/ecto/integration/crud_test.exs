@@ -60,12 +60,11 @@ defmodule Ecto.Integration.CrudTest do
     @tag :busy_repo
     test "delete_all deletes one product" do
       TestRepo.insert!(%Product{name: "hello"})
-      #TestRepo.all(Product)
 
       # we have to do this because the tests are not isolated from one another.
       # @kevinlang is working on rectifying that problem
       assert {total, _} = TestRepo.delete_all(Product)
-      #assert total >= 1
+      assert total >= 1
     end
 
     # this test keeps on hitting busy issues, not sure why
@@ -73,14 +72,13 @@ defmodule Ecto.Integration.CrudTest do
     # passes fine in isolation.
     @tag :busy_repo
     test "delete_all deletes all products" do
-      #TestRepo.insert!(%Product{name: "hello"})
-      #TestRepo.insert!(%Product{name: "hello again"})
-      #TestRepo.all(Product)
+      TestRepo.insert!(%Product{name: "hello"})
+      TestRepo.insert!(%Product{name: "hello again"})
 
       # we have to do this because the tests are not isolated from one another.
       # @kevinlang is working on rectifying that problem
       assert {total, _} = TestRepo.delete_all(Product)
-      #assert total >= 2
+      assert total >= 2
     end
   end
 
