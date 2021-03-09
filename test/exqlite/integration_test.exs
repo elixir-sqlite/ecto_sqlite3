@@ -62,6 +62,37 @@ defmodule Exqlite.IntegrationTest do
     File.rm(path)
   end
 
+  test "handles busy correctly" do
+    path = Temp.path!()
+
+    {:ok, conn1} =
+      Connection.connect(
+        database: path,
+        journal_mode: :wal,
+        cache_size: -64000,
+        temp_store: :memory
+      )
+
+    {:ok, conn2} =
+      Connection.connect(
+        database: path,
+        journal_mode: :wal,
+        cache_size: -64000,
+        temp_store: :memory
+      )
+
+    {:ok, _result, conn1} = Connection.handle_begin([mode: :immediate], conn1)
+    {:error, _err, conn2} = Connection.handle_begin([mode: :immediate], conn2)
+    {:ok, _result, conn1} = Connection.handle_commit([mode: :immediate], conn1)
+    {:ok, _result, conn2} = Connection.handle_begin([mode: :immediate], conn2)
+    {:ok, _result, conn2} = Connection.handle_commit([mode: :immediate], conn2)
+
+    Connection.disconnect(nil, conn1)
+    Connection.disconnect(nil, conn2)
+
+    File.rm(path)
+  end
+
   test "transaction with interleaved connections" do
     path = Temp.path!()
 
