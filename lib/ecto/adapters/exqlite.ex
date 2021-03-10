@@ -5,6 +5,8 @@ defmodule Ecto.Adapters.Exqlite do
   @behaviour Ecto.Adapter.Storage
   @behaviour Ecto.Adapter.Structure
 
+  alias Ecto.Adapters.Exqlite.Codec
+
   @impl Ecto.Adapter.Storage
   def storage_down(options) do
     db_path = Keyword.fetch!(options, :database)
@@ -101,7 +103,7 @@ defmodule Ecto.Adapters.Exqlite do
 
   @impl Ecto.Adapter
   def loaders(:boolean, type) do
-    [&bool_decode/1, type]
+    [&Codec.bool_decode/1, type]
   end
 
   @impl Ecto.Adapter
@@ -111,96 +113,57 @@ defmodule Ecto.Adapters.Exqlite do
 
   @impl Ecto.Adapter
   def loaders(:utc_datetime, type) do
-    [&datetime_decode/1, type]
+    [&Codec.datetime_decode/1, type]
   end
 
   @impl Ecto.Adapter
   def loaders(:naive_datetime, type) do
-    [&naive_datetime_decode/1, type]
+    [&Codec.naive_datetime_decode/1, type]
   end
 
   @impl Ecto.Adapter
   def loaders(:datetime, type) do
-    [&datetime_decode/1, type]
+    [&Codec.datetime_decode/1, type]
   end
 
   @impl Ecto.Adapter
   def loaders(:date, type) do
-    [&date_decode/1, type]
+    [&Codec.date_decode/1, type]
   end
 
   @impl Ecto.Adapter
   def loaders({:embed, _} = type, _) do
-    [&json_decode/1, &Ecto.Type.embedded_load(type, &1, :json)]
+    [&Codec.json_decode/1, &Ecto.Type.embedded_load(type, &1, :json)]
   end
 
   @impl Ecto.Adapter
   def loaders({:map, _}, type) do
-    [&json_decode/1, &Ecto.Type.embedded_load(type, &1, :json)]
+    [&Codec.json_decode/1, &Ecto.Type.embedded_load(type, &1, :json)]
   end
 
   @impl Ecto.Adapter
   def loaders({:array, _}, type) do
-    [&json_decode/1, type]
+    [&Codec.json_decode/1, type]
   end
 
   @impl Ecto.Adapter
   def loaders(:map, type) do
-    [&json_decode/1, type]
+    [&Codec.json_decode/1, type]
   end
 
   @impl Ecto.Adapter
   def loaders(:float, type) do
-    [&float_decode/1, type]
+    [&Codec.float_decode/1, type]
+  end
+
+  @impl Ecto.Adapter
+  def loaders(:decimal, type) do
+    [&Codec.decimal_decode/1, type]
   end
 
   @impl Ecto.Adapter
   def loaders(_, type) do
     [type]
-  end
-
-  defp bool_decode(0), do: {:ok, false}
-  defp bool_decode("0"), do: {:ok, false}
-  defp bool_decode("FALSE"), do: {:ok, false}
-  defp bool_decode(1), do: {:ok, true}
-  defp bool_decode("1"), do: {:ok, true}
-  defp bool_decode("TRUE"), do: {:ok, true}
-  defp bool_decode(x), do: {:ok, x}
-
-  defp json_decode(x) when is_binary(x) do
-    Application.get_env(:ecto, :json_library).decode(x)
-  end
-
-  defp json_decode(x), do: x
-
-  defp float_decode(x) when is_integer(x), do: {:ok, x / 1}
-  defp float_decode(x), do: {:ok, x}
-
-  defp datetime_decode(val) do
-    # TODO: Should we be preserving the timezone? SQLite3 stores everything
-    #       shifted to UTC. sqlite_ecto2 used a custom field type "TEXT_DATETIME"
-    #       to preserve the original string inserted. But I don't know if that
-    #       is desirable or not.
-    #
-    #       @warmwaffles 2021-02-28
-    case DateTime.from_iso8601(val) do
-      {:ok, dt, _offset} -> {:ok, dt}
-      _ -> :error
-    end
-  end
-
-  defp naive_datetime_decode(val) do
-    case NaiveDateTime.from_iso8601(val) do
-      {:ok, dt} -> {:ok, dt}
-      _ -> :error
-    end
-  end
-
-  defp date_decode(val) do
-    case Date.from_iso8601(val) do
-      {:ok, d} -> {:ok, d}
-      _ -> :error
-    end
   end
 
   ##
@@ -209,7 +172,7 @@ defmodule Ecto.Adapters.Exqlite do
 
   @impl Ecto.Adapter
   def dumpers(:binary, type) do
-    [type, &blob_encode/1]
+    [type, &Codec.blob_encode/1]
   end
 
   @impl Ecto.Adapter
@@ -219,7 +182,12 @@ defmodule Ecto.Adapters.Exqlite do
 
   @impl Ecto.Adapter
   def dumpers(:boolean, type) do
-    [type, &bool_encode/1]
+    [type, &Codec.bool_encode/1]
+  end
+
+  @impl Ecto.Adapter
+  def dumpers(:decimal, type) do
+    [type, &Codec.decimal_encode/1]
   end
 
   @impl Ecto.Adapter
@@ -229,12 +197,12 @@ defmodule Ecto.Adapters.Exqlite do
 
   @impl Ecto.Adapter
   def dumpers(:time, type) do
-    [type, &time_encode/1]
+    [type, &Codec.time_encode/1]
   end
 
   @impl Ecto.Adapter
   def dumpers(:naive_datetime, type) do
-    [type, &naive_datetime_encode/1]
+    [type, &Codec.naive_datetime_encode/1]
   end
 
   @impl Ecto.Adapter
@@ -244,34 +212,17 @@ defmodule Ecto.Adapters.Exqlite do
 
   @impl Ecto.Adapter
   def dumpers({:array, _}, type) do
-    [type, &json_encode/1]
+    [type, &Codec.json_encode/1]
   end
 
   @impl Ecto.Adapter
   def dumpers({:map, _}, type) do
-    [type, &json_encode/1]
+    [type, &Codec.json_encode/1]
   end
 
   @impl Ecto.Adapter
   def dumpers(_primitive, type) do
     [type]
-  end
-
-  defp json_encode(value) do
-    Application.get_env(:ecto, :json_library).encode(value)
-  end
-
-  defp blob_encode(value), do: {:ok, {:blob, value}}
-
-  defp bool_encode(false), do: {:ok, 0}
-  defp bool_encode(true), do: {:ok, 1}
-
-  defp time_encode(value) do
-    {:ok, value}
-  end
-
-  defp naive_datetime_encode(value) do
-    {:ok, NaiveDateTime.to_iso8601(value)}
   end
 
   ##
