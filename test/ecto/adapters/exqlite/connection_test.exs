@@ -2034,6 +2034,13 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
     )
   end
 
+  test "insert with query as rows" do
+    query = from(s in "schema", select: %{ foo: fragment("3"), bar: s.bar }) |> plan(:all)
+    query = insert(nil, "schema", [:foo, :bar], query, {:raise, [], []}, [])
+
+    assert query == ~s{INSERT INTO schema (foo,bar) (SELECT 3, s0.bar FROM schema AS s0)}
+  end
+
   # test "update" do
   #   query = update(nil, "schema", [:x, :y], [:id], [])
   #   assert query == ~s{UPDATE schema SET x = ?, y = ? WHERE id = ?}

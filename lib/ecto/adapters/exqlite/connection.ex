@@ -230,7 +230,7 @@ defmodule Ecto.Adapters.Exqlite.Connection do
       quote_table(prefix, table),
       " (",
       fields,
-      ") VALUES ",
+      ") ",
       insert_all(rows) | on_conflict(on_conflict, header)
     ]
   end
@@ -645,12 +645,24 @@ defmodule Ecto.Adapters.Exqlite.Connection do
 
   def insert_all(rows), do: insert_all(rows, 1)
 
+  def insert_all(%Ecto.Query{} = query, _counter) do
+    [?(, all(query), ?)]
+  end
+
   def insert_all(rows, counter) do
-    intersperse_reduce(rows, ?,, counter, fn row, counter ->
-      {row, counter} = insert_each(row, counter)
-      {[?(, row, ?)], counter}
-    end)
-    |> elem(0)
+    [
+      "VALUES ",
+      intersperse_reduce(
+        rows,
+        ?,,
+        counter,
+        fn row, counter ->
+          {row, counter} = insert_each(row, counter)
+          {[?(, row, ?)], counter}
+        end
+      )
+      |> elem(0)
+    ]
   end
 
   def insert_each(values, counter) do
