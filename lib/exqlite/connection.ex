@@ -203,7 +203,7 @@ defmodule Exqlite.Connection do
   def handle_commit(options, %{transaction_status: transaction_status} = state) do
     case Keyword.get(options, :mode, :deferred) do
       :savepoint when transaction_status == :transaction ->
-        handle_transaction(:commit, "RELEASE SAVEPOINT exqlite_savepoint", state)
+        handle_transaction(:commit_savepoint, "RELEASE SAVEPOINT exqlite_savepoint", state)
 
       mode
       when mode in [:deferred, :immediate, :exclusive, :transaction] and
@@ -218,11 +218,11 @@ defmodule Exqlite.Connection do
       :savepoint when transaction_status == :transaction ->
         with {:ok, _result, state} <-
                handle_transaction(
-                 :rollback,
+                 :rollback_savepoint,
                  "ROLLBACK TO SAVEPOINT exqlite_savepoint",
                  state
                ) do
-          handle_transaction(:rollback, "RELEASE SAVEPOINT exqlite_savepoint", state)
+          handle_transaction(:rollback_savepoint, "RELEASE SAVEPOINT exqlite_savepoint", state)
         end
 
       mode
