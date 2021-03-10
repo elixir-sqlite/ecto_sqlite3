@@ -25,7 +25,7 @@ Application.put_env(:exqlite, TestRepo,
 alias Ecto.Integration.PoolRepo
 
 Application.put_env(:exqlite, PoolRepo,
-adapter: Ecto.Adapters.Exqlite,
+  adapter: Ecto.Adapters.Exqlite,
   database: "/tmp/exqlite_integration_pool_test.db",
   journal_mode: :wal,
   cache_size: -64000,
@@ -57,6 +57,16 @@ _ = Ecto.Adapters.Exqlite.storage_down(TestRepo.config())
 
 {:ok, _} = TestRepo.start_link()
 {:ok, _pid} = PoolRepo.start_link()
+
+# migrate the pool repo
+case Ecto.Migrator.migrated_versions(PoolRepo) do
+  [] ->
+    :ok = Ecto.Migrator.up(PoolRepo, 0, Ecto.Integration.Migration, log: false)
+
+  _ ->
+    :ok = Ecto.Migrator.down(PoolRepo, 0, Ecto.Integration.Migration, log: false)
+    :ok = Ecto.Migrator.up(PoolRepo, 0, Ecto.Integration.Migration, log: false)
+end
 
 :ok = Ecto.Migrator.up(TestRepo, 0, Ecto.Integration.Migration, log: false)
 Ecto.Adapters.SQL.Sandbox.mode(TestRepo, :manual)

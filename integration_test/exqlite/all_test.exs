@@ -10,7 +10,7 @@ ecto_sql = Mix.Project.deps_paths()[:ecto_sql]
 # Code.require_file "#{ecto}/integration_test/cases/windows.exs", __DIR__
 
 # Code.require_file "#{ecto_sql}/integration_test/sql/lock.exs", __DIR__
-# Code.require_file "#{ecto_sql}/integration_test/sql/logging.exs", __DIR__
+Code.require_file "#{ecto_sql}/integration_test/sql/logging.exs", __DIR__
 # Code.require_file "#{ecto_sql}/integration_test/sql/migration.exs", __DIR__
 # Code.require_file "#{ecto_sql}/integration_test/sql/migrator.exs", __DIR__
 
