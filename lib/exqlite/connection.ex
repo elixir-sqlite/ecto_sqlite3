@@ -389,7 +389,7 @@ defmodule Exqlite.Connection do
 
   # Attempt to retrieve the cached query, if it doesn't exist, we'll prepare one
   # and cache it for later.
-  defp prepare(%Query{statement: statement, ref: nil} = query, options, state) do
+  defp prepare(%Query{statement: statement} = query, options, state) do
     query = maybe_put_command(query, options)
 
     with {:ok, ref} <- Sqlite3.prepare(state.db, IO.iodata_to_binary(statement)),
@@ -399,10 +399,6 @@ defmodule Exqlite.Connection do
       {:error, reason} ->
         {:error, %Error{message: reason}, state}
     end
-  end
-
-  defp prepare(%Query{ref: ref} = query, options, state) when ref != nil do
-    {:ok, maybe_put_command(query, options), state}
   end
 
   # Prepare a query and do not cache it.
