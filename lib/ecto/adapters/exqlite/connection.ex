@@ -1169,27 +1169,18 @@ defmodule Ecto.Adapters.Exqlite.Connection do
 
   def expr({:count, _, []}, _sources, _query), do: "count(*)"
 
-  #
-  # TODO: Sqlite has some json operation support
-  #
-  def expr({:json_extract_path, _, [_expr, _path]}, _sources, query) do
-    raise Ecto.QueryError,
-      query: query,
-      message: "json_extract_path is not currently supported"
-  end
+  def expr({:json_extract_path, _, [expr, path]}, sources, query) do
+    path =
+      Enum.map(path, fn
+        binary when is_binary(binary) ->
+          [?., ?", escape_json_key(binary), ?"]
 
-  # def expr({:json_extract_path, _, [expression, path]}, sources, query) do
-  #   path =
-  #     Enum.map(path, fn
-  #       binary when is_binary(binary) ->
-  #         [?., ?", escape_json_key(binary), ?"]
-  #
-  #       integer when is_integer(integer) ->
-  #         "[#{integer}]"
-  #     end)
-  #
-  #   ["json_extract(", expr(expression, sources, query), ", '$", path, "')"]
-  # end
+        integer when is_integer(integer) ->
+          "[#{integer}]"
+      end)
+
+    ["json_extract(", expr(expr, sources, query), ", '$", path, "')"]
+  end
 
   def expr({fun, _, args}, sources, query) when is_atom(fun) and is_list(args) do
     {modifier, args} =
@@ -1600,9 +1591,9 @@ defmodule Ecto.Adapters.Exqlite.Connection do
     |> :binary.replace("\\", "\\\\", [:global])
   end
 
-  # defp escape_json_key(value) when is_binary(value) do
-  #   value
-  #   |> escape_string()
-  #   |> :binary.replace("\"", "\\\\\"", [:global])
-  # end
+  defp escape_json_key(value) when is_binary(value) do
+    value
+    |> escape_string()
+    |> :binary.replace("\"", "\\\\\"", [:global])
+  end
 end

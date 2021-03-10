@@ -944,19 +944,22 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
     assert all(query) == ~s{SELECT CAST(? AS TEXT) FROM schema AS s0}
   end
 
-  # test "json_extract_path" do
-  #   query = Schema |> select([s], json_extract_path(s.meta, [0, 1])) |> plan()
-  #   assert all(query) == ~s{SELECT json_extract(s0.meta, '$[0][1]') FROM schema AS s0}
-  #
-  #   query = Schema |> select([s], json_extract_path(s.meta, ["a", "b"])) |> plan()
-  #   assert all(query) == ~s{SELECT json_extract(s0.meta, '$."a"."b"') FROM schema AS s0}
-  #
-  #   query = Schema |> select([s], json_extract_path(s.meta, ["'a"])) |> plan()
-  #   assert all(query) == ~s{SELECT json_extract(s0.meta, '$."''a"') FROM schema AS s0}
-  #
-  #   query = Schema |> select([s], json_extract_path(s.meta, ["\"a"])) |> plan()
-  #   assert all(query) == ~s{SELECT json_extract(s0.meta, '$."\\\\"a"') FROM schema AS s0}
-  # end
+  test "json_extract_path" do
+    query = Schema |> select([s], json_extract_path(s.meta, [0, 1])) |> plan()
+    assert all(query) == ~s{SELECT json_extract(s0.meta, '$[0][1]') FROM schema AS s0}
+
+    query = Schema |> select([s], json_extract_path(s.meta, ["a", "b"])) |> plan()
+    assert all(query) == ~s{SELECT json_extract(s0.meta, '$."a"."b"') FROM schema AS s0}
+
+    query = Schema |> select([s], json_extract_path(s.meta, ["'a"])) |> plan()
+    assert all(query) == ~s{SELECT json_extract(s0.meta, '$."''a"') FROM schema AS s0}
+
+    query = Schema |> select([s], json_extract_path(s.meta, ["\"a"])) |> plan()
+    assert all(query) == ~s{SELECT json_extract(s0.meta, '$."\\\\"a"') FROM schema AS s0}
+
+    query = Schema |> select([s], s.meta["author"]["name"]) |> plan()
+    assert all(query) == ~s{SELECT json_extract(s0.meta, '$."author"."name"') FROM schema AS s0}
+  end
 
   test "nested expressions" do
     z = 123
