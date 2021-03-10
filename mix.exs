@@ -4,7 +4,7 @@ defmodule Exqlite.MixProject do
   def project do
     [
       app: :exqlite,
-      version: "0.3.5",
+      version: "0.3.6",
       elixir: "~> 1.8",
       compilers: [:elixir_make] ++ Mix.compilers(),
       make_targets: ["all"],
