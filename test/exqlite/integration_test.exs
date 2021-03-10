@@ -70,7 +70,8 @@ defmodule Exqlite.IntegrationTest do
         database: path,
         journal_mode: :wal,
         cache_size: -64000,
-        temp_store: :memory
+        temp_store: :memory,
+        busy_timeout: 0,
       )
 
     {:ok, conn2} =
@@ -78,7 +79,8 @@ defmodule Exqlite.IntegrationTest do
         database: path,
         journal_mode: :wal,
         cache_size: -64000,
-        temp_store: :memory
+        temp_store: :memory,
+        busy_timeout: 0,
       )
 
     {:ok, _result, conn1} = Connection.handle_begin([mode: :immediate], conn1)
