@@ -1,6 +1,5 @@
 Logger.configure(level: :info)
 
-Application.put_env(:ecto, :json_library, Jason)
 Application.put_env(:ecto, :primary_key_type, :id)
 Application.put_env(:ecto, :async_integration_tests, false)
 
@@ -22,6 +21,23 @@ Application.put_env(:exqlite, TestRepo,
   show_sensitive_data_on_connection_error: true
 )
 
+# Pool repo for non-async tests
+alias Ecto.Integration.PoolRepo
+
+Application.put_env(:exqlite, PoolRepo,
+adapter: Ecto.Adapters.Exqlite,
+  database: "/tmp/exqlite_integration_pool_test.db",
+  journal_mode: :wal,
+  cache_size: -64000,
+  temp_store: :memory,
+  pool_size: 5,
+  show_sensitive_data_on_connection_error: true
+)
+
+defmodule Ecto.Integration.PoolRepo do
+  use Ecto.Integration.Repo, otp_app: :exqlite, adapter: Ecto.Adapters.Exqlite
+end
+
 Code.require_file "#{ecto}/integration_test/support/schemas.exs", __DIR__
 Code.require_file "#{ecto_sql}/integration_test/support/migration.exs", __DIR__
 
@@ -30,7 +46,6 @@ defmodule Ecto.Integration.Case do
 
   setup do
     :ok = Ecto.Adapters.SQL.Sandbox.checkout(TestRepo)
-    #on_exit(fn -> Ecto.Adapters.SQL.Sandbox.checkin(TestRepo) end)
   end
 end
 
@@ -41,9 +56,15 @@ _ = Ecto.Adapters.Exqlite.storage_down(TestRepo.config())
 :ok = Ecto.Adapters.Exqlite.storage_up(TestRepo.config())
 
 {:ok, _} = TestRepo.start_link()
+{:ok, _pid} = PoolRepo.start_link()
 
 :ok = Ecto.Migrator.up(TestRepo, 0, Ecto.Integration.Migration, log: false)
 Ecto.Adapters.SQL.Sandbox.mode(TestRepo, :manual)
 Process.flag(:trap_exit, true)
 
-ExUnit.start()
+ExUnit.start(
+  exclude: [
+    # SQLite does not have an array type
+    :array_type,
+  ]
+)

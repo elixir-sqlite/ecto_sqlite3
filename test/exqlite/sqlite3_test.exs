@@ -149,7 +149,7 @@ defmodule Exqlite.Sqlite3Test do
 
       {:ok, columns} = Sqlite3.columns(conn, statement)
 
-      assert [id: "INTEGER", stuff: "text"] == columns
+      assert ["id", "stuff"] == columns
     end
   end
 

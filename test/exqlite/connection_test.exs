@@ -74,7 +74,7 @@ defmodule Exqlite.ConnectionTest do
         |> Connection.handle_execute([4], [], conn)
 
       assert result.command == :execute
-      assert result.columns == [id: "INTEGER", name: "text"]
+      assert result.columns == ["id", "name"]
       assert result.rows == [[1, "Jim"], [2, "Bob"], [3, "Dave"]]
 
       File.rm(path)

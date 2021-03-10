@@ -510,18 +510,12 @@ exqlite_columns(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
 
     for (int i = 0; i < size; i++) {
         const char* name = sqlite3_column_name(statement->statement, i);
-        const char* type = sqlite3_column_decltype(statement->statement, i);
         if (!name) {
             enif_free(columns);
             return make_error_tuple(env, "out_of_memory");
         }
 
-        if (type == NULL) {
-            type = "nil";
-        }
-
-        size_t len = utf8len(type);
-        columns[i] = enif_make_tuple2(env, make_atom(env, name), make_binary(env, type, len));
+        columns[i] = make_binary(env, name, utf8len(name));
     }
 
     result = enif_make_list_from_array(env, columns, size);
