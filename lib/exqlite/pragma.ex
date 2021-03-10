@@ -3,6 +3,12 @@ defmodule Exqlite.Pragma do
   Handles parsing extra options for the SQLite connection
   """
 
+  def busy_timeout(nil), do: busy_timeout([])
+
+  def busy_timeout(options) do
+    Keyword.get(options, :busy_timeout, 2000)
+  end
+
   def journal_mode(nil), do: journal_mode([])
 
   def journal_mode(options) do

@@ -86,7 +86,8 @@ defmodule Exqlite.Connection do
     * `:wal_auto_check_point` - Sets the write-ahead log auto-checkpoint
       interval. Default is `1000`. Setting the auto-checkpoint size to zero or a
       negative value turns auto-checkpointing off.
-
+    * `:busy_timeout` - Sets the busy timeout in milliseconds for a connection.
+      Default is `2000`.
 
   For more information about the options above, see [sqlite documenation][1]
 
@@ -353,6 +354,10 @@ defmodule Exqlite.Connection do
     set_pragma(db, "wal_autocheckpoint", Pragma.wal_auto_check_point(options))
   end
 
+  defp set_busy_timeout(db, options) do
+    set_pragma(db, "busy_timeout", Pragma.busy_timeout(options))
+  end
+
   defp do_connect(path, options) do
     with {:ok, db} <- Sqlite3.open(path),
          :ok <- set_journal_mode(db, options),
@@ -365,7 +370,8 @@ defmodule Exqlite.Connection do
          :ok <- set_locking_mode(db, options),
          :ok <- set_secure_delete(db, options),
          :ok <- set_wal_auto_check_point(db, options),
-         :ok <- set_case_sensitive_like(db, options) do
+         :ok <- set_case_sensitive_like(db, options),
+         :ok <- set_busy_timeout(db, options) do
       state = %__MODULE__{
         db: db,
         path: path,
