@@ -108,9 +108,19 @@ defmodule Ecto.Adapters.Exqlite.Connection do
   # is no way to do this, so we name the index according to ecto
   # convention, even if technically it _could_ have a different name
   defp constraint_name_hack(constraint) do
-    if String.contains?(constraint, ",") do
-      # todo: support multiple column constraint?
+    if String.contains?(constraint, ", ") do
+      # "a.b, a.c" -> a_b_c_index
       constraint
+      |> String.split(", ")
+      |> Enum.with_index()
+      |> Enum.map(fn {table_col, idx} ->
+        case idx do
+          0 -> table_col |> String.replace(".", "_")
+          _ -> table_col |> String.split(".") |> List.last()
+        end
+      end)
+      |> Enum.concat(["index"])
+      |> Enum.join("_")
     else
       constraint
       |> String.split(".")
@@ -122,6 +132,11 @@ defmodule Ecto.Adapters.Exqlite.Connection do
   @impl true
   def to_constraints(%Exqlite.Error{message: "UNIQUE constraint failed: " <> constraint}, _opts) do
     [unique: constraint_name_hack(constraint)]
+  end
+
+  def to_constraints(%Exqlite.Error{message: "FOREIGN KEY constraint failed"}, _opts) do
+    # unfortunately we have no other date from SQLite
+    [foreign_key: nil]
   end
 
   def to_constraints(_, _), do: []
@@ -220,6 +235,14 @@ defmodule Ecto.Adapters.Exqlite.Connection do
   @impl true
   def insert(prefix, table, header, rows, on_conflict, returning) do
     insert(prefix, table, header, rows, on_conflict, returning, [])
+  end
+
+  def insert(prefix, table, [], [[]], on_conflict, [], []) do
+    [
+      "INSERT INTO ",
+      quote_table(prefix, table),
+      " DEFAULT VALUES"
+    ]
   end
 
   def insert(prefix, table, header, rows, on_conflict, [], []) do

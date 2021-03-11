@@ -1902,10 +1902,10 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
     )
 
     query = insert(nil, "schema", [], [[]], {:raise, [], []}, [])
-    assert query == ~s{INSERT INTO schema () VALUES ()}
+    assert query == ~s{INSERT INTO schema DEFAULT VALUES}
 
     query = insert("prefix", "schema", [], [[]], {:raise, [], []}, [])
-    assert query == ~s{INSERT INTO prefix.schema () VALUES ()}
+    assert query == ~s{INSERT INTO prefix.schema DEFAULT VALUES}
 
     assert_raise(
       ArgumentError,

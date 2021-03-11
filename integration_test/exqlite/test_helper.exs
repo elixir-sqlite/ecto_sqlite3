@@ -76,6 +76,18 @@ ExUnit.start(
   exclude: [
     # SQLite does not have an array type
     :array_type,
-    :transaction_isolation
+    :transaction_isolation,
+    :insert_cell_wise_defaults,
+    :returning,
+    :read_after_writes,
+    # sqlite supports FKs, but does not return sufficient data
+    # for ecto to support matching on a given constraint violation name
+    # which is what most of the tests validate
+    :foreign_key_constraint,
+
+    # we should be able to fully/correctly support these, but don't currently
+    :with_conflict_target,
+    :without_conflict_target,
+    :insert_select
   ]
 )
