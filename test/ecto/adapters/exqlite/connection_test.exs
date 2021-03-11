@@ -9,6 +9,27 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
   import Ecto.Migration, only: [table: 1, table: 2, index: 2, index: 3, constraint: 3]
   alias Ecto.Migration.Reference
 
+  defmodule Comment do
+    use Ecto.Schema
+
+    schema "comments" do
+      field(:content, :string)
+    end
+  end
+
+  defmodule Post do
+    use Ecto.Schema
+
+    schema "posts" do
+      field(:title, :string)
+      field(:content, :string)
+      has_many(:comments, Comment)
+    end
+  end
+
+  # TODO: Let's rename these or make them more concrete and less terse so that
+  #       tests are easier to read and understand what is happening.
+  #       @warmwaffles 2021-03-11
   defmodule Schema3 do
     use Ecto.Schema
 
@@ -2668,5 +2689,14 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
         |> all()
       end
     )
+  end
+
+  test "preloading" do
+    query =
+      from(p in Post, preload: [:comments], select: p)
+      |> plan()
+      |> all()
+
+    assert query == "SELECT p0.id, p0.title, p0.content FROM posts AS p0"
   end
 end

@@ -738,12 +738,12 @@ defmodule Ecto.Adapters.Exqlite.Connection do
   end
 
   def select(%{select: %{fields: fields}, distinct: distinct} = query, sources) do
-    ["SELECT ", distinct(distinct, sources, query) | select(fields, sources, query)]
+    ["SELECT ", distinct(distinct, sources, query) | select_fields(fields, sources, query)]
   end
 
-  defp select([], _sources, _query), do: "1"
+  defp select_fields([], _sources, _query), do: "1"
 
-  defp select(fields, sources, query) do
+  defp select_fields(fields, sources, query) do
     intersperse_map(fields, ", ", fn
       {:&, _, [idx]} ->
         case elem(sources, idx) do

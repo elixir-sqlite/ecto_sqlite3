@@ -152,4 +152,23 @@ defmodule Ecto.Integration.CrudTest do
         |> TestRepo.transaction()
     end
   end
+
+  describe "preloading" do
+    test "preloads many to many relation" do
+      account1 = TestRepo.insert!(%Account{name: "Main"})
+      account2 = TestRepo.insert!(%Account{name: "Secondary"})
+      user1 = TestRepo.insert!(%User{name: "John"}, [])
+      user2 = TestRepo.insert!(%User{name: "Shelly"}, [])
+      TestRepo.insert!(%AccountUser{user_id: user1.id, account_id: account1.id})
+      TestRepo.insert!(%AccountUser{user_id: user1.id, account_id: account2.id})
+      TestRepo.insert!(%AccountUser{user_id: user2.id, account_id: account2.id})
+
+      accounts = from(a in Account, preload: [:users]) |> TestRepo.all()
+
+      assert Enum.count(accounts) == 2
+      Enum.each(accounts, fn account ->
+        assert Ecto.assoc_loaded?(account.users)
+      end)
+    end
+  end
 end

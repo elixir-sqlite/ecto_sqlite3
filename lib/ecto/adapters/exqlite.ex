@@ -206,11 +206,6 @@ defmodule Ecto.Adapters.Exqlite do
   end
 
   @impl Ecto.Adapter
-  def dumpers({:in, sub}, {:in, sub}) do
-    [{:array, sub}]
-  end
-
-  @impl Ecto.Adapter
   def dumpers({:array, _}, type) do
     [type, &Codec.json_encode/1]
   end
