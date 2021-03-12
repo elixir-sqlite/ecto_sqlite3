@@ -102,6 +102,12 @@ defmodule Ecto.Integration.CrudTest do
 
       assert changed.name == "Bob"
     end
+
+    test "update_all handles null<->nil conversion correctly" do
+      account = TestRepo.insert!(%Account{name: "hello"})
+      assert {1, nil} = TestRepo.update_all(Account, set: [name: nil])
+      assert %Account{name: nil} = TestRepo.reload(account)
+    end
   end
 
   describe "transaction" do

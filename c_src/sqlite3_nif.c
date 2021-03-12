@@ -287,7 +287,7 @@ bind(ErlNifEnv* env, const ERL_NIF_TERM arg, sqlite3_stmt* statement, int index)
     }
 
     if (enif_get_atom(env, arg, the_atom, sizeof(the_atom), ERL_NIF_LATIN1)) {
-        if (0 == utf8ncmp("undefined", the_atom, 9)) {
+        if (0 == utf8ncmp("undefined", the_atom, 9) || 0 == utf8ncmp("nil", the_atom, 3)) {
             return sqlite3_bind_null(statement, index);
         }
 

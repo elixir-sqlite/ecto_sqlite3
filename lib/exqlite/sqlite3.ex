@@ -113,6 +113,5 @@ defmodule Exqlite.Sqlite3 do
   defp convert(%DateTime{} = val), do: DateTime.to_iso8601(val)
   defp convert(%Time{} = val), do: Time.to_iso8601(val)
   defp convert(%NaiveDateTime{} = val), do: NaiveDateTime.to_iso8601(val)
-  defp convert(nil), do: "NULL"
   defp convert(val), do: val
 end
