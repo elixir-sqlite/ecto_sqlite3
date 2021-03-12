@@ -439,6 +439,9 @@ defmodule Exqlite.Connection do
 
   defp maybe_changes(_, _), do: nil
 
+  defp maybe_rows([]), do: nil
+  defp maybe_rows(rows), do: rows
+
   defp execute(call, %Query{} = query, params, state) do
     with {:ok, query, state} <- bind_params(query, params, state),
          {:ok, columns} <- Sqlite3.columns(state.db, query.ref),
@@ -452,8 +455,8 @@ defmodule Exqlite.Connection do
             query,
             Result.new(
               command: call,
-              rows: nil,
-              num_rows: changes
+              num_rows: changes,
+              rows: maybe_rows(rows)
             ),
             state
           }
@@ -465,7 +468,7 @@ defmodule Exqlite.Connection do
             Result.new(
               command: call,
               num_rows: changes,
-              rows: nil,
+              rows: maybe_rows(rows),
               last_insert_id: last_insert_id
             ),
             state

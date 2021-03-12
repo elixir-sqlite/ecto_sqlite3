@@ -99,9 +99,9 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
     |> Enum.map(&IO.iodata_to_binary/1)
   end
 
-  defp insert(prefix, table, header, rows, on_conflict, returning) do
+  defp insert(prefix, table, header, rows, on_conflict, returning, placeholders \\ []) do
     prefix
-    |> Connection.insert(table, header, rows, on_conflict, returning, [])
+    |> Connection.insert(table, header, rows, on_conflict, returning, placeholders)
     |> IO.iodata_to_binary()
   end
 
@@ -1307,13 +1307,19 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
              AND (s0.x = 123)\
              """
 
-    assert_raise(
-      ArgumentError,
-      ":select is not supported in update_all by SQLite3",
-      fn ->
-        from(e in Schema, where: e.x == 123, select: e.x) |> update_all()
-      end
-    )
+    query = from(
+      p in Post,
+      where: p.title == ^"foo",
+      select: p.content,
+      update: [set: [title: "bar"]]
+    ) |> plan(:update_all)
+    assert update_all(query) ==
+             """
+             UPDATE posts AS p0 \
+             SET title = 'bar' \
+             WHERE (p0.title = ?) \
+             RETURNING p0.content\
+             """
   end
 
   test "update all with prefix" do
@@ -1334,6 +1340,32 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
     assert update_all(query) == ~s{UPDATE first.schema AS s0 SET x = 0}
   end
 
+  test "update all with returning" do
+    query =
+      from(p in Post, update: [set: [title: "foo"]])
+      |> select([p], p)
+      |> plan(:update_all)
+    assert update_all(query) ==
+             """
+             UPDATE posts AS p0 \
+             SET title = 'foo' \
+             RETURNING p0.id, p0.title, p0.content\
+             """
+
+    query =
+      from(m in Schema, update: [set: [x: ^1]])
+      |> where([m], m.x == ^2)
+      |> select([m], m.x == ^3)
+      |> plan(:update_all)
+    assert update_all(query) ==
+             """
+             UPDATE schema AS s0 \
+             SET x = ? \
+             WHERE (s0.x = ?) \
+             RETURNING s0.x = ?\
+             """
+  end
+
   test "delete all" do
     query =
       Schema
@@ -1349,13 +1381,24 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
 
     assert delete_all(query) == ~s{DELETE FROM schema AS s0 WHERE (s0.x = 123)}
 
-    assert_raise(
-      ArgumentError,
-      ":select is not supported in delete_all by SQLite3",
-      fn ->
-        (e in Schema) |> from(where: e.x == 123, select: e.x) |> delete_all()
-      end
-    )
+    query =
+      (e in Schema)
+      |> from(where: e.x == 123, select: e.x)
+      |> plan()
+    assert delete_all(query) ==
+            """
+            DELETE FROM schema AS s0 \
+            WHERE (s0.x = 123) RETURNING s0.x\
+            """
+  end
+
+  test "delete all with returning" do
+    query = Post |> Ecto.Queryable.to_query |> select([m], m) |> plan()
+    assert delete_all(query) ==
+           """
+           DELETE FROM posts AS p0 \
+           RETURNING p0.id, p0.title, p0.content\
+           """
   end
 
   test "delete all with prefix" do
@@ -1935,18 +1978,14 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
     query = insert("prefix", "schema", [], [[]], {:raise, [], []}, [])
     assert query == ~s{INSERT INTO prefix.schema DEFAULT VALUES}
 
+    query = insert(nil, "schema", [:x, :y], [[:x, :y]], {:raise, [], []}, [:id])
+    assert query == ~s{INSERT INTO schema (x,y) VALUES (?,?) RETURNING id}
+
     assert_raise(
       ArgumentError,
-      ":returning is not supported in insert/6 by SQLite3",
+      "Cell-wise default values are not supported on INSERT statements by SQLite3",
       fn ->
-        insert(
-          nil,
-          "schema",
-          [:x, :y],
-          [[:x, :y]],
-          {:raise, [], []},
-          [:x, :y]
-        )
+        insert(nil, "schema", [:x, :y], [[:x, :y], [nil, :z]], {:raise, [], []}, [:id])
       end
     )
   end

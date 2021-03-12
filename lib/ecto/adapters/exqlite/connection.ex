@@ -187,10 +187,6 @@ defmodule Ecto.Adapters.Exqlite.Connection do
   def update_all(query, prefix \\ nil) do
     %{from: %{source: source}, select: select} = query
 
-    if select do
-      raise ArgumentError, ":select is not supported in update_all by SQLite3"
-    end
-
     sources = create_names(query, [])
     cte = cte(query, sources)
     {from, name} = get_source(query, sources, 0, source)
@@ -208,7 +204,14 @@ defmodule Ecto.Adapters.Exqlite.Connection do
     prefix = prefix || ["UPDATE ", from, " AS ", name, " SET "]
     where = where(%{query | wheres: wheres ++ query.wheres}, sources)
 
-    [cte, prefix, fields, join, where]
+    [
+      cte,
+      prefix,
+      fields,
+      join,
+      where,
+      returning(query, sources)
+    ]
   end
 
   @impl true
@@ -219,17 +222,19 @@ defmodule Ecto.Adapters.Exqlite.Connection do
 
   @impl true
   def delete_all(query) do
-    if query.select do
-      raise ArgumentError, ":select is not supported in delete_all by SQLite3"
-    end
-
     sources = create_names(query, [])
     cte = cte(query, sources)
 
     from = from(query, sources)
     where = where(query, sources)
 
-    [cte, "DELETE", from, where]
+    [
+      cte,
+      "DELETE",
+      from,
+      where,
+      returning(query, sources)
+    ]
   end
 
   @impl true
@@ -237,15 +242,15 @@ defmodule Ecto.Adapters.Exqlite.Connection do
     insert(prefix, table, header, rows, on_conflict, returning, [])
   end
 
-  def insert(prefix, table, [], [[]], on_conflict, [], []) do
+  def insert(prefix, table, [], [[]], _on_conflict, returning, []) do
     [
       "INSERT INTO ",
       quote_table(prefix, table),
-      " DEFAULT VALUES"
+      " DEFAULT VALUES",
+      returning(returning)
     ]
   end
-
-  def insert(prefix, table, header, rows, on_conflict, [], []) do
+  def insert(prefix, table, header, rows, on_conflict, returning, _placeholders) do
     fields = quote_names(header)
 
     [
@@ -254,28 +259,14 @@ defmodule Ecto.Adapters.Exqlite.Connection do
       " (",
       fields,
       ") ",
-      insert_all(rows) | on_conflict(on_conflict, header)
+      insert_all(rows),
+      on_conflict(on_conflict, header),
+      returning(returning)
     ]
   end
 
-  def insert(_prefix, _table, _header, _rows, _on_conflict, returning, _placeholders)
-      when length(returning) > 0 do
-    raise ArgumentError, ":returning is not supported in insert/6 by SQLite3"
-  end
-
-  def insert(_prefix, _table, _header, _rows, _on_conflict, _returning, placeholders)
-      when length(placeholders) > 0 do
-    raise ArgumentError, ":placeholders is not supported insert/6 by SQLite3"
-  end
-
   @impl true
-  def update(_prefix, _table, _fields, _filters, returning)
-      when length(returning) > 0 do
-    raise ArgumentError, ":returning is not supported in update/5 by SQLite3"
-  end
-
-  @impl true
-  def update(prefix, table, fields, filters, []) do
+  def update(prefix, table, fields, filters, returning) do
     fields = intersperse_map(fields, ", ", &[quote_name(&1), " = ?"])
 
     filters =
@@ -287,17 +278,19 @@ defmodule Ecto.Adapters.Exqlite.Connection do
           [quote_name(field), " = ?"]
       end)
 
-    ["UPDATE ", quote_table(prefix, table), " SET ", fields, " WHERE " | filters]
+    [
+      "UPDATE ",
+      quote_table(prefix, table),
+      " SET ",
+      fields,
+      " WHERE ",
+      filters,
+      returning(returning)
+    ]
   end
 
   @impl true
-  def delete(_prefix, _table, _filters, returning)
-      when length(returning) > 0 do
-    raise ArgumentError, ":returning is not supported in delete/4 by SQLite3"
-  end
-
-  @impl true
-  def delete(prefix, table, filters, []) do
+  def delete(prefix, table, filters, returning) do
     filters =
       intersperse_map(filters, " AND ", fn
         {field, nil} ->
@@ -307,7 +300,13 @@ defmodule Ecto.Adapters.Exqlite.Connection do
           [quote_name(field), " = ?"]
       end)
 
-    ["DELETE FROM ", quote_table(prefix, table), " WHERE " | filters]
+    [
+      "DELETE FROM ",
+      quote_table(prefix, table),
+      " WHERE ",
+      filters,
+      returning(returning)
+    ]
   end
 
   @impl true
@@ -1525,6 +1524,21 @@ defmodule Ecto.Adapters.Exqlite.Connection do
   defp reference_on_update(:update_all), do: " ON UPDATE CASCADE"
   defp reference_on_update(:restrict), do: " ON UPDATE RESTRICT"
   defp reference_on_update(_), do: []
+
+  defp returning(%{select: nil}, _sources), do: []
+  defp returning(%{select: %{fields: fields}} = query, sources) do
+    [
+      " RETURNING " | select_fields(fields, sources, query)
+    ]
+  end
+
+  defp returning([]), do: []
+
+  defp returning(returning) do
+    [
+      " RETURNING " | quote_names(returning)
+    ]
+  end
 
   ##
   ## Helpers

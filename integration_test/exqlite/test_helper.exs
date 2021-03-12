@@ -80,7 +80,6 @@ ExUnit.start(
     :array_type,
     :transaction_isolation,
     :insert_cell_wise_defaults,
-    :returning,
     :read_after_writes,
     # sqlite does not support microsecond precision, only millisecond
     :microsecond_precision,
@@ -88,10 +87,6 @@ ExUnit.start(
     # for ecto to support matching on a given constraint violation name
     # which is what most of the tests validate
     :foreign_key_constraint,
-
-    # when using ON CONFLICT IGNORE, the conflict cannot be seen by the client
-    # see Caveats in README.md
-    :on_conflict_ignore,
 
     # we should be able to fully/correctly support these, but don't currently
     :with_conflict_target,
