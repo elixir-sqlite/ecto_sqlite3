@@ -10,7 +10,7 @@ Code.require_file "#{ecto}/integration_test/cases/preload.exs", __DIR__
 Code.require_file "./ecto/repo.exs", __DIR__
 
 # Code.require_file "#{ecto}/integration_test/cases/type.exs", __DIR__
-# Code.require_file "#{ecto}/integration_test/cases/windows.exs", __DIR__
+Code.require_file "#{ecto}/integration_test/cases/windows.exs", __DIR__
 
 # Code.require_file "#{ecto_sql}/integration_test/sql/lock.exs", __DIR__
 Code.require_file "#{ecto_sql}/integration_test/sql/logging.exs", __DIR__

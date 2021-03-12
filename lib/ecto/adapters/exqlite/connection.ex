@@ -1465,7 +1465,7 @@ defmodule Ecto.Adapters.Exqlite.Connection do
   end
 
   defp default_expr({:ok, value}, _type) when is_map(value) or is_list(value) do
-    library = Application.get_env(:myxql, :json_library, Jason)
+    library = Application.get_env(:exqlite, :json_library, Jason)
     expression = IO.iodata_to_binary(library.encode_to_iodata!(value))
 
     [
