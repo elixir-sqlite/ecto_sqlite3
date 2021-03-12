@@ -1030,6 +1030,13 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
 
     assert all(query) ==
              ~s{SELECT ((s0.x = ?) OR s0.x IN (?,?,?)) OR (s0.x = ?) FROM schema AS s0}
+
+    query =
+      Schema
+      |> select([e], e in [1, 2, 3])
+      |> plan()
+
+    assert all(query) == "SELECT s0 IN (SELECT value FROM JSON_EACH('[1,2,3]')) FROM schema AS s0"
   end
 
   test "in subquery" do

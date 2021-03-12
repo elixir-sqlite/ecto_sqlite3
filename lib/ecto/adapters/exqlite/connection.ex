@@ -1105,12 +1105,8 @@ defmodule Ecto.Adapters.Exqlite.Connection do
     [expr(left, sources, query), " IN ", expr(subquery, sources, query)]
   end
 
-  def expr({:in, _, [_left, _right]}, _sources, query) do
-    # TODO: We don't have an ANY operator. Perhaps there is a work around?
-    #       SELECT 1 = ANY('[]') FROM schema AS s0
-    raise Ecto.QueryError,
-      query: query,
-      message: "SQLite3 adapter does not support the ANY function"
+  def expr({:in, _, [left, right]}, sources, query) do
+    [expr(left, sources, query), " IN (SELECT value FROM JSON_EACH(", expr(right, sources, query), ?), ?)]
   end
 
   def expr({:is_nil, _, [arg]}, sources, query) do

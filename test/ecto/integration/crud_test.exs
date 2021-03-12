@@ -184,4 +184,12 @@ defmodule Ecto.Integration.CrudTest do
       end)
     end
   end
+
+  describe "select" do
+    test "can handle in" do
+      TestRepo.insert!(%Account{name: "hi"})
+      assert [] = TestRepo.all from a in Account, where: a.name in ["404"]
+      assert [_] = TestRepo.all from a in Account, where: a.name in ["hi"]
+    end
+  end
 end
