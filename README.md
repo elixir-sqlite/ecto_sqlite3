@@ -16,6 +16,10 @@ An SQLite3 library with an Ecto adapter implementation.
   second column somewhere storing the timezone name and shifting it when you
   get it from the database. This is more reliable than storing the offset as
   `+03:00` as it does not respect daylight savings time.
+* `on_conflict: :ignore` may return an invalid / non-sensical primary key
+  if a conflict was indeed hit. This is due to limitations around not being able
+   to detect a conflict happened and thus using the last row insert id 
+   which could be from any table.
 
 
 ## Installation

@@ -1,5 +1,6 @@
 Logger.configure(level: :info)
 
+Application.put_env(:ecto, :json_library, Jason)
 Application.put_env(:ecto, :primary_key_type, :id)
 Application.put_env(:ecto, :async_integration_tests, false)
 
@@ -74,6 +75,8 @@ Process.flag(:trap_exit, true)
 
 ExUnit.start(
   exclude: [
+    :delete_with_join,
+    :right_join,
     # SQLite does not have an array type
     :array_type,
     :transaction_isolation,
@@ -86,6 +89,10 @@ ExUnit.start(
     # for ecto to support matching on a given constraint violation name
     # which is what most of the tests validate
     :foreign_key_constraint,
+
+    # when using ON CONFLICT IGNORE, the conflict cannot be seen by the client
+    # see Caveats in README.md
+    :on_conflict_ignore,
 
     # we should be able to fully/correctly support these, but don't currently
     :with_conflict_target,
