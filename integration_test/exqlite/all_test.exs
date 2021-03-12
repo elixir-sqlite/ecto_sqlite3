@@ -1,18 +1,18 @@
 ecto = Mix.Project.deps_paths()[:ecto]
-ecto_sql = Mix.Project.deps_paths()[:ecto_sql]
 
 # Code.require_file "#{ecto}/integration_test/cases/assoc.exs", __DIR__
-# Code.require_file "#{ecto}/integration_test/cases/interval.exs", __DIR__
 Code.require_file "#{ecto}/integration_test/cases/joins.exs", __DIR__
 Code.require_file "#{ecto}/integration_test/cases/preload.exs", __DIR__
 Code.require_file "#{ecto}/integration_test/cases/repo.exs", __DIR__
-
-# forked in order to add the :on_conflict_ignore tag
-# Code.require_file "./ecto/repo.exs", __DIR__
-
 # Code.require_file "#{ecto}/integration_test/cases/type.exs", __DIR__
 Code.require_file "#{ecto}/integration_test/cases/windows.exs", __DIR__
 
+# Since sqlite does not have microsecond precision we forked these tests
+# and added some additionals tests for datetime types
+Code.require_file "./ecto/interval.exs", __DIR__
+
+
+ecto_sql = Mix.Project.deps_paths()[:ecto_sql]
 # Code.require_file "#{ecto_sql}/integration_test/sql/lock.exs", __DIR__
 Code.require_file "#{ecto_sql}/integration_test/sql/logging.exs", __DIR__
 # Code.require_file "#{ecto_sql}/integration_test/sql/migration.exs", __DIR__
@@ -21,10 +21,6 @@ Code.require_file "#{ecto_sql}/integration_test/sql/logging.exs", __DIR__
 # necessary to fork into the repo as it relies on :ecto_sql app, which
 # we modified to be :exqlite app until we merge into ecto_sql
 Code.require_file "./ecto_sql/sandbox.exs", __DIR__
-# Since sqlite does not have microsecond precision we forked these tests
-# and added some additionals tests for datetime types
-Code.require_file "./cases/interval.exs", __DIR__
-
 
 Code.require_file "#{ecto_sql}/integration_test/sql/sql.exs", __DIR__
 Code.require_file "#{ecto_sql}/integration_test/sql/stream.exs", __DIR__
