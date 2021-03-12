@@ -1151,7 +1151,7 @@ defmodule Ecto.Adapters.Exqlite.Connection do
   def expr({:datetime_add, _, [datetime, count, interval]}, sources, query) do
     [
       "CAST (",
-      "strftime('%Y-%m-%d %H:%M:%f000'",
+      "strftime('%Y-%m-%d %H:%M:%f000Z'",
       ",",
       expr(datetime, sources, query),
       ",",
@@ -1240,7 +1240,7 @@ defmodule Ecto.Adapters.Exqlite.Connection do
 
   def expr(%Ecto.Query.Tagged{value: other, type: type}, sources, query)
       when type in [:decimal, :float] do
-    [expr(other, sources, query), " + 0"]
+    ["(", expr(other, sources, query), " + 0)"]
   end
 
   def expr(%Ecto.Query.Tagged{value: other, type: type}, sources, query) do

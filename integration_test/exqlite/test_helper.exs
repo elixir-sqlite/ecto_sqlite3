@@ -80,6 +80,8 @@ ExUnit.start(
     :insert_cell_wise_defaults,
     :returning,
     :read_after_writes,
+    # sqlite does not support microsecond precision, only millisecond
+    :microsecond_precision,
     # sqlite supports FKs, but does not return sufficient data
     # for ecto to support matching on a given constraint violation name
     # which is what most of the tests validate

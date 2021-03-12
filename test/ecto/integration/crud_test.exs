@@ -129,27 +129,23 @@ defmodule Ecto.Integration.CrudTest do
         |> TestRepo.transaction()
     end
 
-    # "cannot open savepoint - SQL statements in progress"
-    # which indicates we are not closing some of our statement handles
-    # properly, which is manifesting in this test not being able to run
-    # though it passes fine in isolation... - kcl
-    # test "unsuccessful account creation" do
-    #   {:error, _, _, _} =
-    #     Ecto.Multi.new()
-    #     |> Ecto.Multi.insert(:account, fn _ ->
-    #       Account.changeset(%Account{}, %{name: nil})
-    #     end)
-    #     |> Ecto.Multi.insert(:user, fn _ ->
-    #       User.changeset(%User{}, %{name: "Bob"})
-    #     end)
-    #     |> Ecto.Multi.insert(:account_user, fn %{account: account, user: user} ->
-    #       AccountUser.changeset(%AccountUser{}, %{
-    #         account_id: account.id,
-    #         user_id: user.id
-    #       })
-    #     end)
-    #     |> TestRepo.transaction()
-    # end
+    test "unsuccessful account creation" do
+      {:error, _, _, _} =
+        Ecto.Multi.new()
+        |> Ecto.Multi.insert(:account, fn _ ->
+          Account.changeset(%Account{}, %{name: nil})
+        end)
+        |> Ecto.Multi.insert(:user, fn _ ->
+          User.changeset(%User{}, %{name: "Bob"})
+        end)
+        |> Ecto.Multi.insert(:account_user, fn %{account: account, user: user} ->
+          AccountUser.changeset(%AccountUser{}, %{
+            account_id: account.id,
+            user_id: user.id
+          })
+        end)
+        |> TestRepo.transaction()
+    end
 
     test "unsuccessful user creation" do
       {:error, _, _, _} =

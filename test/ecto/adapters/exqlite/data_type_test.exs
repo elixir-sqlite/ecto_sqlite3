@@ -65,19 +65,19 @@ defmodule Ecto.Adapters.Exqlite.DataTypeTest do
     end
 
     test ":utc_datetime is DATETIME" do
-      assert DataType.column_type(:utc_datetime, nil) == "DATETIME"
+      assert DataType.column_type(:utc_datetime, nil) == "TEXT_DATETIME"
     end
 
     test ":utc_datetime_usec is DATETIME" do
-      assert DataType.column_type(:utc_datetime_usec, nil) == "DATETIME"
+      assert DataType.column_type(:utc_datetime_usec, nil) == "TEXT_DATETIME"
     end
 
     test ":naive_datetime is DATETIME" do
-      assert DataType.column_type(:naive_datetime, nil) == "DATETIME"
+      assert DataType.column_type(:naive_datetime, nil) == "TEXT_DATETIME"
     end
 
     test ":naive_datetime_usec is DATETIME" do
-      assert DataType.column_type(:naive_datetime_usec, nil) == "DATETIME"
+      assert DataType.column_type(:naive_datetime_usec, nil) == "TEXT_DATETIME"
     end
   end
 end

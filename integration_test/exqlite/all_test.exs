@@ -17,6 +17,10 @@ Code.require_file "#{ecto_sql}/integration_test/sql/logging.exs", __DIR__
 # necessary to fork into the repo as it relies on :ecto_sql app, which
 # we modified to be :exqlite app until we merge into ecto_sql
 Code.require_file "./ecto_sql/sandbox.exs", __DIR__
+# Since sqlite does not have microsecond precision we forked these tests
+# and added some additionals tests for datetime types
+Code.require_file "./cases/interval.exs", __DIR__
+
 
 Code.require_file "#{ecto_sql}/integration_test/sql/sql.exs", __DIR__
 Code.require_file "#{ecto_sql}/integration_test/sql/stream.exs", __DIR__

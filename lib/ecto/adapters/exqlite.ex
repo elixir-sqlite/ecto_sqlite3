@@ -112,6 +112,16 @@ defmodule Ecto.Adapters.Exqlite do
   end
 
   @impl Ecto.Adapter
+  def loaders(:naive_datetime_usec, type) do
+    [&Codec.datetime_decode/1, type]
+  end
+
+  @impl Ecto.Adapter
+  def loaders(:utc_datetime_usec, type) do
+    [&Codec.datetime_decode/1, type]
+  end
+
+  @impl Ecto.Adapter
   def loaders(:utc_datetime, type) do
     [&Codec.datetime_decode/1, type]
   end

@@ -850,7 +850,7 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
       |> select(true)
       |> plan()
 
-    assert all(query) == "SELECT 1 FROM schema3 AS s0 ORDER BY s0.binary + 0"
+    assert all(query) == "SELECT 1 FROM schema3 AS s0 ORDER BY (s0.binary + 0)"
   end
 
   test "fragments" do
@@ -2252,8 +2252,8 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
     assert execute_ddl(create) == [
              """
              CREATE TABLE posts (\
-             published_at DATETIME, \
-             submitted_at DATETIME\
+             published_at TEXT_DATETIME, \
+             submitted_at TEXT_DATETIME\
              )\
              """
            ]
@@ -2268,7 +2268,7 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
        ]}
 
     assert execute_ddl(create) == [
-             "CREATE TABLE posts (published_at DATETIME, submitted_at DATETIME)"
+             "CREATE TABLE posts (published_at TEXT_DATETIME, submitted_at TEXT_DATETIME)"
            ]
   end
 
@@ -2358,7 +2358,7 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
              """,
              """
              ALTER TABLE posts \
-             ADD COLUMN when DATETIME\
+             ADD COLUMN when TEXT_DATETIME\
              """
            ]
   end

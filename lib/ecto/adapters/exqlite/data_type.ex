@@ -22,10 +22,10 @@ defmodule Ecto.Adapters.Exqlite.DataType do
   def column_type(:array, _opts), do: "JSON"
   def column_type({:map, _}, _opts), do: "JSON"
   def column_type({:array, _}, _opts), do: "JSON"
-  def column_type(:utc_datetime, _opts), do: "DATETIME"
-  def column_type(:utc_datetime_usec, _opts), do: "DATETIME"
-  def column_type(:naive_datetime, _opts), do: "DATETIME"
-  def column_type(:naive_datetime_usec, _opts), do: "DATETIME"
+  def column_type(:utc_datetime, _opts), do: "TEXT_DATETIME"
+  def column_type(:utc_datetime_usec, _opts), do: "TEXT_DATETIME"
+  def column_type(:naive_datetime, _opts), do: "TEXT_DATETIME"
+  def column_type(:naive_datetime_usec, _opts), do: "TEXT_DATETIME"
   def column_type(:decimal, nil), do: "DECIMAL"
 
   def column_type(:decimal, opts) do
