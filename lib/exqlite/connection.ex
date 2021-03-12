@@ -458,6 +458,19 @@ defmodule Exqlite.Connection do
             state
           }
 
+        :insert ->
+          {
+            :ok,
+            query,
+            Result.new(
+              command: call,
+              num_rows: changes,
+              rows: nil,
+              last_insert_id: last_insert_id
+            ),
+            state
+          }
+
         _ ->
           {
             :ok,
@@ -466,8 +479,7 @@ defmodule Exqlite.Connection do
               command: call,
               columns: columns,
               rows: rows,
-              num_rows: Enum.count(rows),
-              last_insert_id: last_insert_id
+              num_rows: Enum.count(rows)
             ),
             state
           }

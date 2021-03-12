@@ -48,6 +48,17 @@ defmodule Ecto.Integration.CrudTest do
       assert found.name == "Thing"
       assert found.tags == []
     end
+
+    test "insert_all" do
+      timestamp = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+      account = %{
+        name: "John",
+        inserted_at: timestamp,
+        updated_at: timestamp,
+      }
+      {1, nil} = TestRepo.insert_all(Account, [account], [])
+    end
+
   end
 
   describe "delete" do
