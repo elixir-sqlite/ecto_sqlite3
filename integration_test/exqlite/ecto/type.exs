@@ -141,6 +141,7 @@ defmodule Ecto.Integration.TypeTest do
     assert [^bid] = TestRepo.all(from c in Custom, select: type(^bid, :binary_id))
   end
 
+  @tag :like_match_blob
   test "text type as blob" do
     assert %Post{} = post = TestRepo.insert!(%Post{blob: <<0, 1, 2>>})
     id = post.id
@@ -148,6 +149,7 @@ defmodule Ecto.Integration.TypeTest do
     assert [^id] = TestRepo.all(from p in Post, where: like(p.blob, ^<<0, 1, 2>>), select: p.id)
   end
 
+  @tag :like_match_blob
   @tag :text_type_as_string
   test "text type as string" do
     assert %Post{} = post = TestRepo.insert!(%Post{blob: "hello"})

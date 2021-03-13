@@ -90,6 +90,9 @@ ExUnit.start(
     # for ecto to support matching on a given constraint violation name
     # which is what most of the tests validate
     :foreign_key_constraint,
+    # SQLite with DSQLITE_LIKE_DOESNT_MATCH_BLOBS=1
+    # does not support using LIKE on BLOB types
+    :like_match_blob,
 
     # we should be able to fully/correctly support these, but don't currently
     :with_conflict_target,

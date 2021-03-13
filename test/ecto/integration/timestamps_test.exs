@@ -52,6 +52,13 @@ defmodule Ecto.Integration.TimestampsTest do
     assert user
   end
 
+  test "max of naive datetime" do
+    datetime = ~N[2014-01-16 20:26:51]
+    TestRepo.insert!(%UserNaiveDatetime{inserted_at: datetime})
+    query = from p in UserNaiveDatetime, select: max(p.inserted_at)
+    assert [^datetime] = TestRepo.all(query)
+  end
+
   test "insert and fetch utc datetime" do
     {:ok, user} =
       %UserUtcDatetime{}

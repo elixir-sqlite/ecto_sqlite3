@@ -144,6 +144,14 @@ defmodule Ecto.Adapters.Exqlite do
     [&Codec.decimal_decode/1, type]
   end
 
+  # when we have an e.g., max(created_date) function
+  # Ecto does not truly know the return type, hence :maybe
+  # see Ecto.Query.Planner.collect_fields
+  @impl Ecto.Adapter
+  def loaders({:maybe, :naive_datetime}, type) do
+    [&Codec.naive_datetime_decode/1, type]
+  end
+
   @impl Ecto.Adapter
   def loaders(_, type) do
     [type]
