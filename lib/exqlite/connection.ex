@@ -469,14 +469,6 @@ defmodule Exqlite.Connection do
   end
 
   defp bind_params(%Query{ref: ref} = query, params, state) when ref != nil do
-    # TODO:
-    #    - Add parameter translation to sqlite types. See e.g.
-    #      https://github.com/elixir-sqlite/sqlitex/blob/master/lib/sqlitex/statement.ex#L274
-    #    - Do we do anything special to distinguish the different types of
-    #      parameters? See https://www.sqlite.org/lang_expr.html#varparam and
-    #      https://www.sqlite.org/c3ref/bind_blob.html E.g. we can accept a map of params
-    #      that binds values to named params. We can look up their indices via
-    #      https://www.sqlite.org/c3ref/bind_parameter_index.html
     case Sqlite3.bind(state.db, ref, params) do
       :ok -> {:ok, query, state}
       {:error, reason} -> {:error, %Error{message: reason}, state}
