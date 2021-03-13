@@ -507,7 +507,7 @@ defmodule Exqlite.Connection do
         end
 
       {:error, reason} ->
-        {:error, %Error{message: reason}, state}
+        {:disconnect, %Error{message: reason}, state}
     end
   end
 end
