@@ -1116,10 +1116,9 @@ defmodule Ecto.Adapters.Exqlite.Connection do
     ["NOT (", expr(expression, sources, query), ?)]
   end
 
-  def expr({:filter, _, _}, _sources, query) do
-    raise Ecto.QueryError,
-      query: query,
-      message: "SQLite3 adapter does not support aggregate filters"
+  def expr({:filter, _, [agg, filter]}, sources, query) do
+    aggregate = expr(agg, sources, query)
+    [aggregate, " FILTER (WHERE ", expr(filter, sources, query), ?)]
   end
 
   def expr(%Ecto.SubQuery{query: query}, sources, _query) do

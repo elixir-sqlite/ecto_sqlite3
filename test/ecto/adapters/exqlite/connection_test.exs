@@ -385,18 +385,14 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
   end
 
   test "aggregate filters" do
-    query =
-      Schema
-      |> select([r], count(r.x) |> filter(r.x > 10))
-      |> plan()
+    query = Schema |> select([r], count(r.x) |> filter(r.x > 10)) |> plan()
+    assert all(query) == ~s{SELECT count(s0.x) FILTER (WHERE s0.x > 10) FROM schema AS s0}
 
-    assert_raise(
-      Ecto.QueryError,
-      ~r/SQLite3 adapter does not support aggregate filters in query/,
-      fn ->
-        all(query)
-      end
-    )
+    query = Schema |> select([r], count(r.x) |> filter(r.x > 10 and r.x < 50)) |> plan()
+    assert all(query) == ~s{SELECT count(s0.x) FILTER (WHERE (s0.x > 10) AND (s0.x < 50)) FROM schema AS s0}
+
+    query = Schema |> select([r], count() |> filter(r.x > 10)) |> plan()
+    assert all(query) == ~s{SELECT count(*) FILTER (WHERE s0.x > 10) FROM schema AS s0}
   end
 
   test "distinct" do
