@@ -84,7 +84,7 @@ ExUnit.start(
     :array_type,
     :transaction_isolation,
     :insert_cell_wise_defaults,
-    :insert_select
+    :insert_select,
     # sqlite does not support microsecond precision, only millisecond
     :microsecond_precision,
     # sqlite supports FKs, but does not return sufficient data
@@ -100,6 +100,6 @@ ExUnit.start(
 
     # we should be able to fully/correctly support these, but don't currently
     :with_conflict_target,
-    :without_conflict_target,
+    :without_conflict_target
   ]
 )
