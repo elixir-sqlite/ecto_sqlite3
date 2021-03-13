@@ -464,9 +464,6 @@ defmodule Exqlite.Connection do
             state
           }
       end
-    else
-      {:error, reason} ->
-        {:error, %Error{message: reason}, state}
     end
   end
 
@@ -478,11 +475,17 @@ defmodule Exqlite.Connection do
   end
 
   defp get_columns(query, state) do
-    Sqlite3.columns(state.db, query.ref)
+    case Sqlite3.columns(state.db, query.ref) do
+      {:ok, columns} -> {:ok, columns}
+      {:error, reason} -> {:error, %Error{message: reason}, state}
+    end
   end
 
   defp get_rows(query, state) do
-    Sqlite3.fetch_all(state.db, query.ref)
+    case Sqlite3.fetch_all(state.db, query.ref) do
+      {:ok, rows} -> {:ok, rows}
+      {:error, reason} -> {:error, %Error{message: reason}, state}
+    end
   end
 
   defp handle_transaction(call, statement, state) do
