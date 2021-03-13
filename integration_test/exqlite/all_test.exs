@@ -4,12 +4,14 @@ Code.require_file "#{ecto}/integration_test/cases/assoc.exs", __DIR__
 Code.require_file "#{ecto}/integration_test/cases/joins.exs", __DIR__
 Code.require_file "#{ecto}/integration_test/cases/preload.exs", __DIR__
 Code.require_file "#{ecto}/integration_test/cases/repo.exs", __DIR__
-# Code.require_file "#{ecto}/integration_test/cases/type.exs", __DIR__
 Code.require_file "#{ecto}/integration_test/cases/windows.exs", __DIR__
 
 # Since sqlite does not have microsecond precision we forked these tests
 # and added some additionals tests for datetime types
 Code.require_file "./ecto/interval.exs", __DIR__
+
+# we also added some fixes to their decimal precision tests
+# Code.require_file "./ecto/type.exs", __DIR__
 
 
 ecto_sql = Mix.Project.deps_paths()[:ecto_sql]
