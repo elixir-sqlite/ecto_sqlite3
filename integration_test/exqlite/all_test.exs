@@ -25,3 +25,4 @@ Code.require_file "#{ecto_sql}/integration_test/sql/sql.exs", __DIR__
 Code.require_file "#{ecto_sql}/integration_test/sql/stream.exs", __DIR__
 Code.require_file "#{ecto_sql}/integration_test/sql/subquery.exs", __DIR__
 # Code.require_file "#{ecto_sql}/integration_test/sql/transaction.exs", __DIR__
+Code.require_file "./ecto_sql/migration.exs", __DIR__

@@ -2218,7 +2218,7 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
   test "create table with options" do
     assert_raise(
       ArgumentError,
-      "SQLite3 adapter does not support :options",
+      "SQLite3 adapter does not support keyword lists in :options",
       fn ->
         {:create, table(:posts, options: "WITH FOO=BAR"),
          [{:add, :id, :serial, [primary_key: true]}, {:add, :created_at, :datetime, []}]}

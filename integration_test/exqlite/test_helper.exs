@@ -59,6 +59,9 @@ end
 _ = Ecto.Adapters.Exqlite.storage_down(TestRepo.config())
 :ok = Ecto.Adapters.Exqlite.storage_up(TestRepo.config())
 
+_ = Ecto.Adapters.Exqlite.storage_down(PoolRepo.config())
+:ok = Ecto.Adapters.Exqlite.storage_up(PoolRepo.config())
+
 {:ok, _} = TestRepo.start_link()
 {:ok, _pid} = PoolRepo.start_link()
 
@@ -100,6 +103,17 @@ ExUnit.start(
 
     # we should be able to fully/correctly support these, but don't currently
     :with_conflict_target,
-    :without_conflict_target
+    :without_conflict_target,
+    :insert_select,
+
+    # Migration we don't support
+    :prefix,
+    :add_column_if_not_exists,
+    :remove_column_if_exists,
+    :alter_primary_key,
+    :alter_foreign_key,
+    :composite_foreign_key,
+    :assigns_id_type,
+    :modify_column
   ]
 )

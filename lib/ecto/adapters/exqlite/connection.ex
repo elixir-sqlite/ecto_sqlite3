@@ -326,7 +326,7 @@ defmodule Ecto.Adapters.Exqlite.Connection do
 
   @impl true
   def execute_ddl({_command, %Table{options: keyword}, _}) when keyword != nil do
-    raise ArgumentError, "SQLite3 adapter does not support :options"
+    raise ArgumentError, "SQLite3 adapter does not support keyword lists in :options"
   end
 
   @impl true
