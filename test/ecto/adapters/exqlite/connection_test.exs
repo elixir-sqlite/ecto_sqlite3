@@ -237,8 +237,8 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
              WITH RECURSIVE tree AS \
              (SELECT c0.id AS id, 1 AS depth FROM categories AS c0 WHERE (c0.parent_id IS NULL) \
              UNION ALL \
-             (SELECT c0.id, t1.depth + 1 FROM categories AS c0 \
-             INNER JOIN tree AS t1 ON t1.id = c0.parent_id)) \
+             SELECT c0.id, t1.depth + 1 FROM categories AS c0 \
+             INNER JOIN tree AS t1 ON t1.id = c0.parent_id) \
              SELECT s0.x, t1.id, CAST(t1.depth AS INTEGER) \
              FROM schema AS s0 \
              INNER JOIN tree AS t1 ON t1.id = s0.category_id\
@@ -276,9 +276,9 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
              FROM posts AS p0 \
              INNER JOIN comments_scope AS c1 ON c1.entity_id = p0.guid \
              UNION ALL \
-             (SELECT v0.title, c1.text \
+             SELECT v0.title, c1.text \
              FROM videos AS v0 \
-             INNER JOIN comments_scope AS c1 ON c1.entity_id = v0.guid)\
+             INNER JOIN comments_scope AS c1 ON c1.entity_id = v0.guid\
              """
   end
 
@@ -572,8 +572,8 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
     assert all(query) ==
              """
              SELECT s0.x FROM schema AS s0 \
-             UNION (SELECT s0.y FROM schema AS s0 ORDER BY s0.y LIMIT 40 OFFSET 20) \
-             UNION (SELECT s0.z FROM schema AS s0 ORDER BY s0.z LIMIT 60 OFFSET 30) \
+             UNION SELECT s0.y FROM schema AS s0 ORDER BY s0.y LIMIT 40 OFFSET 20 \
+             UNION SELECT s0.z FROM schema AS s0 ORDER BY s0.z LIMIT 60 OFFSET 30 \
              ORDER BY rand LIMIT 5 OFFSET 10\
              """
 
@@ -586,8 +586,8 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
     assert all(query) ==
              """
              SELECT s0.x FROM schema AS s0 \
-             UNION ALL (SELECT s0.y FROM schema AS s0 ORDER BY s0.y LIMIT 40 OFFSET 20) \
-             UNION ALL (SELECT s0.z FROM schema AS s0 ORDER BY s0.z LIMIT 60 OFFSET 30) \
+             UNION ALL SELECT s0.y FROM schema AS s0 ORDER BY s0.y LIMIT 40 OFFSET 20 \
+             UNION ALL SELECT s0.z FROM schema AS s0 ORDER BY s0.z LIMIT 60 OFFSET 30 \
              ORDER BY rand LIMIT 5 OFFSET 10\
              """
   end
@@ -623,24 +623,21 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
     assert all(query) ==
              """
              SELECT s0.x FROM schema AS s0 \
-             EXCEPT (SELECT s0.y FROM schema AS s0 ORDER BY s0.y LIMIT 40 OFFSET 20) \
-             EXCEPT (SELECT s0.z FROM schema AS s0 ORDER BY s0.z LIMIT 60 OFFSET 30) \
+             EXCEPT SELECT s0.y FROM schema AS s0 ORDER BY s0.y LIMIT 40 OFFSET 20 \
+             EXCEPT SELECT s0.z FROM schema AS s0 ORDER BY s0.z LIMIT 60 OFFSET 30 \
              ORDER BY rand LIMIT 5 OFFSET 10\
              """
 
-    query =
-      base_query
-      |> except_all(^except_query1)
-      |> except_all(^except_query2)
-      |> plan()
-
-    assert all(query) ==
-             """
-             SELECT s0.x FROM schema AS s0 \
-             EXCEPT ALL (SELECT s0.y FROM schema AS s0 ORDER BY s0.y LIMIT 40 OFFSET 20) \
-             EXCEPT ALL (SELECT s0.z FROM schema AS s0 ORDER BY s0.z LIMIT 60 OFFSET 30) \
-             ORDER BY rand LIMIT 5 OFFSET 10\
-             """
+    assert_raise(
+      Ecto.QueryError,
+      fn ->
+        base_query
+        |> except_all(^except_query1)
+        |> except_all(^except_query2)
+        |> plan()
+        |> all()
+      end
+    )
   end
 
   test "intersect and intersect all" do
@@ -674,24 +671,21 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
     assert all(query) ==
              """
              SELECT s0.x FROM schema AS s0 \
-             INTERSECT (SELECT s0.y FROM schema AS s0 ORDER BY s0.y LIMIT 40 OFFSET 20) \
-             INTERSECT (SELECT s0.z FROM schema AS s0 ORDER BY s0.z LIMIT 60 OFFSET 30) \
+             INTERSECT SELECT s0.y FROM schema AS s0 ORDER BY s0.y LIMIT 40 OFFSET 20 \
+             INTERSECT SELECT s0.z FROM schema AS s0 ORDER BY s0.z LIMIT 60 OFFSET 30 \
              ORDER BY rand LIMIT 5 OFFSET 10\
              """
 
-    query =
-      base_query
-      |> intersect_all(^intersect_query1)
-      |> intersect_all(^intersect_query2)
-      |> plan()
-
-    assert all(query) ==
-             """
-             SELECT s0.x FROM schema AS s0 \
-             INTERSECT ALL (SELECT s0.y FROM schema AS s0 ORDER BY s0.y LIMIT 40 OFFSET 20) \
-             INTERSECT ALL (SELECT s0.z FROM schema AS s0 ORDER BY s0.z LIMIT 60 OFFSET 30) \
-             ORDER BY rand LIMIT 5 OFFSET 10\
-             """
+    assert_raise(
+      Ecto.QueryError,
+      fn ->
+        base_query
+        |> intersect_all(^intersect_query1)
+        |> intersect_all(^intersect_query2)
+        |> plan()
+        |> all()
+      end
+    )
   end
 
   test "limit and offset" do
@@ -1201,8 +1195,8 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
              SELECT s0.id, ? FROM schema AS s0 INNER JOIN schema2 AS s1 ON ? \
              INNER JOIN schema2 AS s2 ON ? WHERE (?) AND (?) \
              GROUP BY ?, ? HAVING (?) AND (?) \
-             UNION (SELECT s0.id, ? FROM schema1 AS s0 WHERE (?)) \
-             UNION ALL (SELECT s0.id, ? FROM schema2 AS s0 WHERE (?)) \
+             UNION SELECT s0.id, ? FROM schema1 AS s0 WHERE (?) \
+             UNION ALL SELECT s0.id, ? FROM schema2 AS s0 WHERE (?) \
              ORDER BY ? LIMIT ? OFFSET ?\
              """
   end

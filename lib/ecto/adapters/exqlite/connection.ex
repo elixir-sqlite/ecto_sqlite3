@@ -1000,14 +1000,24 @@ defmodule Ecto.Adapters.Exqlite.Connection do
   end
 
   defp combinations(%{combinations: combinations}) do
-    Enum.map(combinations, fn
-      {:union, query} -> [" UNION (", all(query), ")"]
-      {:union_all, query} -> [" UNION ALL (", all(query), ")"]
-      {:except, query} -> [" EXCEPT (", all(query), ")"]
-      {:except_all, query} -> [" EXCEPT ALL (", all(query), ")"]
-      {:intersect, query} -> [" INTERSECT (", all(query), ")"]
-      {:intersect_all, query} -> [" INTERSECT ALL (", all(query), ")"]
-    end)
+    Enum.map(combinations, &combination/1)
+  end
+
+  defp combination({:union, query}), do: [" UNION ", all(query)]
+  defp combination({:union_all, query}), do: [" UNION ALL ", all(query)]
+  defp combination({:except, query}), do: [" EXCEPT ", all(query)]
+  defp combination({:intersect, query}), do: [" INTERSECT ", all(query)]
+
+  defp combination({:except_all, query}) do
+    raise Ecto.QueryError,
+      query: query,
+      message: "SQLite3 does not support EXCEPT ALL"
+  end
+
+  defp combination({:intersect_all, query}) do
+    raise Ecto.QueryError,
+      query: query,
+      message: "SQLite3 does not INTERSECT ALL"
   end
 
   def lock(query, _sources) do
