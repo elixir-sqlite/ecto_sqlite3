@@ -150,12 +150,14 @@ defmodule Exqlite.Connection do
 
   @impl true
   def handle_prepare(%Query{} = query, options, state) do
-    prepare(query, options, state)
+    with {:ok, query} <- prepare(query, options, state) do
+      {:ok, query, state}
+    end
   end
 
   @impl true
   def handle_execute(%Query{} = query, params, options, state) do
-    with {:ok, query, state} <- prepare(query, options, state) do
+    with {:ok, query} <- prepare(query, options, state) do
       execute(:execute, query, params, state)
     end
   end
@@ -248,8 +250,8 @@ defmodule Exqlite.Connection do
   def handle_declare(%Query{} = query, params, opts, state) do
     # We emulate cursor functionality by just using a prepared statement and
     # step through it. Thus we just return the query ref as the cursor.
-    with {:ok, query, state} <- prepare_no_cache(query, opts, state),
-         {:ok, query, state} <- bind_params(query, params, state) do
+    with {:ok, query} <- prepare_no_cache(query, opts, state),
+         {:ok, query} <- bind_params(query, params, state) do
       {:ok, query, query.ref, state}
     end
   end
@@ -398,7 +400,7 @@ defmodule Exqlite.Connection do
 
     with {:ok, ref} <- Sqlite3.prepare(state.db, IO.iodata_to_binary(statement)),
          query <- %{query | ref: ref} do
-      {:ok, query, state}
+      {:ok, query}
     else
       {:error, reason} ->
         {:error, %Error{message: reason}, state}
@@ -411,7 +413,7 @@ defmodule Exqlite.Connection do
 
     case Sqlite3.prepare(state.db, statement) do
       {:ok, ref} ->
-        {:ok, %{query | ref: ref}, state}
+        {:ok, %{query | ref: ref}}
 
       {:error, reason} ->
         {:error, %Error{message: reason}, state}
@@ -432,9 +434,9 @@ defmodule Exqlite.Connection do
   defp maybe_rows(rows), do: rows
 
   defp execute(call, %Query{} = query, params, state) do
-    with {:ok, query, state} <- bind_params(query, params, state),
-         {:ok, columns} <- Sqlite3.columns(state.db, query.ref),
-         {:ok, rows} <- Sqlite3.fetch_all(state.db, query.ref),
+    with {:ok, query} <- bind_params(query, params, state),
+         {:ok, columns} <- get_columns(query, state),
+         {:ok, rows} <- get_rows(query, state),
          changes <- maybe_changes(state.db, query) do
       case query.command do
         command when command in [:delete, :insert, :update] ->
@@ -470,9 +472,17 @@ defmodule Exqlite.Connection do
 
   defp bind_params(%Query{ref: ref} = query, params, state) when ref != nil do
     case Sqlite3.bind(state.db, ref, params) do
-      :ok -> {:ok, query, state}
+      :ok -> {:ok, query}
       {:error, reason} -> {:error, %Error{message: reason}, state}
     end
+  end
+
+  defp get_columns(query, state) do
+    Sqlite3.columns(state.db, query.ref)
+  end
+
+  defp get_rows(query, state) do
+    Sqlite3.fetch_all(state.db, query.ref)
   end
 
   defp handle_transaction(call, statement, state) do
