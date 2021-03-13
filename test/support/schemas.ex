@@ -79,6 +79,7 @@ defmodule Exqlite.Integration.Product do
     field(:external_id, Ecto.UUID)
     field(:tags, {:array, :string}, default: [])
     field(:approved_at, :naive_datetime)
+    field(:price, :decimal)
 
     belongs_to(:account, Account)
 
@@ -98,5 +99,15 @@ defmodule Exqlite.Integration.Product do
     else
       put_change(changeset, :external_id, Ecto.UUID.bingenerate())
     end
+  end
+end
+
+defmodule Exqlite.Integration.Vec3f do
+  use Ecto.Schema
+
+  schema "vec3f" do
+    field(:x, :float)
+    field(:y, :float)
+    field(:z, :float)
   end
 end

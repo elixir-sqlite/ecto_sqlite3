@@ -27,7 +27,14 @@ defmodule Exqlite.Integration.Migration do
       add(:external_id, :uuid)
       add(:tags, {:array, :string})
       add(:approved_at, :naive_datetime)
+      add(:price, :decimal)
       timestamps()
+    end
+
+    create table(:vec3f) do
+      add(:x, :float)
+      add(:y, :float)
+      add(:z, :float)
     end
   end
 end
