@@ -104,7 +104,6 @@ defmodule Ecto.Integration.TypeTest do
     assert [^blob] = TestRepo.all(query)
   end
 
-  @tag :onboarding
   test "coalesce text type when value" do
     blob = <<0, 2>>
     default_blob = <<0, 1>>

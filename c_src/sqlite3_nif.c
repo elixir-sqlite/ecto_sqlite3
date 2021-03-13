@@ -392,14 +392,10 @@ make_cell(ErlNifEnv* env, sqlite3_stmt* statement, unsigned int i)
             return make_atom(env, "nil");
 
         case SQLITE_BLOB:
-            return enif_make_tuple2(
+            return make_binary(
                 env,
-                make_atom(env, "blob"),
-                make_binary(
-                    env,
-                    sqlite3_column_blob(statement, i),
-                    sqlite3_column_bytes(statement, i)
-                )
+                sqlite3_column_blob(statement, i),
+                sqlite3_column_bytes(statement, i)
             );
 
         case SQLITE_TEXT:
