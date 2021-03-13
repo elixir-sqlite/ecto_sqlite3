@@ -2444,18 +2444,19 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
     )
   end
 
-  test "alter column errors for :remove column" do
-    assert_raise(
-      ArgumentError,
-      "ALTER COLUMN not supported by SQLite3",
-      fn ->
-        {:alter, table(:posts),
-         [
-           {:remove, :price, :numeric, [precision: 8, scale: 2]}
-         ]}
-        |> execute_ddl()
-      end
-    )
+  test "alter table removes column" do
+    alteration = {
+      :alter,
+      table(:posts),
+      [{:remove, :price, :numeric, [precision: 8, scale: 2]}]
+    }
+
+    assert execute_ddl(alteration) == [
+      """
+      ALTER TABLE posts \
+      DROP COLUMN price\
+      """
+    ]
   end
 
   test "alter table with primary key" do
@@ -2713,15 +2714,15 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
            ]
   end
 
-  test "drop column errors" do
-    assert_raise(
-      ArgumentError,
-      "DROP COLUMN not supported by SQLite3",
-      fn ->
-        {:alter, table(:posts), [{:remove, :summary}]}
-        |> execute_ddl()
-      end
-    )
+  test "drop column" do
+    drop_column = {:alter, table(:posts), [{:remove, :summary}]}
+
+    assert execute_ddl(drop_column) == [
+      """
+      ALTER TABLE posts \
+      DROP COLUMN summary\
+      """
+    ]
   end
 
   test "arrays" do

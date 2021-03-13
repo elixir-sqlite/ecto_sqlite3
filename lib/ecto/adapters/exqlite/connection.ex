@@ -185,7 +185,7 @@ defmodule Ecto.Adapters.Exqlite.Connection do
 
   @impl true
   def update_all(query, prefix \\ nil) do
-    %{from: %{source: source}, select: select} = query
+    %{from: %{source: source}} = query
 
     sources = create_names(query, [])
     cte = cte(query, sources)
@@ -1404,12 +1404,15 @@ defmodule Ecto.Adapters.Exqlite.Connection do
     raise ArgumentError, "ALTER COLUMN not supported by SQLite3"
   end
 
-  defp column_change(_table, {:remove, _name, _type, _opts}) do
-    raise ArgumentError, "ALTER COLUMN not supported by SQLite3"
+  defp column_change(table, {:remove, name, _type, _opts}) do
+    column_change(table, {:remove, name})
   end
 
-  defp column_change(_table, {:remove, :summary}) do
-    raise ArgumentError, "DROP COLUMN not supported by SQLite3"
+  defp column_change(_table, {:remove, name}) do
+    [
+      "DROP COLUMN ",
+      quote_name(name)
+    ]
   end
 
   defp column_change(_table, _) do
