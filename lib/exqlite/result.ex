@@ -4,10 +4,9 @@ defmodule Exqlite.Result do
           columns: [String.t()] | nil,
           rows: [[term] | term] | nil,
           num_rows: integer(),
-          last_insert_id: any()
         }
 
-  defstruct command: nil, columns: [], rows: [], num_rows: 0, last_insert_id: nil
+  defstruct command: nil, columns: [], rows: [], num_rows: 0
 
   def new(options) do
     %__MODULE__{
@@ -15,7 +14,6 @@ defmodule Exqlite.Result do
       columns: Keyword.get(options, :columns, []),
       rows: Keyword.get(options, :rows, []),
       num_rows: Keyword.get(options, :num_rows, 0),
-      last_insert_id: Keyword.get(options, :last_insert_id)
     }
   end
 end

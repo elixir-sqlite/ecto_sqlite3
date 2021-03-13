@@ -271,8 +271,7 @@ defmodule Exqlite.Connection do
           %Result{
             rows: [],
             command: :fetch,
-            num_rows: 0,
-            last_insert_id: nil
+            num_rows: 0
           },
           state
         }
@@ -283,8 +282,7 @@ defmodule Exqlite.Connection do
           %Result{
             rows: [row],
             command: :fetch,
-            num_rows: 1,
-            last_insert_id: nil
+            num_rows: 1
           },
           state
         }
@@ -420,15 +418,6 @@ defmodule Exqlite.Connection do
     end
   end
 
-  defp maybe_last_insert_id(db, %Query{command: :insert}) do
-    case Sqlite3.last_insert_rowid(db) do
-      {:ok, rowid} -> rowid
-      _ -> nil
-    end
-  end
-
-  defp maybe_last_insert_id(_, _), do: nil
-
   defp maybe_changes(db, %Query{command: command})
        when command in [:update, :insert, :delete] do
     case Sqlite3.changes(db) do
@@ -446,7 +435,6 @@ defmodule Exqlite.Connection do
     with {:ok, query, state} <- bind_params(query, params, state),
          {:ok, columns} <- Sqlite3.columns(state.db, query.ref),
          {:ok, rows} <- Sqlite3.fetch_all(state.db, query.ref),
-         last_insert_id <- maybe_last_insert_id(state.db, query),
          changes <- maybe_changes(state.db, query) do
       case query.command do
         command when command in [:delete, :update] ->
@@ -468,8 +456,7 @@ defmodule Exqlite.Connection do
             Result.new(
               command: call,
               num_rows: changes,
-              rows: maybe_rows(rows),
-              last_insert_id: last_insert_id
+              rows: maybe_rows(rows)
             ),
             state
           }
@@ -515,7 +502,6 @@ defmodule Exqlite.Connection do
           command: call,
           rows: [],
           columns: [],
-          last_insert_id: nil,
           num_rows: 0
         }
 
