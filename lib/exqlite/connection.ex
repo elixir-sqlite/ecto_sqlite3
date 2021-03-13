@@ -437,19 +437,7 @@ defmodule Exqlite.Connection do
          {:ok, rows} <- Sqlite3.fetch_all(state.db, query.ref),
          changes <- maybe_changes(state.db, query) do
       case query.command do
-        command when command in [:delete, :update] ->
-          {
-            :ok,
-            query,
-            Result.new(
-              command: call,
-              num_rows: changes,
-              rows: maybe_rows(rows)
-            ),
-            state
-          }
-
-        :insert ->
+        command when command in [:delete, :insert, :update] ->
           {
             :ok,
             query,
