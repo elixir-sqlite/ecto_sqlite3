@@ -94,6 +94,9 @@ ExUnit.start(
     # does not support using LIKE on BLOB types
     :like_match_blob,
 
+    # we are in the midst of onboarding these (i.e., fixing the bugs they point towards)
+    :onboarding,
+
     # we should be able to fully/correctly support these, but don't currently
     :with_conflict_target,
     :without_conflict_target,

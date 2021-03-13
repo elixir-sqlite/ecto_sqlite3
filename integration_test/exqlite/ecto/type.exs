@@ -5,6 +5,7 @@ defmodule Ecto.Integration.TypeTest do
   alias Ecto.Integration.TestRepo
   import Ecto.Query
 
+  @tag :onboarding
   test "primitive types" do
     integer  = 1
     float    = 0.1
@@ -103,6 +104,7 @@ defmodule Ecto.Integration.TypeTest do
     assert [^blob] = TestRepo.all(query)
   end
 
+  @tag :onboarding
   test "coalesce text type when value" do
     blob = <<0, 2>>
     default_blob = <<0, 1>>
@@ -256,6 +258,7 @@ defmodule Ecto.Integration.TypeTest do
     assert TestRepo.get!(Post, post.id).meta == %{"world" => "hello"}
   end
 
+  @tag :onboarding
   @tag :map_type
   test "embeds one" do
     item = %Item{price: 123, valid_at: ~D[2014-01-16]}
@@ -322,6 +325,7 @@ defmodule Ecto.Integration.TypeTest do
     assert TestRepo.one(from o in Order, select: o.items[0]["valid_at"]) == "2020-01-01"
   end
 
+  @tag :onboarding
   @tag :map_type
   @tag :map_type_schemaless
   test "embeds one with custom type" do
@@ -439,6 +443,7 @@ defmodule Ecto.Integration.TypeTest do
     assert Decimal.equal?(decimal, cost)
   end
 
+  @tag :onboarding
   @tag :decimal_type
   test "on coalesce with mixed types" do
     decimal = Decimal.new("1.0")

@@ -11,7 +11,8 @@ Code.require_file "#{ecto}/integration_test/cases/windows.exs", __DIR__
 Code.require_file "./ecto/interval.exs", __DIR__
 
 # we also added some fixes to their decimal precision tests
-# Code.require_file "./ecto/type.exs", __DIR__
+# we also added the :like_match_blob tag
+Code.require_file "./ecto/type.exs", __DIR__
 
 
 ecto_sql = Mix.Project.deps_paths()[:ecto_sql]

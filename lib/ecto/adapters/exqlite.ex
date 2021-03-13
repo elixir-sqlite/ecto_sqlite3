@@ -80,11 +80,6 @@ defmodule Ecto.Adapters.Exqlite do
   end
 
   @impl Ecto.Adapter
-  def loaders(:binary_id, type) do
-    [Ecto.UUID, type]
-  end
-
-  @impl Ecto.Adapter
   def loaders(:naive_datetime_usec, type) do
     [&Codec.datetime_decode/1, type]
   end
@@ -167,11 +162,6 @@ defmodule Ecto.Adapters.Exqlite do
   end
 
   @impl Ecto.Adapter
-  def dumpers(:binary_id, type) do
-    [type, Ecto.UUID]
-  end
-
-  @impl Ecto.Adapter
   def dumpers(:boolean, type) do
     [type, &Codec.bool_encode/1]
   end
@@ -203,6 +193,11 @@ defmodule Ecto.Adapters.Exqlite do
 
   @impl Ecto.Adapter
   def dumpers({:map, _}, type) do
+    [type, &Codec.json_encode/1]
+  end
+
+  @impl Ecto.Adapter
+  def dumpers(:map, type) do
     [type, &Codec.json_encode/1]
   end
 

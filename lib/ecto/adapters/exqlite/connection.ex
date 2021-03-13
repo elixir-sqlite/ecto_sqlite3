@@ -1200,7 +1200,7 @@ defmodule Ecto.Adapters.Exqlite.Connection do
     path =
       Enum.map(path, fn
         binary when is_binary(binary) ->
-          [?., ?", escape_json_key(binary), ?"]
+          [?., escape_json_key(binary)]
 
         integer when is_integer(integer) ->
           "[#{integer}]"
@@ -1639,6 +1639,6 @@ defmodule Ecto.Adapters.Exqlite.Connection do
   defp escape_json_key(value) when is_binary(value) do
     value
     |> escape_string()
-    |> :binary.replace("\"", "\\\\\"", [:global])
+    |> :binary.replace("\"", "\\\"", [:global])
   end
 end
