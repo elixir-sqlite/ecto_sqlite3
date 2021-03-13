@@ -34,6 +34,10 @@ Application.put_env(:exqlite, PoolRepo,
   show_sensitive_data_on_connection_error: true
 )
 
+# needed since some of the integration tests rely on fetching env from :ecto_sql
+Application.put_env(:ecto_sql, TestRepo, Application.get_env(:exqlite, TestRepo))
+Application.put_env(:ecto_sql, PoolRepo, Application.get_env(:exqlite, PoolRepo))
+
 defmodule Ecto.Integration.PoolRepo do
   use Ecto.Integration.Repo, otp_app: :exqlite, adapter: Ecto.Adapters.Exqlite
 end
