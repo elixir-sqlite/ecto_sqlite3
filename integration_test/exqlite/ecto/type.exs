@@ -5,7 +5,6 @@ defmodule Ecto.Integration.TypeTest do
   alias Ecto.Integration.TestRepo
   import Ecto.Query
 
-  @tag :onboarding
   test "primitive types" do
     integer  = 1
     float    = 0.1
