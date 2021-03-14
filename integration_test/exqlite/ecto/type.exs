@@ -440,12 +440,12 @@ defmodule Ecto.Integration.TypeTest do
     assert Decimal.equal?(decimal, cost)
   end
 
-  @tag :onboarding
   @tag :decimal_type
   test "on coalesce with mixed types" do
     decimal = Decimal.new("1.0")
     TestRepo.insert!(%Post{cost: decimal})
-    assert [^decimal] = TestRepo.all(from p in Post, select: coalesce(p.cost, 0))
+    [cost] = TestRepo.all(from p in Post, select: coalesce(p.cost, 0))
+    assert Decimal.equal?(decimal, cost)
   end
 
   @tag :union_with_literals
