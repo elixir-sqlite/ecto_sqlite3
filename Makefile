@@ -72,6 +72,6 @@ $(PRIV_DIR):
 	mkdir -p $@
 
 clean:
-	rm -f $(LIB_NAME)
+	rm -f $(LIB_NAME) $(OBJ)
 
 .PHONY: all clean
