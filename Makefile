@@ -1,4 +1,5 @@
 SRC = sqlite3/sqlite3.c c_src/sqlite3_nif.c
+OBJ = $(SRC:.c=.o)
 
 CFLAGS ?= -g
 
@@ -44,25 +45,28 @@ PRIV_DIR = $(MIX_APP_PATH)/priv
 LIB_NAME = $(PRIV_DIR)/sqlite3_nif.so
 
 ifneq ($(CROSSCOMPILE),)
-	LIB_CFLAGS := -shared -fPIC -fvisibility=hidden
+	CFLAGS += -shared -fPIC -fvisibility=hidden
 	SO_LDFLAGS := -Wl,-soname,libsqlite3.so.0
 else
 	ifeq ($(KERNEL_NAME), Linux)
-		LIB_CFLAGS := -shared -fPIC -fvisibility=hidden
+		CFLAGS += -shared -fPIC -fvisibility=hidden
 		SO_LDFLAGS := -Wl,-soname,libsqlite3.so.0
 	endif
 	ifeq ($(KERNEL_NAME), Darwin)
-		LIB_CFLAGS := -dynamiclib -undefined dynamic_lookup
+		CFLAGS += -dynamiclib -undefined dynamic_lookup
 	endif
 	ifeq ($(KERNEL_NAME), $(filter $(KERNEL_NAME),OpenBSD FreeBSD NetBSD))
-		LIB_CFLAGS := -shared -fPIC
+		CFLAGS += -shared -fPIC
 	endif
 endif
 
+%.o: %.c
+	$(CC) $(CFLAGS) -o $@ -c $<
+
 all: $(PRIV_DIR) $(LIB_NAME)
 
-$(LIB_NAME): $(SRC)
-	$(CC) $(CFLAGS) $(LIB_CFLAGS) $(SO_LDFLAGS) $^ -o $@
+$(LIB_NAME): $(OBJ)
+	$(CC) $(CFLAGS) $(SO_LDFLAGS) $^ -o $@
 
 $(PRIV_DIR):
 	mkdir -p $@
