@@ -104,7 +104,6 @@ ExUnit.start(
     # we should be able to fully/correctly support these, but don't currently
     :with_conflict_target,
     :without_conflict_target,
-    :insert_select,
 
     # Migration we don't support
     :prefix,
