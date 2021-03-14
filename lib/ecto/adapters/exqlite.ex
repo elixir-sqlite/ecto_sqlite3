@@ -110,11 +110,6 @@ defmodule Ecto.Adapters.Exqlite do
   end
 
   @impl Ecto.Adapter
-  def loaders({:embed, _} = type, _) do
-    [&Codec.json_decode/1, &Ecto.Type.embedded_load(type, &1, :json)]
-  end
-
-  @impl Ecto.Adapter
   def loaders({:map, _}, type) do
     [&Codec.json_decode/1, &Ecto.Type.embedded_load(type, &1, :json)]
   end
@@ -172,11 +167,6 @@ defmodule Ecto.Adapters.Exqlite do
   end
 
   @impl Ecto.Adapter
-  def dumpers({:embed, _} = type, _) do
-    [&Ecto.Type.embedded_dump(type, &1, :json)]
-  end
-
-  @impl Ecto.Adapter
   def dumpers(:time, type) do
     [type, &Codec.time_encode/1]
   end
@@ -193,7 +183,7 @@ defmodule Ecto.Adapters.Exqlite do
 
   @impl Ecto.Adapter
   def dumpers({:map, _}, type) do
-    [type, &Codec.json_encode/1]
+    [&Ecto.Type.embedded_dump(type, &1, :json), &Codec.json_encode/1]
   end
 
   @impl Ecto.Adapter

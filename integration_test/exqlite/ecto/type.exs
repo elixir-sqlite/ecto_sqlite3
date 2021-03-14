@@ -257,7 +257,6 @@ defmodule Ecto.Integration.TypeTest do
     assert TestRepo.get!(Post, post.id).meta == %{"world" => "hello"}
   end
 
-  @tag :onboarding
   @tag :map_type
   test "embeds one" do
     item = %Item{price: 123, valid_at: ~D[2014-01-16]}
