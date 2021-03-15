@@ -322,7 +322,6 @@ defmodule Ecto.Integration.TypeTest do
     assert TestRepo.one(from o in Order, select: o.items[0]["valid_at"]) == "2020-01-01"
   end
 
-  @tag :onboarding
   @tag :map_type
   @tag :map_type_schemaless
   test "embeds one with custom type" do

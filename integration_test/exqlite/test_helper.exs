@@ -97,9 +97,10 @@ ExUnit.start(
     # SQLite with DSQLITE_LIKE_DOESNT_MATCH_BLOBS=1
     # does not support using LIKE on BLOB types
     :like_match_blob,
-
-    # we are in the midst of onboarding these (i.e., fixing the bugs they point towards)
-    :onboarding,
+    # SQLite will return a string for schemaless map types as
+    # Ecto does not have enough information to call the associated loader
+    # that converts the string JSON representaiton into a map
+    :map_type_schemaless,
 
     # we should be able to fully/correctly support these, but don't currently
     :with_conflict_target,
