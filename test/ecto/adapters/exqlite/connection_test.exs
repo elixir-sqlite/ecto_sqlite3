@@ -2208,8 +2208,8 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
              category_2 INTEGER CONSTRAINT posts_category_2_fkey REFERENCES categories(id), \
              category_3 INTEGER NOT NULL CONSTRAINT posts_category_3_fkey REFERENCES categories(id) ON DELETE CASCADE, \
              category_4 INTEGER CONSTRAINT posts_category_4_fkey REFERENCES categories(id) ON DELETE SET NULL, \
-             category_5 INTEGER CONSTRAINT posts_category_5_fkey REFERENCES categories(id) ON DELETE SET NULL, \
-             category_6 INTEGER CONSTRAINT posts_category_6_fkey REFERENCES categories(id) ON DELETE SET NULL\
+             category_5 INTEGER CONSTRAINT posts_category_5_fkey REFERENCES foo.categories(id) ON DELETE SET NULL, \
+             category_6 INTEGER CONSTRAINT posts_category_6_fkey REFERENCES categories(id,there) ON DELETE SET NULL\
              )\
              """
            ]
