@@ -398,22 +398,38 @@ defmodule Ecto.Adapters.Exqlite.Connection do
   end
 
   @impl true
-  def execute_ddl({command, %Index{} = index})
-      when command in [:create, :create_if_not_exists] do
+  def execute_ddl({:create, %Index{} = index}) do
     fields = intersperse_map(index.columns, ", ", &index_expr/1)
 
     [
       [
         "CREATE ",
         if_do(index.unique, "UNIQUE "),
-        "INDEX",
-        if_do(command == :create_if_not_exists, " IF NOT EXISTS"),
-        ?\s,
+        "INDEX ",
         quote_name(index.name),
         " ON ",
         quote_table(index.prefix, index.table),
-        ?\s,
-        ?(,
+        " (",
+        fields,
+        ?),
+        if_do(index.where, [" WHERE ", to_string(index.where)])
+      ]
+    ]
+  end
+
+  @impl true
+  def execute_ddl({:create_if_not_exists, %Index{} = index}) do
+    fields = intersperse_map(index.columns, ", ", &index_expr/1)
+
+    [
+      [
+        "CREATE ",
+        if_do(index.unique, "UNIQUE "),
+        "INDEX IF NOT EXISTS ",
+        quote_name(index.name),
+        " ON ",
+        quote_table(index.prefix, index.table),
+        " (",
         fields,
         ?),
         if_do(index.where, [" WHERE ", to_string(index.where)])
