@@ -106,6 +106,12 @@ ExUnit.start(
     :with_conflict_target,
     :without_conflict_target,
 
+    # right now in lock_for_migrations() we do effectively nothing, this is because
+    # SQLite is single-writer so there isn't really a need for us to do anything.
+    # ecto assumes all implementing adapters need >=2 connections for migrations
+    # which is not true for SQLite
+    :lock_for_migrations,
+
     # Migration we don't support
     :prefix,
     :add_column_if_not_exists,

@@ -461,7 +461,6 @@ defmodule Ecto.Integration.MigrationTest do
     assert :ok == down(PoolRepo, num, OnDeleteMigration, log: false)
   end
 
-  @tag :composite_foreign_key
   test "composite foreign keys", %{migration_number: num} do
     assert :ok == up(PoolRepo, num, CompositeForeignKeyMigration, log: false)
 
