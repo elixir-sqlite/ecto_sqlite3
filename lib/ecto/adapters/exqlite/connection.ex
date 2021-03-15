@@ -1522,13 +1522,15 @@ defmodule Ecto.Adapters.Exqlite.Connection do
   defp options_expr(options), do: [?\s, to_string(options)]
 
   defp reference_expr(%Reference{} = ref, table, name) do
+    {_, reference_columns} = Enum.unzip([{name, ref.column} | ref.with])
+
     [
       " CONSTRAINT ",
       reference_name(ref, table, name),
       " REFERENCES ",
-      quote_table(table.prefix, ref.table),
+      quote_table(ref.prefix || table.prefix, ref.table),
       ?(,
-      quote_name(ref.column),
+      quote_names(reference_columns),
       ?),
       reference_on_delete(ref.on_delete),
       reference_on_update(ref.on_update)
