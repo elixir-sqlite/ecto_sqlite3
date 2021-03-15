@@ -111,7 +111,6 @@ ExUnit.start(
     :remove_column_if_exists,
     :alter_primary_key,
     :alter_foreign_key,
-    :composite_foreign_key,
     :assigns_id_type,
     :modify_column
   ]

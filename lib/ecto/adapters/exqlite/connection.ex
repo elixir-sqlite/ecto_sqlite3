@@ -332,6 +332,7 @@ defmodule Ecto.Adapters.Exqlite.Connection do
   @impl true
   def execute_ddl({:create, %Table{} = table, columns}) do
     {table, composite_pk_def} = composite_pk_definition(table, columns)
+    composite_fk_defs = composite_fk_definitions(table, columns)
 
     [
       [
@@ -341,6 +342,7 @@ defmodule Ecto.Adapters.Exqlite.Connection do
         ?(,
         column_definitions(table, columns),
         composite_pk_def,
+        composite_fk_defs,
         ?),
         options_expr(table.options)
       ]
@@ -350,6 +352,7 @@ defmodule Ecto.Adapters.Exqlite.Connection do
   @impl true
   def execute_ddl({:create_if_not_exists, %Table{} = table, columns}) do
     {table, composite_pk_def} = composite_pk_definition(table, columns)
+    composite_fk_defs = composite_fk_definitions(table, columns)
 
     [
       [
@@ -359,6 +362,7 @@ defmodule Ecto.Adapters.Exqlite.Connection do
         ?(,
         column_definitions(table, columns),
         composite_pk_def,
+        composite_fk_defs,
         ?),
         options_expr(table.options)
       ]
@@ -1521,16 +1525,17 @@ defmodule Ecto.Adapters.Exqlite.Connection do
 
   defp options_expr(options), do: [?\s, to_string(options)]
 
-  defp reference_expr(%Reference{} = ref, table, name) do
-    {_, reference_columns} = Enum.unzip([{name, ref.column} | ref.with])
+  # composite FK is handled at table level
+  defp reference_expr(%Reference{with: [_]}, _table, _name), do: []
 
+  defp reference_expr(%Reference{} = ref, table, name) do
     [
       " CONSTRAINT ",
       reference_name(ref, table, name),
       " REFERENCES ",
       quote_table(ref.prefix || table.prefix, ref.table),
       ?(,
-      quote_names(reference_columns),
+      quote_name(ref.column),
       ?),
       reference_on_delete(ref.on_delete),
       reference_on_update(ref.on_update)
@@ -1595,6 +1600,35 @@ defmodule Ecto.Adapters.Exqlite.Connection do
     else
       {table, ""}
     end
+  end
+
+  defp composite_fk_definitions(%Table{} = table, columns) do
+    composite_fk_cols = columns
+      |> Enum.filter(fn c ->
+        case c do
+          {_op, _name, %Reference{with: [_]}, _opts} -> true
+          _ -> false
+        end
+      end)
+
+    Enum.map(composite_fk_cols, &composite_fk_definition(table, &1))
+  end
+
+  defp composite_fk_definition(table, {_op, name, ref, _opts}) do
+    {current_columns, reference_columns} = Enum.unzip([{name, ref.column} | ref.with])
+
+    [
+      ", FOREIGN KEY (",
+      quote_names(current_columns),
+      ") REFERENCES ",
+      quote_table(ref.prefix || table.prefix, ref.table),
+      ?(,
+      quote_names(reference_columns),
+      ?),
+      reference_on_delete(ref.on_delete),
+      reference_on_update(ref.on_update)
+    ]
+
   end
 
   defp get_source(query, sources, ix, source) do

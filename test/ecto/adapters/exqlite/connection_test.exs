@@ -2196,7 +2196,10 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
           %Reference{table: :categories, prefix: :foo, on_delete: :nilify_all}, []},
          {:add, :category_6,
           %Reference{table: :categories, with: [here: :there], on_delete: :nilify_all},
-          []}
+          []},
+         {:add, :category_7,
+          %Reference{table: :tags, with: [that: :this], on_delete: :nilify_all},
+          []},
        ]}
 
     assert execute_ddl(create) == [
@@ -2209,7 +2212,10 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
              category_3 INTEGER NOT NULL CONSTRAINT posts_category_3_fkey REFERENCES categories(id) ON DELETE CASCADE, \
              category_4 INTEGER CONSTRAINT posts_category_4_fkey REFERENCES categories(id) ON DELETE SET NULL, \
              category_5 INTEGER CONSTRAINT posts_category_5_fkey REFERENCES foo.categories(id) ON DELETE SET NULL, \
-             category_6 INTEGER CONSTRAINT posts_category_6_fkey REFERENCES categories(id,there) ON DELETE SET NULL\
+             category_6 INTEGER, \
+             category_7 INTEGER, \
+             FOREIGN KEY (category_6,here) REFERENCES categories(id,there) ON DELETE SET NULL, \
+             FOREIGN KEY (category_7,that) REFERENCES tags(id,this) ON DELETE SET NULL\
              )\
              """
            ]
