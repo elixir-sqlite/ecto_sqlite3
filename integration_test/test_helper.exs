@@ -11,7 +11,7 @@ Code.require_file("#{ecto_sql}/integration_test/support/repo.exs", __DIR__)
 alias Ecto.Integration.TestRepo
 
 Application.put_env(:ecto_sqlite3, TestRepo,
-  adapter: Ecto.Adapters.Exqlite,
+  adapter: Ecto.Adapters.SQLite3,
   database: "/tmp/exqlite_integration_test.db",
   journal_mode: :wal,
   cache_size: -64000,
@@ -25,7 +25,7 @@ Application.put_env(:ecto_sqlite3, TestRepo,
 alias Ecto.Integration.PoolRepo
 
 Application.put_env(:ecto_sqlite3, PoolRepo,
-  adapter: Ecto.Adapters.Exqlite,
+  adapter: Ecto.Adapters.SQLite3,
   database: "/tmp/exqlite_integration_pool_test.db",
   journal_mode: :wal,
   cache_size: -64000,
@@ -39,7 +39,7 @@ Application.put_env(:ecto_sql, TestRepo, Application.get_env(:ecto_sqlite3, Test
 Application.put_env(:ecto_sql, PoolRepo, Application.get_env(:ecto_sqlite3, PoolRepo))
 
 defmodule Ecto.Integration.PoolRepo do
-  use Ecto.Integration.Repo, otp_app: :ecto_sqlite3, adapter: Ecto.Adapters.Exqlite
+  use Ecto.Integration.Repo, otp_app: :ecto_sqlite3, adapter: Ecto.Adapters.SQLite3
 end
 
 Code.require_file "#{ecto}/integration_test/support/schemas.exs", __DIR__
@@ -53,14 +53,14 @@ defmodule Ecto.Integration.Case do
   end
 end
 
-{:ok, _} = Ecto.Adapters.Exqlite.ensure_all_started(TestRepo.config(), :temporary)
+{:ok, _} = Ecto.Adapters.SQLite3.ensure_all_started(TestRepo.config(), :temporary)
 
 # Load up the repository, start it, and run migrations
-_ = Ecto.Adapters.Exqlite.storage_down(TestRepo.config())
-:ok = Ecto.Adapters.Exqlite.storage_up(TestRepo.config())
+_ = Ecto.Adapters.SQLite3.storage_down(TestRepo.config())
+:ok = Ecto.Adapters.SQLite3.storage_up(TestRepo.config())
 
-_ = Ecto.Adapters.Exqlite.storage_down(PoolRepo.config())
-:ok = Ecto.Adapters.Exqlite.storage_up(PoolRepo.config())
+_ = Ecto.Adapters.SQLite3.storage_down(PoolRepo.config())
+:ok = Ecto.Adapters.SQLite3.storage_up(PoolRepo.config())
 
 {:ok, _} = TestRepo.start_link()
 {:ok, _pid} = PoolRepo.start_link()

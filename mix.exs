@@ -69,5 +69,5 @@ defmodule EctoSQLite3.MixProject do
   defp elixirc_paths(_), do: ["lib"]
 
   defp test_paths(nil), do: ["test"]
-  defp test_paths(_any), do: ["integration_test/exqlite"]
+  defp test_paths(_any), do: ["integration_test"]
 end
