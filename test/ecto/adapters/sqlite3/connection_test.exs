@@ -1,8 +1,8 @@
-defmodule Ecto.Adapters.Exqlite.ConnectionTest do
+defmodule Ecto.Adapters.SQLite3.ConnectionTest do
   use ExUnit.Case
 
-  alias Ecto.Adapters.Exqlite.Connection
-  alias Ecto.Adapters.Exqlite
+  alias Ecto.Adapters.SQLite3.Connection
+  alias Ecto.Adapters.SQLite3
   # alias Ecto.Migration.Table
 
   import Ecto.Query
@@ -47,12 +47,12 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
       field(:z, :integer)
       field(:meta, :map)
 
-      has_many(:comments, Ecto.Adapters.Exqlite.ConnectionTest.Schema2,
+      has_many(:comments, Ecto.Adapters.SQLite3.ConnectionTest.Schema2,
         references: :x,
         foreign_key: :z
       )
 
-      has_one(:permalink, Ecto.Adapters.Exqlite.ConnectionTest.Schema3,
+      has_one(:permalink, Ecto.Adapters.SQLite3.ConnectionTest.Schema3,
         references: :y,
         foreign_key: :id
       )
@@ -63,7 +63,7 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
     use Ecto.Schema
 
     schema "schema2" do
-      belongs_to(:post, Ecto.Adapters.Exqlite.ConnectionTest.Schema,
+      belongs_to(:post, Ecto.Adapters.SQLite3.ConnectionTest.Schema,
         references: :x,
         foreign_key: :z
       )
@@ -71,7 +71,7 @@ defmodule Ecto.Adapters.Exqlite.ConnectionTest do
   end
 
   defp plan(query, operation \\ :all) do
-    {query, _params} = Ecto.Adapter.Queryable.plan_query(operation, Exqlite, query)
+    {query, _params} = Ecto.Adapter.Queryable.plan_query(operation, SQLite3, query)
     query
   end
 

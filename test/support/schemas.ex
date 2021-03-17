@@ -1,10 +1,10 @@
-defmodule Exqlite.Integration.Account do
+defmodule EctoSQLite3.Integration.Account do
   use Ecto.Schema
 
   import Ecto.Changeset
 
-  alias Exqlite.Integration.User
-  alias Exqlite.Integration.Product
+  alias EctoSQLite3.Integration.User
+  alias EctoSQLite3.Integration.Product
 
   schema "accounts" do
     field(:name, :string)
@@ -22,12 +22,12 @@ defmodule Exqlite.Integration.Account do
   end
 end
 
-defmodule Exqlite.Integration.User do
+defmodule EctoSQLite3.Integration.User do
   use Ecto.Schema
 
   import Ecto.Changeset
 
-  alias Exqlite.Integration.Account
+  alias EctoSQLite3.Integration.Account
 
   schema "users" do
     field(:name, :string)
@@ -44,13 +44,13 @@ defmodule Exqlite.Integration.User do
   end
 end
 
-defmodule Exqlite.Integration.AccountUser do
+defmodule EctoSQLite3.Integration.AccountUser do
   use Ecto.Schema
 
   import Ecto.Changeset
 
-  alias Exqlite.Integration.Account
-  alias Exqlite.Integration.User
+  alias EctoSQLite3.Integration.Account
+  alias EctoSQLite3.Integration.User
 
   schema "account_users" do
     timestamps()
@@ -66,12 +66,12 @@ defmodule Exqlite.Integration.AccountUser do
   end
 end
 
-defmodule Exqlite.Integration.Product do
+defmodule EctoSQLite3.Integration.Product do
   use Ecto.Schema
 
   import Ecto.Changeset
 
-  alias Exqlite.Integration.Account
+  alias EctoSQLite3.Integration.Account
 
   schema "products" do
     field(:name, :string)
@@ -102,7 +102,7 @@ defmodule Exqlite.Integration.Product do
   end
 end
 
-defmodule Exqlite.Integration.Vec3f do
+defmodule EctoSQLite3.Integration.Vec3f do
   use Ecto.Schema
 
   schema "vec3f" do

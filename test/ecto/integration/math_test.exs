@@ -2,9 +2,9 @@ defmodule Ecto.Integration.MathTest do
   use Ecto.Integration.Case
 
   alias Ecto.Integration.TestRepo
-  alias Exqlite.Integration.Account
-  alias Exqlite.Integration.Product
-  alias Exqlite.Integration.Vec3f
+  alias EctoSQLite3.Integration.Account
+  alias EctoSQLite3.Integration.Product
+  alias EctoSQLite3.Integration.Vec3f
 
   import Ecto.Query
 

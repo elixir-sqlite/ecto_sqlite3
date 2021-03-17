@@ -1,4 +1,4 @@
-defmodule Exqlite.Integration.Migration do
+defmodule EctoSQLite3.Integration.Migration do
   use Ecto.Migration
 
   def change do

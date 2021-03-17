@@ -2,7 +2,7 @@ defmodule Ecto.Integration.UUIDTest do
   use Ecto.Integration.Case
 
   alias Ecto.Integration.TestRepo
-  alias Exqlite.Integration.Product
+  alias EctoSQLite3.Integration.Product
 
   test "handles uuid serialization and deserialization" do
     external_id = Ecto.UUID.generate()

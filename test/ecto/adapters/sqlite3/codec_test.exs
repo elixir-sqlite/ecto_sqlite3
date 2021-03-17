@@ -1,7 +1,7 @@
-defmodule Ecto.Adapters.Exqlite.CodecTest do
+defmodule Ecto.Adapters.SQLite3.CodecTest do
   use ExUnit.Case, async: true
 
-  alias Ecto.Adapters.Exqlite.Codec
+  alias Ecto.Adapters.SQLite3.Codec
 
   describe ".bool_decode/1" do
     test "0" do

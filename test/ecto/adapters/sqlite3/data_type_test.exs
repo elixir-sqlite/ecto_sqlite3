@@ -1,7 +1,7 @@
-defmodule Ecto.Adapters.Exqlite.DataTypeTest do
+defmodule Ecto.Adapters.SQLite3.DataTypeTest do
   use ExUnit.Case, async: true
 
-  alias Ecto.Adapters.Exqlite.DataType
+  alias Ecto.Adapters.SQLite3.DataType
 
   describe ".column_type/2" do
     test ":id is INTEGER" do
