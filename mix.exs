@@ -37,7 +37,13 @@ defmodule Exqlite.MixProject do
       {:elixir_make, "~> 0.6", runtime: false},
       {:ex_doc, "~> 0.23.0", only: [:dev], runtime: false},
       {:jason, ">= 0.0.0", only: [:test, :docs]},
-      {:temp, "~> 0.4", only: [:test]}
+      {:temp, "~> 0.4", only: [:test]},
+
+      # Benchmarks
+      {:benchee, "~> 0.11.0", only: :bench},
+      {:benchee_json, "~> 0.4.0", only: :bench},
+      {:postgrex, "~> 0.15.0", only: :bench},
+      {:myxql, "~> 0.4.0", only: :bench}
     ]
   end
 
