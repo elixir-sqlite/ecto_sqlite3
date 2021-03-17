@@ -437,6 +437,7 @@ defmodule Exqlite.Connection do
     with {:ok, query} <- bind_params(query, params, state),
          {:ok, columns} <- get_columns(query, state),
          {:ok, rows} <- get_rows(query, state),
+         {:ok, transaction_status} <- Sqlite3.transaction_status(state.db),
          changes <- maybe_changes(state.db, query) do
       case query.command do
         command when command in [:delete, :insert, :update] ->
@@ -448,7 +449,7 @@ defmodule Exqlite.Connection do
               num_rows: changes,
               rows: maybe_rows(rows)
             ),
-            state
+            %{state | transaction_status: transaction_status}
           }
 
         _ ->
@@ -461,7 +462,7 @@ defmodule Exqlite.Connection do
               rows: rows,
               num_rows: Enum.count(rows)
             ),
-            state
+            %{state | transaction_status: transaction_status}
           }
       end
     end
@@ -489,26 +490,16 @@ defmodule Exqlite.Connection do
   end
 
   defp handle_transaction(call, statement, state) do
-    case Sqlite3.execute(state.db, statement) do
-      :ok ->
-        result = %Result{
-          command: call,
-          rows: [],
-          columns: [],
-          num_rows: 0
-        }
-
-        case call do
-          :rollback ->
-            {:ok, result, %{state | transaction_status: :idle}}
-
-          :commit ->
-            {:ok, result, %{state | transaction_status: :idle}}
-
-          _ ->
-            {:ok, result, %{state | transaction_status: :transaction}}
-        end
-
+    with :ok <- Sqlite3.execute(state.db, statement),
+         {:ok, transaction_status} <- Sqlite3.transaction_status(state.db) do
+      result = %Result{
+        command: call,
+        rows: [],
+        columns: [],
+        num_rows: 0
+      }
+      {:ok, result, %{state | transaction_status: transaction_status}}
+    else
       {:error, reason} ->
         {:disconnect, %Error{message: reason}, state}
     end

@@ -43,5 +43,8 @@ defmodule Exqlite.Sqlite3NIF do
   @spec last_insert_rowid(db()) :: {:ok, integer()}
   def last_insert_rowid(_conn), do: :erlang.nif_error(:not_loaded)
 
+  @spec transaction_status(db()) :: {:ok, :idle | :transaction}
+  def transaction_status(_conn), do: :erlang.nif_error(:not_loaded)
+
   # TODO: add statement inspection tooling https://sqlite.org/c3ref/expanded_sql.html
 end

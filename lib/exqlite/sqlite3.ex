@@ -81,6 +81,9 @@ defmodule Exqlite.Sqlite3 do
   @spec last_insert_rowid(db()) :: {:ok, integer()}
   def last_insert_rowid(conn), do: Sqlite3NIF.last_insert_rowid(conn)
 
+  @spec transaction_status(db()) :: {:ok, :idle | :transaction}
+  def transaction_status(conn), do: Sqlite3NIF.transaction_status(conn)
+
   @doc """
   Causes the database connection to free as much memory as it can. This is
   useful if you are on a memory restricted system.

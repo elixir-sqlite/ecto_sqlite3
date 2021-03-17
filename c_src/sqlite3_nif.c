@@ -145,6 +145,7 @@ exqlite_close(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
     assert(env);
 
     connection_t* conn = NULL;
+    int rc = SQLITE_OK;
 
     if (argc != 1) {
         return enif_make_badarg(env);
@@ -154,7 +155,21 @@ exqlite_close(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
         return make_error_tuple(env, "invalid_connection");
     }
 
+    int autocommit = sqlite3_get_autocommit(conn->db);
+    if (autocommit == 0) {
+        rc = sqlite3_exec(conn->db, "ROLLBACK;", NULL, NULL, NULL);
+        if (rc != SQLITE_OK) {
+            return make_sqlite3_error_tuple(env, rc, conn->db);
+        }
+    }
+
+    // note: _v2 may not fully close the connection, hence why we check if 
+    // any transaction is open above, to make sure other connections aren't blocked. 
+    // v1 is guaranteed to close or error, but will return error if any
+    // unfinalized statements, which we likely have, as we rely on the destructors 
+    // to later run to clean those up 
     sqlite3_close_v2(conn->db);
+
     conn->db = NULL;
 
     return make_atom(env, "ok");
@@ -539,6 +554,27 @@ exqlite_last_insert_rowid(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
     return make_ok_tuple(env, enif_make_int64(env, last_rowid));
 }
 
+static ERL_NIF_TERM
+exqlite_transaction_status(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
+{
+    assert(env);
+
+    connection_t* conn = NULL;
+
+    if (argc != 1) {
+        return enif_make_badarg(env);
+    }
+
+    if (!enif_get_resource(env, argv[0], connection_type, (void**)&conn)) {
+        return make_error_tuple(env, "invalid_connection");
+    }
+
+    int autocommit = sqlite3_get_autocommit(conn->db);
+    return make_ok_tuple(
+        env,
+        autocommit == 0 ? make_atom(env, "transaction") : make_atom(env, "idle"));
+}
+
 static void
 connection_type_destructor(ErlNifEnv* env, void* arg)
 {
@@ -611,6 +647,7 @@ static ErlNifFunc nif_funcs[] = {
   {"step", 2, exqlite_step, ERL_NIF_DIRTY_JOB_IO_BOUND},
   {"columns", 2, exqlite_columns, ERL_NIF_DIRTY_JOB_IO_BOUND},
   {"last_insert_rowid", 1, exqlite_last_insert_rowid, ERL_NIF_DIRTY_JOB_IO_BOUND},
+  {"transaction_status", 1, exqlite_transaction_status, ERL_NIF_DIRTY_JOB_IO_BOUND},
 };
 
 ERL_NIF_INIT(Elixir.Exqlite.Sqlite3NIF, nif_funcs, on_load, NULL, NULL, NULL)
