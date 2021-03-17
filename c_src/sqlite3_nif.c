@@ -94,10 +94,9 @@ make_sqlite3_error_tuple(ErlNifEnv* env, int rc, sqlite3* db)
     size_t len      = utf8len(msg);
 
     return enif_make_tuple2(
-        env,
-        make_atom(env, "error"),
-        make_binary(env, msg, len)
-    );
+      env,
+      make_atom(env, "error"),
+      make_binary(env, msg, len));
 }
 
 static ERL_NIF_TERM
@@ -145,7 +144,7 @@ exqlite_close(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
     assert(env);
 
     connection_t* conn = NULL;
-    int rc = SQLITE_OK;
+    int rc             = SQLITE_OK;
 
     if (argc != 1) {
         return enif_make_badarg(env);
@@ -163,11 +162,11 @@ exqlite_close(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
         }
     }
 
-    // note: _v2 may not fully close the connection, hence why we check if 
-    // any transaction is open above, to make sure other connections aren't blocked. 
+    // note: _v2 may not fully close the connection, hence why we check if
+    // any transaction is open above, to make sure other connections aren't blocked.
     // v1 is guaranteed to close or error, but will return error if any
-    // unfinalized statements, which we likely have, as we rely on the destructors 
-    // to later run to clean those up 
+    // unfinalized statements, which we likely have, as we rely on the destructors
+    // to later run to clean those up
     sqlite3_close_v2(conn->db);
 
     conn->db = NULL;
@@ -408,17 +407,15 @@ make_cell(ErlNifEnv* env, sqlite3_stmt* statement, unsigned int i)
 
         case SQLITE_BLOB:
             return make_binary(
-                env,
-                sqlite3_column_blob(statement, i),
-                sqlite3_column_bytes(statement, i)
-            );
+              env,
+              sqlite3_column_blob(statement, i),
+              sqlite3_column_bytes(statement, i));
 
         case SQLITE_TEXT:
             return make_binary(
-                env,
-                sqlite3_column_text(statement, i),
-                sqlite3_column_bytes(statement, i)
-            );
+              env,
+              sqlite3_column_text(statement, i),
+              sqlite3_column_bytes(statement, i));
 
         default:
             return make_atom(env, "unsupported");
@@ -571,8 +568,8 @@ exqlite_transaction_status(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
 
     int autocommit = sqlite3_get_autocommit(conn->db);
     return make_ok_tuple(
-        env,
-        autocommit == 0 ? make_atom(env, "transaction") : make_atom(env, "idle"));
+      env,
+      autocommit == 0 ? make_atom(env, "transaction") : make_atom(env, "idle"));
 }
 
 static void
