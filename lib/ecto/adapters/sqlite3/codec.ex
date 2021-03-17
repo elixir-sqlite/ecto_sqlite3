@@ -1,4 +1,4 @@
-defmodule Ecto.Adapters.Exqlite.Codec do
+defmodule Ecto.Adapters.SQLite3.Codec do
   def bool_decode(nil), do: {:ok, nil}
   def bool_decode(0), do: {:ok, false}
   def bool_decode("0"), do: {:ok, false}

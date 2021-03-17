@@ -1,4 +1,4 @@
-defmodule Ecto.Adapters.Exqlite.Connection do
+defmodule Ecto.Adapters.SQLite3.Connection do
   @behaviour Ecto.Adapters.SQL.Connection
 
   alias Ecto.Migration.Constraint
@@ -10,7 +10,7 @@ defmodule Ecto.Adapters.Exqlite.Connection do
   alias Ecto.Query.QueryExpr
   alias Ecto.Query.WithExpr
 
-  import Ecto.Adapters.Exqlite.DataType
+  import Ecto.Adapters.SQLite3.DataType
 
   @parent_as __MODULE__
   @connect_buffer 50

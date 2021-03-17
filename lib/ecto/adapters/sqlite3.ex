@@ -1,11 +1,11 @@
-defmodule Ecto.Adapters.Exqlite do
+defmodule Ecto.Adapters.SQLite3 do
   use Ecto.Adapters.SQL,
     driver: :exqlite
 
   @behaviour Ecto.Adapter.Storage
   @behaviour Ecto.Adapter.Structure
 
-  alias Ecto.Adapters.Exqlite.Codec
+  alias Ecto.Adapters.SQLite3.Codec
 
   @impl Ecto.Adapter.Storage
   def storage_down(options) do
@@ -207,7 +207,7 @@ defmodule Ecto.Adapters.Exqlite do
           Your config/*.exs file should have something like this in it:
 
             config :my_app, MyApp.Repo,
-              adapter: Ecto.Adapters.Exqlite,
+              adapter: Ecto.Adapters.SQLite3,
               database: "/path/to/sqlite/database"
           """
   end

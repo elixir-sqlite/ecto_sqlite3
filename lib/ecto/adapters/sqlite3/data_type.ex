@@ -1,4 +1,4 @@
-defmodule Ecto.Adapters.Exqlite.DataType do
+defmodule Ecto.Adapters.SQLite3.DataType do
   # Simple column types. Note that we ignore options like :size, :precision,
   # etc. because columns do not have types, and SQLite will not coerce any
   # stored value. Thus, "strings" are all text and "numerics" have arbitrary
