@@ -5,11 +5,13 @@ An SQLite3 library with an Ecto adapter implementation.
 
 ## Caveats
 
-* When using the Ecto adapter, all prepared statements are cached using an LRU
-  cache.
+* Prepared statements are not cached.
 * Prepared statements are not immutable. You must be careful when manipulating
   statements and binding values to statements. Do not try to manipulate the
   statements concurrently. Keep it isolated to one process.
+* Adding a `CHECK` constraint is not supported by the Ecto adapter. This is due
+  to how Ecto handles specifying constraints. In SQLite you must specify the
+  `CHECK` on creation.
 * All native calls are run through the Dirty NIF scheduler.
 * Datetimes are stored without offsets. This is due to how SQLite3 handles date
   and times. If you would like to store a timezone, you will need to create a
