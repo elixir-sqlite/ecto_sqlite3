@@ -102,10 +102,6 @@ ExUnit.start(
     # that converts the string JSON representaiton into a map
     :map_type_schemaless,
 
-    # we should be able to fully/correctly support these, but don't currently
-    :with_conflict_target,
-    :without_conflict_target,
-
     # right now in lock_for_migrations() we do effectively nothing, this is because
     # SQLite is single-writer so there isn't really a need for us to do anything.
     # ecto assumes all implementing adapters need >=2 connections for migrations

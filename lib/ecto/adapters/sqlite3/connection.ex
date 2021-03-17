@@ -242,10 +242,11 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     insert(prefix, table, header, rows, on_conflict, returning, [])
   end
 
-  def insert(prefix, table, [], [[]], _on_conflict, returning, []) do
+  def insert(prefix, table, [], [[]], on_conflict, returning, []) do
     [
       "INSERT INTO ",
       quote_table(prefix, table),
+      insert_as(on_conflict),
       " DEFAULT VALUES",
       returning(returning)
     ]
@@ -256,6 +257,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     [
       "INSERT INTO ",
       quote_table(prefix, table),
+      insert_as(on_conflict),
       " (",
       fields,
       ") ",
@@ -639,49 +641,45 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   ## Query generation
   ##
 
-  def on_conflict({:raise, _, []}, _header), do: []
+  defp on_conflict({:raise, _, []}, _header), do: []
 
-  def on_conflict({:nothing, _, targets}, _header) do
+  defp on_conflict({:nothing, _, targets}, _header) do
     [" ON CONFLICT ", conflict_target(targets) | "DO NOTHING"]
   end
 
-  def on_conflict({:replace_all, _, []}, _header) do
-    raise ArgumentError, "Upsert in SQLite3 requires :conflict_target"
-  end
-
-  def on_conflict({:replace_all, _, {:constraint, _}}, _header) do
+  defp on_conflict({:replace_all, _, {:constraint, _}}, _header) do
     raise ArgumentError, "Upsert in SQLite3 does not support ON CONSTRAINT"
   end
 
-  def on_conflict({:replace_all, _, targets}, header) do
-    [
-      " ON CONFLICT ",
-      conflict_target(targets),
-      "DO " | replace_all(header)
-    ]
+  defp on_conflict({:replace_all, _, []}, _header) do
+    raise ArgumentError, "Upsert in SQLite3 requires :conflict_target"
   end
 
-  def on_conflict({query, _, targets}, _header) do
-    [
-      " ON CONFLICT ",
-      conflict_target(targets),
-      "DO " | update_all(query, "UPDATE SET ")
-    ]
+  defp on_conflict({:replace_all, _, targets}, header) do
+    [" ON CONFLICT ", conflict_target(targets), "DO " | replace(header)]
   end
 
-  def conflict_target([]), do: ""
+  defp on_conflict({fields, _, targets}, _header) when is_list(fields) do
+    [" ON CONFLICT ", conflict_target(targets), "DO " | replace(fields)]
+  end
 
-  def conflict_target(targets) do
+  defp on_conflict({query, _, targets}, _header) do
+    [" ON CONFLICT ", conflict_target(targets), "DO " | update_all(query, "UPDATE SET ")]
+  end
+
+  defp conflict_target([]), do: ""
+
+  defp conflict_target(targets) do
     [?(, intersperse_map(targets, ?,, &quote_name/1), ?), ?\s]
   end
 
-  def replace_all(header) do
+  defp replace(fields) do
     [
-      "UPDATE SET "
-      | intersperse_map(header, ?,, fn field ->
-          quoted = quote_name(field)
-          [quoted, " = ", "EXCLUDED." | quoted]
-        end)
+      "UPDATE SET " |
+      intersperse_map(fields, ?,, fn field ->
+        quoted = quote_name(field)
+        [quoted, " = ", "EXCLUDED." | quoted]
+      end)
     ]
   end
 
@@ -719,6 +717,14 @@ defmodule Ecto.Adapters.SQLite3.Connection do
         # {['?' | Integer.to_string(counter)], counter + 1}
         {['?'], counter + 1}
     end)
+  end
+
+  defp insert_as({%{sources: sources}, _, _}) do
+    {_expr, name, _schema} = create_name(sources, 0, [])
+    [" AS " | name]
+  end
+  defp insert_as({_, _, _}) do
+    []
   end
 
   binary_ops = [
