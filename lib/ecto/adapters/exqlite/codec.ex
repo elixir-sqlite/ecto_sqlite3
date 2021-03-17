@@ -11,7 +11,7 @@ defmodule Ecto.Adapters.Exqlite.Codec do
   def json_decode(nil), do: {:ok, nil}
 
   def json_decode(x) when is_binary(x) do
-    Application.get_env(:exqlite, :json_library, Jason).decode(x)
+    Application.get_env(:ecto_sqlite3, :json_library, Jason).decode(x)
   end
 
   def json_decode(_), do: :error
@@ -75,7 +75,7 @@ defmodule Ecto.Adapters.Exqlite.Codec do
   end
 
   def json_encode(value) do
-    Application.get_env(:exqlite, :json_library, Jason).encode(value)
+    Application.get_env(:ecto_sqlite3, :json_library, Jason).encode(value)
   end
 
   def blob_encode(value), do: {:ok, {:blob, value}}

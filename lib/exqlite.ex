@@ -1,2 +1,0 @@
-defmodule Exqlite do
-end

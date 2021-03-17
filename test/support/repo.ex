@@ -1,5 +1,5 @@
 defmodule Ecto.Integration.TestRepo do
-  use Ecto.Repo, otp_app: :exqlite, adapter: Ecto.Adapters.Exqlite
+  use Ecto.Repo, otp_app: :ecto_sqlite3, adapter: Ecto.Adapters.Exqlite
 
   def create_prefix(_) do
     raise "SQLite3 does not support CREATE DATABASE"

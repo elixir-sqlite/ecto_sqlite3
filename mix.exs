@@ -1,17 +1,14 @@
-defmodule Exqlite.MixProject do
+defmodule EctoSQLite3.MixProject do
   use Mix.Project
 
   def project do
     [
-      app: :exqlite,
+      app: :ecto_sqlite3,
       version: "0.4.8",
       elixir: "~> 1.8",
-      compilers: [:elixir_make] ++ Mix.compilers(),
-      make_targets: ["all"],
-      make_clean: ["clean"],
       start_permanent: Mix.env() == :prod,
-      source_url: "https://github.com/warmwaffles/exqlite",
-      homepage_url: "https://github.com/warmwaffles/exqlite",
+      source_url: "https://github.com/kevinlang/ecto_sqlite3",
+      homepage_url: "https://github.com/kevinlang/ecto_sqlite3",
       deps: deps(),
       package: package(),
       description: description(),
@@ -30,11 +27,10 @@ defmodule Exqlite.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:db_connection, "~> 2.1"},
       {:decimal, "~> 2.0"},
       {:ecto_sql, "~> 3.5.4"},
       {:ecto, "~> 3.5.8"},
-      {:elixir_make, "~> 0.6", runtime: false},
+      {:exqlite, "~> 0.4.8"},
       {:ex_doc, "~> 0.23.0", only: [:dev], runtime: false},
       {:jason, ">= 0.0.0", only: [:test, :docs]},
       {:temp, "~> 0.4", only: [:test]},
@@ -59,16 +55,12 @@ defmodule Exqlite.MixProject do
         mix.exs
         README.md
         LICENSE
-        .clang-format
-        c_src
-        Makefile*
-        sqlite3
       ),
-      name: "exqlite",
+      name: "ecto_sqlite3",
       licenses: ["MIT"],
       links: %{
-        "GitHub" => "https://github.com/warmwaffles/exqlite",
-        "docs" => "https://hexdocs.pm/exqlite"
+        "GitHub" => "https://github.com/kevinlang/ecto_sqlite3",
+        "docs" => "https://hexdocs.pm/ecto_sqlite3"
       }
     ]
   end

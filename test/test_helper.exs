@@ -8,7 +8,7 @@ Code.require_file("#{ecto}/integration_test/support/schemas.exs", __DIR__)
 
 alias Ecto.Integration.TestRepo
 
-Application.put_env(:exqlite, TestRepo,
+Application.put_env(:ecto_sqlite3, TestRepo,
   adapter: Ecto.Adapters.Exqlite,
   database: "/tmp/exqlite_sandbox_test.db",
   journal_mode: :wal,
