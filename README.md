@@ -1,6 +1,6 @@
-# Exqlite
+# Ecto SQLite3 Adapter
 
-An SQLite3 library with an Ecto adapter implementation.
+An Ecto SQLite3 Adapter.
 
 
 ## Caveats
@@ -24,53 +24,23 @@ An SQLite3 library with an Ecto adapter implementation.
 
 ```elixir
 defp deps do
-  {:exqlite, "~> 0.4.8"}
+  {:ecto_sqlite3, "~> 0.5.0"}
 end
 ```
 
-
-## Usage Without Ecto
-
-The `Exqlite.Sqlite3` module usage is fairly straight forward.
-
-```elixir
-# We'll just keep it in memory right now
-{:ok, conn} = Exqlite.Sqlite3.open(":memory:")
-
-# Create the table
-:ok = Exqlite.Sqlite3.execute(conn, "create table test (id integer primary key, stuff text)");
-
-# Prepare a statement
-{:ok, statement} = Exqlite.Sqlite3.prepare(conn, "insert into test (stuff) values (?1)")
-:ok = Exqlite.Sqlite3.bind(conn, statement, ["Hello world"])
-
-# Step is used to run statements
-:done = Exqlite.Sqlite3.step(conn, statement)
-
-# Prepare a select statement
-{:ok, statement} = Exqlite.Sqlite3.prepare(conn, "select id, stuff from test");
-
-# Get the results
-{:row, [1, "Hello world"]} = Exqlite.Sqlite3.step(conn, statement)
-
-# No more results
-:done = Exqlite.Sqlite3.step(conn, statement)
-```
-
-
-## Usage With Ecto
+## Usage
 
 Define your repo similar to this.
 
 ```elixir
 defmodule MyApp.Repo do
-  use Ecto.Repo, otp_app: :my_app, adapter: Ecto.Adapters.Exqlite
+  use Ecto.Repo, otp_app: :my_app, adapter: Ecto.Adapters.SQLite3
 end
 ```
 
 Configure your repository similar to the following. If you want to know more
 about the possible options to pass the repository, checkout the documentation
-for `Exqlite.Connection.connect/1`. It will have more information on what is
+for `SQLite3.Connection.connect/1`. It will have more information on what is
 configurable.
 
 ```elixir
@@ -96,32 +66,13 @@ config :my_app, MyApp.Repo,
 * Cache size is a negative number because that is how SQLite3 defines the cache
   size in kilobytes. If you make it positive, that is the number of pages in
   memory to use. Both have their pros and cons. Check the documentation out for
-  [SQLite3][2].
+  [SQLite3][pragma].
 
-
-## Why SQLite3
-
-I needed an Ecto3 adapter to store time series data for a personal project. I
-didn't want to go through the hassle of trying to setup a postgres database or
-mysql database when I was just wanting to explore data ingestion and some map
-reduce problems.
-
-I also noticed that other SQLite3 implementations didn't really fit my needs. At
-some point I also wanted to use this with a nerves project on an embedded device
-that would be resiliant to power outages and still maintain some state that
-`ets` can not afford.
-
-
-## Under The Hood
-
-We are using the Dirty NIF scheduler to execute the sqlite calls. The rationale
-behind this is that maintaining each sqlite's connection command pool is
-complicated and error prone.
-
+* Uses [Exqlite][exqlite] as the driver to communicate with sqlite3.
 
 ## Contributing
 
 Feel free to check the project out and submit pull requests.
 
-[1]: <https://github.com/mmzeeman/esqlite>
-[2]: <https://www.sqlite.org/pragma.html>
+[pragma]: <https://www.sqlite.org/pragma.html>
+[exqlite]: <https://github.com/warmwaffles/exqlite>
