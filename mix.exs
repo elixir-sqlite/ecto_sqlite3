@@ -4,11 +4,11 @@ defmodule EctoSQLite3.MixProject do
   def project do
     [
       app: :ecto_sqlite3,
-      version: "0.5.0",
+      version: "0.5.1",
       elixir: "~> 1.8",
       start_permanent: Mix.env() == :prod,
-      source_url: "https://github.com/kevinlang/ecto_sqlite3",
-      homepage_url: "https://github.com/kevinlang/ecto_sqlite3",
+      source_url: "https://github.com/elixir-sqlite/ecto_sqlite3",
+      homepage_url: "https://github.com/elixir-sqlite/ecto_sqlite3",
       deps: deps(),
       package: package(),
       description: description(),
@@ -30,7 +30,7 @@ defmodule EctoSQLite3.MixProject do
       {:decimal, "~> 2.0"},
       {:ecto_sql, "~> 3.5.4"},
       {:ecto, "~> 3.5.8"},
-      {:exqlite, "~> 0.4.9"},
+      {:exqlite, "~> 0.5.0"},
       {:ex_doc, "~> 0.23.0", only: [:dev], runtime: false},
       {:jason, ">= 0.0.0", only: [:test, :docs]},
       {:temp, "~> 0.4", only: [:test]},
@@ -59,7 +59,7 @@ defmodule EctoSQLite3.MixProject do
       name: "ecto_sqlite3",
       licenses: ["MIT"],
       links: %{
-        "GitHub" => "https://github.com/kevinlang/ecto_sqlite3",
+        "GitHub" => "https://github.com/elixir-sqlite/ecto_sqlite3",
         "docs" => "https://hexdocs.pm/ecto_sqlite3"
       }
     ]
