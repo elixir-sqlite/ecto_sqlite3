@@ -13,10 +13,20 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   import Ecto.Adapters.SQLite3.DataType
 
   @parent_as __MODULE__
-  @connect_buffer 50
+  @idx_connect_buffer 5
+  @rand_connect_buffer 50
 
-  def sleep(opts) do
-    :timer.sleep(:rand.uniform(@connect_buffer))
+  # db_connection eagerly obtains and holds the configured
+  # pool_size of connections, which can cause us to hit
+  # "SQLite Busy" issues. we solve this by making sure to wait
+  # a bit by hooking into the :configure callback opt and
+  # sleeping an amount of time which is a function of the pool_index
+  def handle_thundering_herd(opts) do
+    case Keyword.get(opts, :pool_index) do
+      idx when is_integer(idx) -> :timer.sleep(idx * @idx_connect_buffer)
+      nil -> :timer.sleep(:rand.uniform(@rand_connect_buffer))
+    end
+
     opts
   end
 
@@ -24,7 +34,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     # todo: we may want to consider wrapping any provided :configure
     # with our custom connection buffering logic
     opts
-    |> Keyword.put_new(:configure, {__MODULE__, :sleep, []})
+    |> Keyword.put_new(:configure, &handle_thundering_herd/1)
   end
 
   def start_link(opts) do
