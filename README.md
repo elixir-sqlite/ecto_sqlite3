@@ -1,5 +1,7 @@
 # Ecto SQLite3 Adapter
 
+[![Build Status](https://github.com/elixir-sqlite/ecto_sqlite3/workflows/CI/badge.svg)](https://github.com/elixir-sqlite/ecto_sqlite3/actions)
+
 An Ecto SQLite3 Adapter.
 
 

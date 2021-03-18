@@ -1,5 +1,5 @@
-name: Main Workflow
-on: pull_request
+name: CI
+on: [push, pull_request]
 jobs:
   test-elixir:
     runs-on: ubuntu-latest
