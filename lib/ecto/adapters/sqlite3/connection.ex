@@ -1,4 +1,6 @@
 defmodule Ecto.Adapters.SQLite3.Connection do
+  @moduledoc false
+
   @behaviour Ecto.Adapters.SQL.Connection
 
   alias Ecto.Migration.Constraint
