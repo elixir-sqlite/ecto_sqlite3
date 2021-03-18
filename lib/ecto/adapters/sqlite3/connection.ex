@@ -24,7 +24,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   def handle_thundering_herd(opts) do
     case Keyword.get(opts, :pool_index) do
       idx -> :timer.sleep(idx * @idx_connect_buffer)
-      nil -> :timer.sleep(:rand.uniform(@connect_buffer))
+      nil -> :timer.sleep(:rand.uniform(@rand_connect_buffer))
     end
 
     opts
