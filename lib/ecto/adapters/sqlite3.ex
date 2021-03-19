@@ -43,6 +43,7 @@ defmodule Ecto.Adapters.SQLite3 do
       negative value turns auto-checkpointing off.
     * `:busy_timeout` - Sets the busy timeout in milliseconds for a connection.
       Default is `2000`.
+    * `:pool_size` - the size of the connection pool. Defaults to `5`.
 
   For more information about the options above, see [sqlite documenation][1]
 
