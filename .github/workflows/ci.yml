@@ -20,5 +20,5 @@ jobs:
           mix local.hex --force
           mix deps.get
 
-      - run: mix test
-      - run: EXQLITE_INTEGRATION=true mix test
+      - run: mix test --trace
+      - run: EXQLITE_INTEGRATION=true mix test --trace
