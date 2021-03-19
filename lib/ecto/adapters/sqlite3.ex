@@ -1,4 +1,108 @@
 defmodule Ecto.Adapters.SQLite3 do
+  @moduledoc """
+  Adapter module for SQLite3.
+
+  It uses `Exqlite` for communicating to the database.
+
+  ## Options
+
+  The adapter supports a superset of the options provided by the
+  underlying `Exqlite` driver.
+
+  ### Provided options
+
+    * `:database` - The path to the database. In memory is allowed. You can use
+      `:memory` or `":memory:"` to designate that.
+    * `:journal_mode` - Sets the journal mode for the sqlite connection. Can be
+      one of the following `:delete`, `:truncate`, `:persist`, `:memory`,
+      `:wal`, or `:off`. Defaults to `:wal`.
+    * `:temp_store` - Sets the storage used for temporary tables. Default is
+      `:default`. Allowed values are `:default`, `:file`, `:memory`.
+    * `:synchronous` - Can be `:extra`, `:full`, `:normal`, or `:off`. Defaults
+      to `:normal`.
+    * `:foreign_keys` - Sets if foreign key checks should be enforced or not.
+      Can be `:on` or `:off`. Default is `:on`.
+    * `:cache_size` - Sets the cache size to be used for the connection. This is
+      an odd setting as a positive value is the number of pages in memory to use
+      and a negative value is the size in kilobytes to use. Default is `-64000`.
+    * `:cache_spill` - The cache_spill pragma enables or disables the ability of
+      the pager to spill dirty cache pages to the database file in the middle of
+      a transaction. By default it is `:on`, and for most applications, it
+      should remain so.
+    * `:case_sensitive_like` - whether LIKE is case-sensitive or not. Can be
+      `:off` or `:on`. Defaults to `:off`.
+    * `:auto_vacuum` - Defaults to `:none`. Can be `:none`, `:full` or
+      `:incremental`. Depending on the database size, `:incremental` may be
+      beneficial.
+    * `:locking_mode` - Defaults to `:normal`. Allowed values are `:normal` or
+      `:exclusive`. See [sqlite documenation][1] for more information.
+    * `:secure_delete` - Defaults to `:off`. Can be `:off` or `:on`. If `:on`, it will cause SQLite3
+      to overwrite records that were deleted with zeros.
+    * `:wal_auto_check_point` - Sets the write-ahead log auto-checkpoint
+      interval. Default is `1000`. Setting the auto-checkpoint size to zero or a
+      negative value turns auto-checkpointing off.
+    * `:busy_timeout` - Sets the busy timeout in milliseconds for a connection.
+      Default is `2000`.
+    * `:pool_size` - the size of the connection pool. Defaults to `5`.
+
+  For more information about the options above, see [sqlite documenation][1]
+
+  ### Differences between SQLite and Ecto SQLite defaults
+
+  For the most part, the defaults we provide above match the defaults that SQLite usually
+  ships with. However, SQLite has conservative defaults due to its need to be strictly backwards
+  compatible, so some of them do not necessarily match "best practices". Below are the defaults
+  we provide above that differ from the normal SQLite defaults, along with rationale.
+
+    * `:journal_mode` - we use `:wal`, as it is vastly superior
+      for concurrent access. SQLite usually defaults to `:delete`.
+      See [SQLite documentation][2] for more info.
+    * `:temp_store` - we use `:memory`, which increases performance a bit.
+      SQLite usually defaults to `:file`.
+    * `:foreign_keys` - we set it to `:on`, for better relational guarantees.
+      This is also the default of the underlying `Exqlite` driver.
+      SQLite usually defaults to `:off` for backwards compat.
+    * `:busy_timeout` - we set it to `2000`, to better enable concurrent access.
+      This is also the default of `Exqlite`. SQLite usually defaults to `0`.
+    * `:cache_size` - we set it to `-64000`, to speed up access of data.
+      SQLite usually defaults to `-2000`.
+
+  These defaults can of course be overridden, as noted above, to suit other needs.
+
+  [1]: https://www.sqlite.org/pragma.html
+  [2]: https://sqlite.org/wal.html
+
+  ## Limitations
+
+  There are some limitations when using Ecto with SQLite that one needs
+  to be aware of. The ones listed below are specific to Ecto usage, but it
+  is encouraged to also view the guidance on [when to use SQLite][4] provided
+  by the SQLite documentation, as well.
+
+  ### Async Sandbox testing
+
+  The Ecto SQLite3 adapter does not support async tests when used with
+  `Ecto.Adapters.SQL.Sandbox`. This is due to SQLite only allowing up one
+  write transaction at a time, which often does not work with the Sandbox approach of
+  wrapping each test in a transaction.
+
+  ### LIKE match on BLOB columns
+
+  We have the DSQLITE_LIKE_DOESNT_MATCH_BLOBS compile-time option set to true,
+  as [recommended][3] by SQLite. This means you cannot do LIKE queries on BLOB columns.
+
+  ### Schemaless queries
+
+  Using [schemaless Ecto queries][5] will not work well with SQLite. This is because
+  the Ecto SQLite adapter relies heavily on the schema to support a rich array of Elixir
+  types, despite the fact SQLite only has [five storage classes][5]. The query will still
+  work and return data, but you will need to do this mapping on your own.
+
+  [3]: https://www.sqlite.org/compile.html
+  [4]: https://www.sqlite.org/whentouse.html
+  [5]: https://www.sqlite.org/datatype3.html
+  """
+
   use Ecto.Adapters.SQL,
     driver: :exqlite
 
