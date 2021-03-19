@@ -1,6 +1,8 @@
 # Ecto SQLite3 Adapter
 
 [![Build Status](https://github.com/elixir-sqlite/ecto_sqlite3/workflows/CI/badge.svg)](https://github.com/elixir-sqlite/ecto_sqlite3/actions)
+[![Hex Package](https://img.shields.io/hexpm/v/ecto_sqlite3.svg)](https://hex.pm/packages/ecto_sqlite3)
+[![Hex Docs](https://img.shields.io/badge/hex-docs-blue.svg)](https://hexdocs.pm/ecto_sqlite3)
 
 An Ecto SQLite3 Adapter. Uses [Exqlite](https://github.com/elixir-sqlite/exqlite) as the driver to communicate with sqlite3.
 
