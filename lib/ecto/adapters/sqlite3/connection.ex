@@ -36,6 +36,10 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     # todo: we may want to consider wrapping any provided :configure
     # with our custom connection buffering logic
     opts
+    |> Keyword.put_new(:journal_mode, :wal)
+    |> Keyword.put_new(:cache_size, -64000)
+    |> Keyword.put_new(:temp_store, :memory)
+    |> Keyword.put_new(:pool_size, 5)
     |> Keyword.put_new(:configure, &handle_thundering_herd/1)
   end
 

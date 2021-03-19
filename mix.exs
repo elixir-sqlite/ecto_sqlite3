@@ -13,7 +13,11 @@ defmodule EctoSQLite3.MixProject do
       package: package(),
       description: description(),
       test_paths: test_paths(System.get_env("EXQLITE_INTEGRATION")),
-      elixirc_paths: elixirc_paths(Mix.env())
+      elixirc_paths: elixirc_paths(Mix.env()),
+
+      # Docs
+      name: "Ecto SQLite3",
+      docs: docs()
     ]
   end
 
@@ -62,6 +66,12 @@ defmodule EctoSQLite3.MixProject do
         "GitHub" => "https://github.com/elixir-sqlite/ecto_sqlite3",
         "docs" => "https://hexdocs.pm/ecto_sqlite3"
       }
+    ]
+  end
+
+  defp docs do
+    [
+      main: "Ecto.Adapters.SQLite3",
     ]
   end
 

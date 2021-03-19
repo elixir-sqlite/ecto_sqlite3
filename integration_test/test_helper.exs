@@ -13,11 +13,7 @@ alias Ecto.Integration.TestRepo
 Application.put_env(:ecto_sqlite3, TestRepo,
   adapter: Ecto.Adapters.SQLite3,
   database: "/tmp/exqlite_integration_test.db",
-  journal_mode: :wal,
-  cache_size: -64000,
-  temp_store: :memory,
   pool: Ecto.Adapters.SQL.Sandbox,
-  pool_size: 5,
   show_sensitive_data_on_connection_error: true
 )
 
@@ -27,10 +23,6 @@ alias Ecto.Integration.PoolRepo
 Application.put_env(:ecto_sqlite3, PoolRepo,
   adapter: Ecto.Adapters.SQLite3,
   database: "/tmp/exqlite_integration_pool_test.db",
-  journal_mode: :wal,
-  cache_size: -64000,
-  temp_store: :memory,
-  pool_size: 5,
   show_sensitive_data_on_connection_error: true
 )
 
