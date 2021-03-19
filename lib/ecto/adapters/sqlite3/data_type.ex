@@ -14,6 +14,18 @@ defmodule Ecto.Adapters.SQLite3.DataType do
   def column_type(:bigint, _opts), do: "INTEGER"
   # TODO: We should make this configurable
   def column_type(:binary_id, _opts), do: "TEXT"
+
+  def column_type(:string, opts) when is_list(opts) do
+    collate = Keyword.get(opts, :collate)
+
+    if collate do
+      str = collate |> Atom.to_string() |> String.upcase()
+      "TEXT COLLATE #{str}"
+    else
+      "TEXT"
+    end
+  end
+
   def column_type(:string, _opts), do: "TEXT"
   def column_type(:float, _opts), do: "NUMERIC"
   def column_type(:binary, _opts), do: "BLOB"

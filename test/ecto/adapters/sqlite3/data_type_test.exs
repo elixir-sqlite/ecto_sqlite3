@@ -24,6 +24,10 @@ defmodule Ecto.Adapters.SQLite3.DataTypeTest do
       assert DataType.column_type(:string, nil) == "TEXT"
     end
 
+    test ":string, collate: :nocase is TEXT COLLATE NOCASE" do
+      assert DataType.column_type(:string, collate: :nocase) == "TEXT COLLATE NOCASE"
+    end
+
     test ":uuid is TEXT" do
       assert DataType.column_type(:uuid, nil) == "TEXT"
     end

@@ -8,6 +8,7 @@ defmodule EctoSQLite3.Integration.Account do
 
   schema "accounts" do
     field(:name, :string)
+    field(:email, :string)
 
     timestamps()
 
