@@ -91,6 +91,24 @@ defmodule Ecto.Adapters.SQLite3 do
   We have the DSQLITE_LIKE_DOESNT_MATCH_BLOBS compile-time option set to true,
   as [recommended][3] by SQLite. This means you cannot do LIKE queries on BLOB columns.
 
+  ### Case sensitivity
+
+  Case sensitivty for `LIKE` is off by default, and controlled by the `:case_sensitive_like`
+  option outlined above.
+
+  However, for equality comparison, case sensitivity is always _on_.
+  If you want to make a column not be case sensitive, for email storage for example, you can
+  make it case insensitive by using the [`COLLATE NOCASE`][6] option in SQLite. This is configured
+  via the `:collate` option.
+
+  So instead of:
+
+      add :email, :string
+
+  You would do:
+
+      add :email, :string, collate: :nocase
+
   ### Schemaless queries
 
   Using [schemaless Ecto queries][5] will not work well with SQLite. This is because
@@ -101,6 +119,7 @@ defmodule Ecto.Adapters.SQLite3 do
   [3]: https://www.sqlite.org/compile.html
   [4]: https://www.sqlite.org/whentouse.html
   [5]: https://www.sqlite.org/datatype3.html
+  [6]: https://www.sqlite.org/datatype3.html#collating_sequences
   """
 
   use Ecto.Adapters.SQL,

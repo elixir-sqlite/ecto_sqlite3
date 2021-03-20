@@ -191,5 +191,17 @@ defmodule Ecto.Integration.CrudTest do
       assert [] = TestRepo.all from a in Account, where: a.name in ["404"]
       assert [_] = TestRepo.all from a in Account, where: a.name in ["hi"]
     end
+
+    test "handles case sensitive text" do
+      TestRepo.insert!(%Account{name: "hi"})
+      assert [_] = TestRepo.all from a in Account, where: a.name == "hi"
+      assert [] = TestRepo.all from a in Account, where: a.name == "HI"
+    end
+
+    test "handles case insensitive text" do
+      TestRepo.insert!(%Account{name: "hi", email: "hi@hi.com"})
+      assert [_] = TestRepo.all from a in Account, where: a.email == "hi@hi.com"
+      assert [_] = TestRepo.all from a in Account, where: a.email == "HI@HI.COM"
+    end
   end
 end

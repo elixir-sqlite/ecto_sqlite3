@@ -4,6 +4,7 @@ defmodule EctoSQLite3.Integration.Migration do
   def change do
     create table(:accounts) do
       add(:name, :string)
+      add(:email, :string, collate: :nocase)
       timestamps()
     end
 
