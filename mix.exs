@@ -31,10 +31,10 @@ defmodule EctoSQLite3.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:decimal, "~> 2.0"},
-      {:ecto_sql, "~> 3.5.4"},
-      {:ecto, "~> 3.5.8"},
-      {:exqlite, "~> 0.5.0"},
+      {:decimal, "~> 1.6 or ~> 2.0"},
+      {:ecto_sql, "~> 3.5"},
+      {:ecto, "~> 3.5"},
+      {:exqlite, "~> 0.5"},
       {:ex_doc, "~> 0.23.0", only: [:dev], runtime: false},
       {:jason, ">= 0.0.0", only: [:test, :docs]},
       {:temp, "~> 0.4", only: [:test]},
