@@ -20,7 +20,7 @@ defmodule Ecto.Integration.Case do
 
   setup do
     :ok = Ecto.Adapters.SQL.Sandbox.checkout(TestRepo)
-    #on_exit(fn -> Ecto.Adapters.SQL.Sandbox.checkin(TestRepo) end)
+    # on_exit(fn -> Ecto.Adapters.SQL.Sandbox.checkin(TestRepo) end)
   end
 end
 

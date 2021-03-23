@@ -146,7 +146,10 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   end
 
   @impl true
-  def to_constraints(%Exqlite.Error{message: "UNIQUE constraint failed: " <> constraint}, _opts) do
+  def to_constraints(
+        %Exqlite.Error{message: "UNIQUE constraint failed: " <> constraint},
+        _opts
+      ) do
     [unique: constraint_name_hack(constraint)]
   end
 
@@ -267,6 +270,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
       returning(returning)
     ]
   end
+
   def insert(prefix, table, header, rows, on_conflict, returning, _placeholders) do
     fields = quote_names(header)
 
@@ -680,7 +684,11 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   end
 
   defp on_conflict({query, _, targets}, _header) do
-    [" ON CONFLICT ", conflict_target(targets), "DO " | update_all(query, "UPDATE SET ")]
+    [
+      " ON CONFLICT ",
+      conflict_target(targets),
+      "DO " | update_all(query, "UPDATE SET ")
+    ]
   end
 
   defp conflict_target([]), do: ""
@@ -691,11 +699,11 @@ defmodule Ecto.Adapters.SQLite3.Connection do
 
   defp replace(fields) do
     [
-      "UPDATE SET " |
-      intersperse_map(fields, ?,, fn field ->
-        quoted = quote_name(field)
-        [quoted, " = ", "EXCLUDED." | quoted]
-      end)
+      "UPDATE SET "
+      | intersperse_map(fields, ?,, fn field ->
+          quoted = quote_name(field)
+          [quoted, " = ", "EXCLUDED." | quoted]
+        end)
     ]
   end
 
@@ -739,6 +747,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     {_expr, name, _schema} = create_name(sources, 0, [])
     [" AS " | name]
   end
+
   defp insert_as({_, _, _}) do
     []
   end
@@ -779,7 +788,10 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   end
 
   def select(%{select: %{fields: fields}, distinct: distinct} = query, sources) do
-    ["SELECT ", distinct(distinct, sources, query) | select_fields(fields, sources, query)]
+    [
+      "SELECT ",
+      distinct(distinct, sources, query) | select_fields(fields, sources, query)
+    ]
   end
 
   defp select_fields([], _sources, _query), do: "1"
@@ -1157,7 +1169,13 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   end
 
   def expr({:in, _, [left, right]}, sources, query) do
-    [expr(left, sources, query), " IN (SELECT value FROM JSON_EACH(", expr(right, sources, query), ?), ?)]
+    [
+      expr(left, sources, query),
+      " IN (SELECT value FROM JSON_EACH(",
+      expr(right, sources, query),
+      ?),
+      ?)
+    ]
   end
 
   def expr({:is_nil, _, [arg]}, sources, query) do
@@ -1585,6 +1603,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   defp reference_on_update(_), do: []
 
   defp returning(%{select: nil}, _sources), do: []
+
   defp returning(%{select: %{fields: fields}} = query, sources) do
     [
       " RETURNING " | select_fields(fields, sources, query)
@@ -1625,7 +1644,8 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   end
 
   defp composite_fk_definitions(%Table{} = table, columns) do
-    composite_fk_cols = columns
+    composite_fk_cols =
+      columns
       |> Enum.filter(fn c ->
         case c do
           {_op, _name, %Reference{with: [_]}, _opts} -> true
@@ -1650,7 +1670,6 @@ defmodule Ecto.Adapters.SQLite3.Connection do
       reference_on_delete(ref.on_delete),
       reference_on_update(ref.on_update)
     ]
-
   end
 
   defp get_source(query, sources, ix, source) do

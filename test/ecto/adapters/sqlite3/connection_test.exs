@@ -386,10 +386,14 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
   test "aggregate filters" do
     query = Schema |> select([r], count(r.x) |> filter(r.x > 10)) |> plan()
-    assert all(query) == ~s{SELECT count(s0.x) FILTER (WHERE s0.x > 10) FROM schema AS s0}
+
+    assert all(query) ==
+             ~s{SELECT count(s0.x) FILTER (WHERE s0.x > 10) FROM schema AS s0}
 
     query = Schema |> select([r], count(r.x) |> filter(r.x > 10 and r.x < 50)) |> plan()
-    assert all(query) == ~s{SELECT count(s0.x) FILTER (WHERE (s0.x > 10) AND (s0.x < 50)) FROM schema AS s0}
+
+    assert all(query) ==
+             ~s{SELECT count(s0.x) FILTER (WHERE (s0.x > 10) AND (s0.x < 50)) FROM schema AS s0}
 
     query = Schema |> select([r], count() |> filter(r.x > 10)) |> plan()
     assert all(query) == ~s{SELECT count(*) FILTER (WHERE s0.x > 10) FROM schema AS s0}
@@ -969,7 +973,9 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
     assert all(query) == ~s{SELECT json_extract(s0.meta, '$.\\"a') FROM schema AS s0}
 
     query = Schema |> select([s], s.meta["author"]["name"]) |> plan()
-    assert all(query) == ~s{SELECT json_extract(s0.meta, '$.author.name') FROM schema AS s0}
+
+    assert all(query) ==
+             ~s{SELECT json_extract(s0.meta, '$.author.name') FROM schema AS s0}
   end
 
   test "nested expressions" do
@@ -1026,7 +1032,8 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> select([e], e in [1, 2, 3])
       |> plan()
 
-    assert all(query) == "SELECT s0 IN (SELECT value FROM JSON_EACH('[1,2,3]')) FROM schema AS s0"
+    assert all(query) ==
+             "SELECT s0 IN (SELECT value FROM JSON_EACH('[1,2,3]')) FROM schema AS s0"
   end
 
   test "in subquery" do
@@ -1297,12 +1304,15 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
              AND (s0.x = 123)\
              """
 
-    query = from(
-      p in Post,
-      where: p.title == ^"foo",
-      select: p.content,
-      update: [set: [title: "bar"]]
-    ) |> plan(:update_all)
+    query =
+      from(
+        p in Post,
+        where: p.title == ^"foo",
+        select: p.content,
+        update: [set: [title: "bar"]]
+      )
+      |> plan(:update_all)
+
     assert update_all(query) ==
              """
              UPDATE posts AS p0 \
@@ -1335,6 +1345,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       from(p in Post, update: [set: [title: "foo"]])
       |> select([p], p)
       |> plan(:update_all)
+
     assert update_all(query) ==
              """
              UPDATE posts AS p0 \
@@ -1347,6 +1358,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> where([m], m.x == ^2)
       |> select([m], m.x == ^3)
       |> plan(:update_all)
+
     assert update_all(query) ==
              """
              UPDATE schema AS s0 \
@@ -1375,20 +1387,22 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       (e in Schema)
       |> from(where: e.x == 123, select: e.x)
       |> plan()
+
     assert delete_all(query) ==
-            """
-            DELETE FROM schema AS s0 \
-            WHERE (s0.x = 123) RETURNING s0.x\
-            """
+             """
+             DELETE FROM schema AS s0 \
+             WHERE (s0.x = 123) RETURNING s0.x\
+             """
   end
 
   test "delete all with returning" do
-    query = Post |> Ecto.Queryable.to_query |> select([m], m) |> plan()
+    query = Post |> Ecto.Queryable.to_query() |> select([m], m) |> plan()
+
     assert delete_all(query) ==
-           """
-           DELETE FROM posts AS p0 \
-           RETURNING p0.id, p0.title, p0.content\
-           """
+             """
+             DELETE FROM posts AS p0 \
+             RETURNING p0.id, p0.title, p0.content\
+             """
   end
 
   test "delete all with prefix" do
@@ -2095,10 +2109,11 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
   end
 
   test "insert with query as rows" do
-    query = from(s in "schema", select: %{ foo: fragment("3"), bar: s.bar }) |> plan(:all)
+    query = from(s in "schema", select: %{foo: fragment("3"), bar: s.bar}) |> plan(:all)
     query = insert(nil, "schema", [:foo, :bar], query, {:raise, [], []}, [])
 
-    assert query == ~s{INSERT INTO schema (foo,bar) (SELECT 3, s0.bar FROM schema AS s0)}
+    assert query ==
+             ~s{INSERT INTO schema (foo,bar) (SELECT 3, s0.bar FROM schema AS s0)}
   end
 
   # test "update" do
@@ -2198,8 +2213,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
           %Reference{table: :categories, with: [here: :there], on_delete: :nilify_all},
           []},
          {:add, :category_7,
-          %Reference{table: :tags, with: [that: :this], on_delete: :nilify_all},
-          []},
+          %Reference{table: :tags, with: [that: :this], on_delete: :nilify_all}, []}
        ]}
 
     assert execute_ddl(create) == [
@@ -2448,11 +2462,11 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
     }
 
     assert execute_ddl(alteration) == [
-      """
-      ALTER TABLE posts \
-      DROP COLUMN price\
-      """
-    ]
+             """
+             ALTER TABLE posts \
+             DROP COLUMN price\
+             """
+           ]
   end
 
   test "alter table with primary key" do
@@ -2714,11 +2728,11 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
     drop_column = {:alter, table(:posts), [{:remove, :summary}]}
 
     assert execute_ddl(drop_column) == [
-      """
-      ALTER TABLE posts \
-      DROP COLUMN summary\
-      """
-    ]
+             """
+             ALTER TABLE posts \
+             DROP COLUMN summary\
+             """
+           ]
   end
 
   test "arrays" do
