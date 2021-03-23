@@ -71,7 +71,7 @@ defmodule EctoSQLite3.MixProject do
 
   defp docs do
     [
-      main: "Ecto.Adapters.SQLite3",
+      main: "Ecto.Adapters.SQLite3"
     ]
   end
 

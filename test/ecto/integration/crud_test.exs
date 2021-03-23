@@ -51,14 +51,15 @@ defmodule Ecto.Integration.CrudTest do
 
     test "insert_all" do
       timestamp = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+
       account = %{
         name: "John",
         inserted_at: timestamp,
-        updated_at: timestamp,
+        updated_at: timestamp
       }
+
       {1, nil} = TestRepo.insert_all(Account, [account], [])
     end
-
   end
 
   describe "delete" do
@@ -179,6 +180,7 @@ defmodule Ecto.Integration.CrudTest do
       accounts = from(a in Account, preload: [:users]) |> TestRepo.all()
 
       assert Enum.count(accounts) == 2
+
       Enum.each(accounts, fn account ->
         assert Ecto.assoc_loaded?(account.users)
       end)
@@ -188,20 +190,20 @@ defmodule Ecto.Integration.CrudTest do
   describe "select" do
     test "can handle in" do
       TestRepo.insert!(%Account{name: "hi"})
-      assert [] = TestRepo.all from a in Account, where: a.name in ["404"]
-      assert [_] = TestRepo.all from a in Account, where: a.name in ["hi"]
+      assert [] = TestRepo.all(from(a in Account, where: a.name in ["404"]))
+      assert [_] = TestRepo.all(from(a in Account, where: a.name in ["hi"]))
     end
 
     test "handles case sensitive text" do
       TestRepo.insert!(%Account{name: "hi"})
-      assert [_] = TestRepo.all from a in Account, where: a.name == "hi"
-      assert [] = TestRepo.all from a in Account, where: a.name == "HI"
+      assert [_] = TestRepo.all(from(a in Account, where: a.name == "hi"))
+      assert [] = TestRepo.all(from(a in Account, where: a.name == "HI"))
     end
 
     test "handles case insensitive text" do
       TestRepo.insert!(%Account{name: "hi", email: "hi@hi.com"})
-      assert [_] = TestRepo.all from a in Account, where: a.email == "hi@hi.com"
-      assert [_] = TestRepo.all from a in Account, where: a.email == "HI@HI.COM"
+      assert [_] = TestRepo.all(from(a in Account, where: a.email == "hi@hi.com"))
+      assert [_] = TestRepo.all(from(a in Account, where: a.email == "HI@HI.COM"))
     end
   end
 end

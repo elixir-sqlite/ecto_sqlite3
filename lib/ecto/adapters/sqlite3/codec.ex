@@ -88,6 +88,7 @@ defmodule Ecto.Adapters.SQLite3.Codec do
   def decimal_encode(%Decimal{} = x) do
     {:ok, Decimal.to_string(x, :normal)}
   end
+
   # def decimal_encode(x), do: {:ok, x}
 
   def time_encode(value) do
