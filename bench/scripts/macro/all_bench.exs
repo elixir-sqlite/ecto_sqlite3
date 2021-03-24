@@ -20,28 +20,31 @@ Code.require_file("../../support/setup.exs", __DIR__)
 
 alias Ecto.Bench.User
 
-limit = 5_000
+limit = 1_000
 
 users =
   1..limit
   |> Enum.map(fn _ -> User.sample_data() end)
 
 # We need to insert data to fetch
+Ecto.Bench.SQLite3Repo.insert_all(User, users)
 Ecto.Bench.PgRepo.insert_all(User, users)
 Ecto.Bench.MyXQLRepo.insert_all(User, users)
 
 jobs = %{
+  "SQLite3 Repo.all/2" => fn -> Ecto.Bench.SQLite3Repo.all(User, limit: limit) end,
   "Pg Repo.all/2" => fn -> Ecto.Bench.PgRepo.all(User, limit: limit) end,
   "MyXQL Repo.all/2" => fn -> Ecto.Bench.MyXQLRepo.all(User, limit: limit) end
 }
 
 path = System.get_env("BENCHMARKS_OUTPUT_PATH") || "bench/results"
-file = Path.join(path, "all.json")
 
 Benchee.run(
   jobs,
-  formatters: [Benchee.Formatters.JSON, Benchee.Formatters.Console],
-  formatter_options: [json: [file: file]],
+  formatters: [
+    Benchee.Formatters.Console,
+    {Benchee.Formatters.Markdown, file: Path.join(path, "all.md")}
+  ],
   time: 10,
   after_each: fn results ->
     ^limit = length(results)
@@ -49,5 +52,6 @@ Benchee.run(
 )
 
 # Clean inserted data
+Ecto.Bench.SQLite3Repo.delete_all(User)
 Ecto.Bench.PgRepo.delete_all(User)
 Ecto.Bench.MyXQLRepo.delete_all(User)

@@ -2,7 +2,7 @@
 [
   inputs: [
     "{mix,.formatter}.exs",
-    "{lib,test}/**/*.{ex,exs}"
+    "{lib,test,bench}/**/*.{ex,exs}"
   ],
   line_length: 88
 ]
