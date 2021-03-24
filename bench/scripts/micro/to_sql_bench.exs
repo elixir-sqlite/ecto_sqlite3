@@ -49,9 +49,13 @@ inputs = %{
 }
 
 jobs = %{
-  "SQLite3 Query Builder" => fn {type, query} -> Ecto.Bench.SQLite3Repo.to_sql(type, query) end,
+  "SQLite3 Query Builder" => fn {type, query} ->
+    Ecto.Bench.SQLite3Repo.to_sql(type, query)
+  end,
   "Pg Query Builder" => fn {type, query} -> Ecto.Bench.PgRepo.to_sql(type, query) end,
-  "MyXQL Query Builder" => fn {type, query} -> Ecto.Bench.MyXQLRepo.to_sql(type, query) end
+  "MyXQL Query Builder" => fn {type, query} ->
+    Ecto.Bench.MyXQLRepo.to_sql(type, query)
+  end
 }
 
 path = System.get_env("BENCHMARKS_OUTPUT_PATH") || "bench/results"
@@ -61,7 +65,6 @@ Benchee.run(
   inputs: inputs,
   formatters: [
     Benchee.Formatters.Console,
-    {Benchee.Formatters.Markdown,
-      file: Path.join(path, "to_sql.md")}
+    {Benchee.Formatters.Markdown, file: Path.join(path, "to_sql.md")}
   ]
 )

@@ -43,8 +43,7 @@ Benchee.run(
   jobs,
   formatters: [
     Benchee.Formatters.Console,
-    {Benchee.Formatters.Markdown,
-      file: Path.join(path, "all.md")}
+    {Benchee.Formatters.Markdown, file: Path.join(path, "all.md")}
   ],
   time: 10,
   after_each: fn results ->

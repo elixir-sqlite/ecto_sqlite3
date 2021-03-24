@@ -37,8 +37,7 @@ Benchee.run(
   inputs: inputs,
   formatters: [
     Benchee.Formatters.Console,
-    {Benchee.Formatters.Markdown,
-      file: Path.join(path, "insert.md")}
+    {Benchee.Formatters.Markdown, file: Path.join(path, "insert.md")}
   ]
 )
 

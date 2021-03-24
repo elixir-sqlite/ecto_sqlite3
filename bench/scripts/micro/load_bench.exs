@@ -30,7 +30,8 @@ inputs = %{
     1..1_000_000 |> Enum.map(fn _ -> %{name: "Alice", email: "email@email.com"} end),
   "Time attr" =>
     1..100_000 |> Enum.map(fn _ -> %{name: "Alice", time_attr: ~T[21:25:04.361140]} end),
-  "Date attr" => 1..100_000 |> Enum.map(fn _ -> %{name: "Alice", date_attr: ~D[2018-06-20]} end),
+  "Date attr" =>
+    1..100_000 |> Enum.map(fn _ -> %{name: "Alice", date_attr: ~D[2018-06-20]} end),
   # "NaiveDateTime attr" =>
   #   1..100_000
   #   |> Enum.map(fn _ -> %{name: "Alice", naive_datetime_attr: ~N[2019-06-20 21:32:07.424178]} end),
@@ -40,7 +41,9 @@ inputs = %{
 }
 
 jobs = %{
-  "SQLite3 Loader" => fn data -> Enum.map(data, &Ecto.Bench.SQLite3Repo.load(User, &1)) end,
+  "SQLite3 Loader" => fn data ->
+    Enum.map(data, &Ecto.Bench.SQLite3Repo.load(User, &1))
+  end,
   "Pg Loader" => fn data -> Enum.map(data, &Ecto.Bench.PgRepo.load(User, &1)) end,
   "MyXQL Loader" => fn data -> Enum.map(data, &Ecto.Bench.MyXQLRepo.load(User, &1)) end
 }
@@ -52,7 +55,6 @@ Benchee.run(
   inputs: inputs,
   formatters: [
     Benchee.Formatters.Console,
-    {Benchee.Formatters.Markdown,
-      file: Path.join(path, "load.md")}
+    {Benchee.Formatters.Markdown, file: Path.join(path, "load.md")}
   ]
 )
