@@ -39,3 +39,9 @@ config :my_app,
 config :my_app, MyApp.Repo,
   database: "path/to/my/database.db",
 ```
+
+## Benchmarks
+
+We have some benchmarks comparing it against the `MySQL` and `Postgres` adapters.
+
+You can read more about those at [bench/README.md](bench/README.md).

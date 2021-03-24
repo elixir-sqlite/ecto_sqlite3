@@ -25,22 +25,24 @@ inputs = %{
 }
 
 jobs = %{
-  "Exqlite Insert" => fn entry -> Ecto.Bench.ExqliteRepo.insert!(entry) end,
+  "SQLite3 Insert" => fn entry -> Ecto.Bench.SQLite3Repo.insert!(entry) end,
   "Pg Insert" => fn entry -> Ecto.Bench.PgRepo.insert!(entry) end,
   "MyXQL Insert" => fn entry -> Ecto.Bench.MyXQLRepo.insert!(entry) end
 }
 
 path = System.get_env("BENCHMARKS_OUTPUT_PATH") || "bench/results"
-file = Path.join(path, "insert.json")
 
 Benchee.run(
   jobs,
   inputs: inputs,
-  formatters: [Benchee.Formatters.JSON, Benchee.Formatters.Console],
-  formatter_options: [json: [file: file]]
+  formatters: [
+    Benchee.Formatters.Console,
+    {Benchee.Formatters.Markdown,
+      file: Path.join(path, "insert.md")}
+  ]
 )
 
 # Clean inserted data
-Ecto.Bench.ExqliteRepo.delete_all(User)
+Ecto.Bench.SQLite3Repo.delete_all(User)
 Ecto.Bench.PgRepo.delete_all(User)
 Ecto.Bench.MyXQLRepo.delete_all(User)
