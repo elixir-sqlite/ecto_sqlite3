@@ -111,7 +111,7 @@ defmodule Ecto.Adapters.SQLite3 do
 
   ### Schemaless queries
 
-  Using [schemaless Ecto queries][5] will not work well with SQLite. This is because
+  Using [schemaless Ecto queries][7] will not work well with SQLite. This is because
   the Ecto SQLite adapter relies heavily on the schema to support a rich array of Elixir
   types, despite the fact SQLite only has [five storage classes][5]. The query will still
   work and return data, but you will need to do this mapping on your own.
@@ -120,6 +120,7 @@ defmodule Ecto.Adapters.SQLite3 do
   [4]: https://www.sqlite.org/whentouse.html
   [5]: https://www.sqlite.org/datatype3.html
   [6]: https://www.sqlite.org/datatype3.html#collating_sequences
+  [7]: https://hexdocs.pm/ecto/schemaless-queries.html
   """
 
   use Ecto.Adapters.SQL,
