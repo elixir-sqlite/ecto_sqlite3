@@ -14,7 +14,7 @@ See [Limitations](https://hexdocs.pm/ecto_sqlite3/Ecto.Adapters.SQLite3.html#mod
 
 ```elixir
 defp deps do
-  {:ecto_sqlite3, "~> 0.5.2"}
+  {:ecto_sqlite3, "~> 0.5.3"}
 end
 ```
 
