@@ -278,7 +278,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
       " (",
       fields,
       ") ",
-      insert_all(rows),
+      insert_all(rows, on_conflict),
       on_conflict(on_conflict, header),
       returning(returning)
     ]
@@ -704,13 +704,19 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     ]
   end
 
-  def insert_all(rows), do: insert_all(rows, 1)
+  def insert_all(rows, on_conflict), do: insert_all(rows, on_conflict, 1)
 
-  def insert_all(%Ecto.Query{} = query, _counter) do
-    [?(, all(query), ?)]
+  def insert_all(%Ecto.Query{wheres: []} = query, on_conflict, _counter)
+      when not is_nil(on_conflict) do
+    raise ArgumentError,
+          "SQLite3 requires a where clause to avoid ambiguity. Even simply specify where: true will work"
   end
 
-  def insert_all(rows, counter) do
+  def insert_all(%Ecto.Query{} = query, _on_conflict, _counter) do
+    [all(query)]
+  end
+
+  def insert_all(rows, _on_conflict, counter) do
     [
       "VALUES ",
       intersperse_reduce(
