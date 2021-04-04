@@ -110,6 +110,8 @@ ExUnit.start(
     :modify_column,
 
     # SQLite3 does not support the concat function
-    :concat
+    :concat,
+
+    :placeholders
   ]
 )
