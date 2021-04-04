@@ -107,6 +107,11 @@ ExUnit.start(
     :alter_primary_key,
     :alter_foreign_key,
     :assigns_id_type,
-    :modify_column
+    :modify_column,
+
+    # SQLite3 does not support the concat function
+    :concat,
+
+    :placeholders
   ]
 )
