@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog][keepachangelog], and this project
 adheres to [Semantic Versioning][semver].
 
 ## [Unreleased]
+- Upgrade `ecto_sql` dependency to 3.6.0
+- Removed old `Ecto.Adapters.SQLite3.Connection.insert/6` was replaced with
+  `Ecto.Adapters.SQLite3.Connection.insert/7`.
 
 ## [0.5.3] - 2021-03-20
 - Added `collate:` opts support to `:string` column type

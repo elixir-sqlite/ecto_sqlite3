@@ -166,8 +166,8 @@ defmodule Ecto.Adapters.SQLite3 do
   def supports_ddl_transaction?(), do: false
 
   @impl Ecto.Adapter.Migration
-  def lock_for_migrations(_meta, query, _options, fun) do
-    fun.(query)
+  def lock_for_migrations(_meta, _options, fun) do
+    fun.()
   end
 
   @impl Ecto.Adapter.Structure
