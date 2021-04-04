@@ -32,7 +32,7 @@ defmodule EctoSQLite3.MixProject do
   defp deps do
     [
       {:decimal, "~> 1.6 or ~> 2.0"},
-      {:ecto_sql, "~> 3.5"},
+      {:ecto_sql, "~> 3.6"},
       {:ecto, "~> 3.5"},
       {:exqlite, "~> 0.5"},
       {:ex_doc, "~> 0.23.0", only: [:dev], runtime: false},
