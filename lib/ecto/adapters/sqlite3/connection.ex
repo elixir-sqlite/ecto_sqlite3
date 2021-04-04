@@ -706,7 +706,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
 
   def insert_all(rows, on_conflict), do: insert_all(rows, on_conflict, 1)
 
-  def insert_all(%Ecto.Query{wheres: []} = query, on_conflict, _counter)
+  def insert_all(%Ecto.Query{wheres: []} = _query, on_conflict, _counter)
       when not is_nil(on_conflict) do
     raise ArgumentError,
           "SQLite3 requires a where clause to avoid ambiguity. Even simply specify where: true will work"
