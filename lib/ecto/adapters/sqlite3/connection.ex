@@ -1128,6 +1128,24 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     '?'
   end
 
+  # workaround for the fact that SQLite3 as of 3.35.4 does not support specifying table
+  # in the returning clause. when a later release adds the ability, this code can be deleted
+  def expr(
+        {{:., _, [{:parent_as, _, [{:&, _, [_idx]}]}, field]}, _, []},
+        _sources,
+        %{returning: true}
+      )
+      when is_atom(field) do
+    quote_name(field)
+  end
+
+  # workaround for the fact that SQLite3 as of 3.35.4 does not support specifying table
+  # in the returning clause. when a later release adds the ability, this code can be deleted
+  def expr({{:., _, [{:&, _, [_idx]}, field]}, _, []}, _sources, %{returning: true})
+      when is_atom(field) do
+    quote_name(field)
+  end
+
   def expr(
         {{:., _, [{:parent_as, _, [{:&, _, [idx]}]}, field]}, _, []},
         _sources,
@@ -1609,7 +1627,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
 
   defp returning(%{select: %{fields: fields}} = query, sources) do
     [
-      " RETURNING " | select_fields(fields, sources, query)
+      " RETURNING " | select_fields(fields, sources, Map.put(query, :returning, true))
     ]
   end
 

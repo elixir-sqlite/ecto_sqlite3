@@ -1318,7 +1318,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
              UPDATE posts AS p0 \
              SET title = 'bar' \
              WHERE (p0.title = ?) \
-             RETURNING p0.content\
+             RETURNING content\
              """
   end
 
@@ -1350,7 +1350,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
              """
              UPDATE posts AS p0 \
              SET title = 'foo' \
-             RETURNING p0.id, p0.title, p0.content\
+             RETURNING id, title, content\
              """
 
     query =
@@ -1364,7 +1364,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
              UPDATE schema AS s0 \
              SET x = ? \
              WHERE (s0.x = ?) \
-             RETURNING s0.x = ?\
+             RETURNING x = ?\
              """
   end
 
@@ -1391,7 +1391,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
     assert delete_all(query) ==
              """
              DELETE FROM schema AS s0 \
-             WHERE (s0.x = 123) RETURNING s0.x\
+             WHERE (s0.x = 123) RETURNING x\
              """
   end
 
@@ -1401,7 +1401,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
     assert delete_all(query) ==
              """
              DELETE FROM posts AS p0 \
-             RETURNING p0.id, p0.title, p0.content\
+             RETURNING id, title, content\
              """
   end
 
