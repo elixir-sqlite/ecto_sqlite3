@@ -4,11 +4,13 @@
 [![Hex Package](https://img.shields.io/hexpm/v/ecto_sqlite3.svg)](https://hex.pm/packages/ecto_sqlite3)
 [![Hex Docs](https://img.shields.io/badge/hex-docs-blue.svg)](https://hexdocs.pm/ecto_sqlite3)
 
-An Ecto SQLite3 Adapter. Uses [Exqlite](https://github.com/elixir-sqlite/exqlite) as the driver to communicate with sqlite3.
+An Ecto SQLite3 Adapter. Uses [Exqlite](https://github.com/elixir-sqlite/exqlite)
+as the driver to communicate with sqlite3.
 
 ## Caveats and limitations
 
-See [Limitations](https://hexdocs.pm/ecto_sqlite3/Ecto.Adapters.SQLite3.html#module-limitations) in Hexdocs.
+See [Limitations](https://hexdocs.pm/ecto_sqlite3/Ecto.Adapters.SQLite3.html#module-limitations)
+in Hexdocs.
 
 ## Installation
 
@@ -30,7 +32,8 @@ end
 
 Configure your repository similar to the following. If you want to know more
 about the possible options to pass the repository, checkout the documentation
-for [`Ecto.Adapters.SQLite`](https://hexdocs.pm/ecto_sqlite3/). It will have more information on what is configurable.
+for [`Ecto.Adapters.SQLite`](https://hexdocs.pm/ecto_sqlite3/). It will have
+more information on what is configurable.
 
 ```elixir
 config :my_app,
@@ -45,3 +48,17 @@ config :my_app, MyApp.Repo,
 We have some benchmarks comparing it against the `MySQL` and `Postgres` adapters.
 
 You can read more about those at [bench/README.md](bench/README.md).
+
+## Running Tests
+
+Running unit tests
+
+```sh
+mix test
+```
+
+Runing integration tests
+
+```sh
+EXQLITE_INTEGRATION=true mix test
+```
