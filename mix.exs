@@ -1,10 +1,12 @@
 defmodule EctoSQLite3.MixProject do
   use Mix.Project
 
+  @version "0.5.4"
+
   def project do
     [
       app: :ecto_sqlite3,
-      version: "0.5.3",
+      version: @version,
       elixir: "~> 1.8",
       start_permanent: Mix.env() == :prod,
       source_url: "https://github.com/elixir-sqlite/ecto_sqlite3",
@@ -48,7 +50,7 @@ defmodule EctoSQLite3.MixProject do
   end
 
   defp description do
-    "A SQLite3 Ecto3 adapter."
+    "An SQLite3 Ecto3 adapter."
   end
 
   defp package do
@@ -71,7 +73,9 @@ defmodule EctoSQLite3.MixProject do
 
   defp docs do
     [
-      main: "Ecto.Adapters.SQLite3"
+      main: "Ecto.Adapters.SQLite3",
+      source_ref: "v#{@version}",
+      source_url: "https://github.com/elixir-sqlite/ecto_sqlite3"
     ]
   end
 
