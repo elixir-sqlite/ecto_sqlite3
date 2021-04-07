@@ -5,6 +5,9 @@ All notable changes will be documented in this file.
 The format is based on [Keep a Changelog][keepachangelog], and this project
 adheres to [Semantic Versioning][semver].
 
+## [0.5.5] - Unreleased
+- Fix "database is locked" issue by setting `journal_mode` at `storage_up` time.
+
 
 ## [0.5.4] - 2021-04-06
 - Upgrade `ecto_sql` dependency to 3.6.0
