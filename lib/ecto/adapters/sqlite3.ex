@@ -157,9 +157,10 @@ defmodule Ecto.Adapters.SQLite3 do
 
   @impl Ecto.Adapter.Storage
   def storage_up(options) do
-    options
-    |> Keyword.get(:database)
-    |> storage_up_with_path()
+    storage_up_with_path(
+      Keyword.get(options, :database),
+      Keyword.get(options, :journal_mode, :wal)
+    )
   end
 
   @impl Ecto.Adapter.Migration
@@ -324,7 +325,7 @@ defmodule Ecto.Adapters.SQLite3 do
   ## HELPERS
   ##
 
-  defp storage_up_with_path(nil) do
+  defp storage_up_with_path(nil, _) do
     raise ArgumentError,
           """
           No SQLite database path specified. Please check the configuration for your Repo.
@@ -336,12 +337,13 @@ defmodule Ecto.Adapters.SQLite3 do
           """
   end
 
-  defp storage_up_with_path(db_path) do
+  defp storage_up_with_path(db_path, journal_mode) do
     if File.exists?(db_path) do
       {:error, :already_up}
     else
       db_path |> Path.dirname() |> File.mkdir_p!()
       {:ok, db} = Exqlite.Sqlite3.open(db_path)
+      :ok = Exqlite.Sqlite3.execute(db, "PRAGMA JOURNAL_MODE = #{journal_mode}")
       :ok = Exqlite.Sqlite3.close(db)
     end
   end

@@ -45,6 +45,6 @@ jobs:
       # - run: mix compile --warnings-as-errors
       #   if: ${{ matrix.lint }}
 
-      - run: mix test
+      - run: mix test --trace
 
-      - run: EXQLITE_INTEGRATION=true mix test
+      - run: EXQLITE_INTEGRATION=true mix test --trace
