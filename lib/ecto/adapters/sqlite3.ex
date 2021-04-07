@@ -157,7 +157,10 @@ defmodule Ecto.Adapters.SQLite3 do
 
   @impl Ecto.Adapter.Storage
   def storage_up(options) do
-    storage_up_with_path(Keyword.get(options, :database), Keyword.get(options, :journal_mode, :wal))
+    storage_up_with_path(
+      Keyword.get(options, :database),
+      Keyword.get(options, :journal_mode, :wal)
+    )
   end
 
   @impl Ecto.Adapter.Migration
