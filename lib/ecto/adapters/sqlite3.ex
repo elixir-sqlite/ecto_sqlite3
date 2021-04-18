@@ -35,7 +35,7 @@ defmodule Ecto.Adapters.SQLite3 do
       `:incremental`. Depending on the database size, `:incremental` may be
       beneficial.
     * `:locking_mode` - Defaults to `:normal`. Allowed values are `:normal` or
-      `:exclusive`. See [sqlite documenation][1] for more information.
+      `:exclusive`. See [sqlite documentation][1] for more information.
     * `:secure_delete` - Defaults to `:off`. Can be `:off` or `:on`. If `:on`, it will cause SQLite3
       to overwrite records that were deleted with zeros.
     * `:wal_auto_check_point` - Sets the write-ahead log auto-checkpoint
@@ -45,7 +45,7 @@ defmodule Ecto.Adapters.SQLite3 do
       Default is `2000`.
     * `:pool_size` - the size of the connection pool. Defaults to `5`.
 
-  For more information about the options above, see [sqlite documenation][1]
+  For more information about the options above, see [sqlite documentation][1]
 
   ### Differences between SQLite and Ecto SQLite defaults
 
