@@ -72,7 +72,7 @@ defmodule Ecto.Adapters.SQLite3 do
   [1]: https://www.sqlite.org/pragma.html
   [2]: https://sqlite.org/wal.html
 
-  ## Limitations
+  ## Limitations and caveats
 
   There are some limitations when using Ecto with SQLite that one needs
   to be aware of. The ones listed below are specific to Ecto usage, but it
@@ -108,6 +108,17 @@ defmodule Ecto.Adapters.SQLite3 do
   You would do:
 
       add :email, :string, collate: :nocase
+
+  ### Check constraints
+
+  SQLite3 supports specifying check constraints on the table or on the column definition. We currently
+  support adding a check constraint via the columnd definition, since the table definition approach only
+  works at table-creation time and cannot be added at table-alter time. You can see more information in
+  the SQLite3 [CREATE TABLE documentation](https://sqlite.org/lang_createtable.html).
+
+  Adding a check constraint is as simple as:
+
+      add :email, :string, check: "email != 'test@example.com')"
 
   ### Schemaless queries
 

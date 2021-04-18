@@ -7,6 +7,7 @@ adheres to [Semantic Versioning][semver].
 
 ## [0.5.5] - Unreleased
 - Fix "database is locked" issue by setting `journal_mode` at `storage_up` time.
+- Add :check constraint column option.
 
 
 ## [0.5.4] - 2021-04-06

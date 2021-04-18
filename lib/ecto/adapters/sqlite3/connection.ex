@@ -139,6 +139,11 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     [foreign_key: nil]
   end
 
+  def to_constraints(%Exqlite.Error{message: "CHECK constraint failed" <> _rest}, _opts) do
+    # right now we only support column-level check constraints which have no name
+    [check: nil]
+  end
+
   def to_constraints(_, _), do: []
 
   ##
