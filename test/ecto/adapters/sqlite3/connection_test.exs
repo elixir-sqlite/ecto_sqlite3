@@ -2169,7 +2169,9 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
          {:add, :on_hand, :integer, [default: 0, null: true]},
          {:add, :likes, :integer, [default: 0, null: false]},
          {:add, :published_at, :datetime, [null: true]},
-         {:add, :is_active, :boolean, [default: true]}
+         {:add, :is_active, :boolean, [default: true]},
+         {:add, :notes, :text, [collate: :nocase]},
+         {:add, :meta, :text, [check: "meta != 'a'"]}
        ]}
 
     assert execute_ddl(create) == [
@@ -2181,7 +2183,9 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
              on_hand INTEGER DEFAULT 0 NULL, \
              likes INTEGER DEFAULT 0 NOT NULL, \
              published_at DATETIME NULL, \
-             is_active BOOLEAN DEFAULT true\
+             is_active BOOLEAN DEFAULT true, \
+             notes TEXT COLLATE NOCASE, \
+             meta TEXT CHECK (meta != 'a')\
              )\
              """
            ]
