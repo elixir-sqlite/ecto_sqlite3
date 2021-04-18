@@ -139,7 +139,10 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     [foreign_key: nil]
   end
 
-  def to_constraints(%Exqlite.Error{message: "CHECK constraint failed: " <> name}, _opts) do
+  def to_constraints(
+        %Exqlite.Error{message: "CHECK constraint failed: " <> name},
+        _opts
+      ) do
     [check: name]
   end
 
@@ -1504,7 +1507,9 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   end
 
   defp check_expr(nil), do: []
-  defp check_expr(%{name: name, expr: expr}), do: [" CONSTRAINT ", name, " CHECK (", expr, ")"]
+
+  defp check_expr(%{name: name, expr: expr}),
+    do: [" CONSTRAINT ", name, " CHECK (", expr, ")"]
 
   defp collate_expr(nil), do: []
 
