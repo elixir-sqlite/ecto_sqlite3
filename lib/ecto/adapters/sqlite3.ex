@@ -116,9 +116,13 @@ defmodule Ecto.Adapters.SQLite3 do
   works at table-creation time and cannot be added at table-alter time. You can see more information in
   the SQLite3 [CREATE TABLE documentation](https://sqlite.org/lang_createtable.html).
 
-  Adding a check constraint is as simple as:
+  Because of this, you cannot add a constraint via the normal `Ecto.Migration.constraint/3` method, as that
+  operates on the table level. You can however get the full functionality by adding a constraint at the column
+  level, specifying the name and expression.
 
-      add :email, :string, check: "email != 'test@example.com')"
+  Thus, adding a check constraint is as simple as:
+
+      add :email, :string, check: %{name: "test_constraint", expr: "email != 'test@example.com')"}
 
   ### Schemaless queries
 

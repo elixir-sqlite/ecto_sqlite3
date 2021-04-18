@@ -13,7 +13,7 @@ defmodule Ecto.Integration.ConstraintsTest do
       create @table do
         add :price, :integer
         add :fromm, :integer
-        add :too, :integer, check: "fromm < too"
+        add :too, :integer, check: %{name: "cannot_overlap", expr: "fromm < too"}
       end
     end
   end
@@ -52,15 +52,15 @@ defmodule Ecto.Integration.ConstraintsTest do
       assert_raise Ecto.ConstraintError, ~r/constraint error when attempting to insert struct/, fn ->
         PoolRepo.insert(overlapping_changeset)
       end
-    #assert exception.message =~ "cannot_overlap (check_constraint)"
+    assert exception.message =~ "cannot_overlap (check_constraint)"
     assert exception.message =~ "The changeset has not defined any constraint."
     assert exception.message =~ "call `check_constraint/3`"
 
-    # {:error, changeset} =
-    #   overlapping_changeset
-    #   |> Ecto.Changeset.check_constraint(:fromm, name: :cannot_overlap)
-    #   |> PoolRepo.insert()
-    # assert changeset.errors == [fromm: {"is invalid", [constraint: :check, constraint_name: "cannot_overlap"]}]
-    # assert changeset.data.__meta__.state == :built
+    {:error, changeset} =
+      overlapping_changeset
+      |> Ecto.Changeset.check_constraint(:fromm, name: :cannot_overlap)
+      |> PoolRepo.insert()
+    assert changeset.errors == [fromm: {"is invalid", [constraint: :check, constraint_name: "cannot_overlap"]}]
+    assert changeset.data.__meta__.state == :built
   end
 end

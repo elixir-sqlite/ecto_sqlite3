@@ -139,9 +139,8 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     [foreign_key: nil]
   end
 
-  def to_constraints(%Exqlite.Error{message: "CHECK constraint failed" <> _rest}, _opts) do
-    # right now we only support column-level check constraints which have no name
-    [check: nil]
+  def to_constraints(%Exqlite.Error{message: "CHECK constraint failed: " <> name}, _opts) do
+    [check: name]
   end
 
   def to_constraints(_, _), do: []
@@ -493,16 +492,6 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   end
 
   @impl true
-  def execute_ddl({:create, %Constraint{}}) do
-    raise ArgumentError, "ALTER TABLE with constraints not supported by SQLite3"
-  end
-
-  @impl true
-  def execute_ddl({:drop, %Constraint{}}) do
-    raise ArgumentError, "ALTER TABLE with constraints not supported by SQLite3"
-  end
-
-  @impl true
   def execute_ddl(string) when is_binary(string), do: [string]
 
   @impl true
@@ -555,13 +544,8 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   end
 
   @impl true
-  def execute_ddl({:create, %Constraint{check: check}}) when is_binary(check) do
-    raise ArgumentError, "SQLite3 adapter does not support check constraints"
-  end
-
-  @impl true
-  def execute_ddl({:create, %Constraint{exclude: exclude}}) when is_binary(exclude) do
-    raise ArgumentError, "SQLite3 adapter does not support exclusion constraints"
+  def execute_ddl({:create, %Constraint{}}) do
+    raise ArgumentError, "SQLite3 does not support ALTER TABLE ADD CONSTRAINT."
   end
 
   @impl true
@@ -586,12 +570,12 @@ defmodule Ecto.Adapters.SQLite3.Connection do
 
   @impl true
   def execute_ddl({:drop, %Constraint{}}) do
-    raise ArgumentError, "SQLite3 adapter does not support constraints"
+    raise ArgumentError, "SQLite3 does not support ALTER TABLE DROP CONSTRAINT."
   end
 
   @impl true
   def execute_ddl({:drop_if_exists, %Constraint{}}) do
-    raise ArgumentError, "SQLite3 adapter does not support constraints"
+    raise ArgumentError, "SQLite3 does not support ALTER TABLE DROP CONSTRAINT."
   end
 
   @impl true
@@ -1520,7 +1504,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   end
 
   defp check_expr(nil), do: []
-  defp check_expr(expr), do: [" CHECK (", expr, ")"]
+  defp check_expr(%{name: name, expr: expr}), do: [" CONSTRAINT ", name, " CHECK (", expr, ")"]
 
   defp collate_expr(nil), do: []
 
