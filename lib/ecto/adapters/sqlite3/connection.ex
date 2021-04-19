@@ -139,6 +139,13 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     [foreign_key: nil]
   end
 
+  def to_constraints(
+        %Exqlite.Error{message: "CHECK constraint failed: " <> name},
+        _opts
+      ) do
+    [check: name]
+  end
+
   def to_constraints(_, _), do: []
 
   ##
@@ -488,16 +495,6 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   end
 
   @impl true
-  def execute_ddl({:create, %Constraint{}}) do
-    raise ArgumentError, "ALTER TABLE with constraints not supported by SQLite3"
-  end
-
-  @impl true
-  def execute_ddl({:drop, %Constraint{}}) do
-    raise ArgumentError, "ALTER TABLE with constraints not supported by SQLite3"
-  end
-
-  @impl true
   def execute_ddl(string) when is_binary(string), do: [string]
 
   @impl true
@@ -550,13 +547,8 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   end
 
   @impl true
-  def execute_ddl({:create, %Constraint{check: check}}) when is_binary(check) do
-    raise ArgumentError, "SQLite3 adapter does not support check constraints"
-  end
-
-  @impl true
-  def execute_ddl({:create, %Constraint{exclude: exclude}}) when is_binary(exclude) do
-    raise ArgumentError, "SQLite3 adapter does not support exclusion constraints"
+  def execute_ddl({:create, %Constraint{}}) do
+    raise ArgumentError, "SQLite3 does not support ALTER TABLE ADD CONSTRAINT."
   end
 
   @impl true
@@ -581,12 +573,12 @@ defmodule Ecto.Adapters.SQLite3.Connection do
 
   @impl true
   def execute_ddl({:drop, %Constraint{}}) do
-    raise ArgumentError, "SQLite3 adapter does not support constraints"
+    raise ArgumentError, "SQLite3 does not support ALTER TABLE DROP CONSTRAINT."
   end
 
   @impl true
   def execute_ddl({:drop_if_exists, %Constraint{}}) do
-    raise ArgumentError, "SQLite3 adapter does not support constraints"
+    raise ArgumentError, "SQLite3 does not support ALTER TABLE DROP CONSTRAINT."
   end
 
   @impl true
@@ -1494,17 +1486,37 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     default = Keyword.fetch(opts, :default)
     null = Keyword.get(opts, :null)
     pk = table.primary_key != :composite and Keyword.get(opts, :primary_key, false)
+    collate = Keyword.get(opts, :collate)
+    check = Keyword.get(opts, :check)
 
-    column_options(default, type, null, pk)
+    column_options(default, type, null, pk, collate, check)
   end
 
-  defp column_options(_default, :serial, _, true) do
+  defp column_options(_default, :serial, _, true, _, _) do
     " PRIMARY KEY AUTOINCREMENT"
   end
 
-  defp column_options(default, type, null, pk) do
-    [default_expr(default, type), null_expr(null), pk_expr(pk)]
+  defp column_options(default, type, null, pk, collate, check) do
+    [
+      default_expr(default, type),
+      null_expr(null),
+      collate_expr(collate),
+      check_expr(check),
+      pk_expr(pk)
+    ]
   end
+
+  defp check_expr(nil), do: []
+
+  defp check_expr(%{name: name, expr: expr}),
+    do: [" CONSTRAINT ", name, " CHECK (", expr, ")"]
+
+  defp collate_expr(nil), do: []
+
+  defp collate_expr(type) when is_atom(type),
+    do: type |> Atom.to_string() |> collate_expr()
+
+  defp collate_expr(type), do: [" COLLATE ", String.upcase(type)]
 
   defp null_expr(false), do: " NOT NULL"
   defp null_expr(true), do: " NULL"

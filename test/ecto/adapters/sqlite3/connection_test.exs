@@ -2169,7 +2169,9 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
          {:add, :on_hand, :integer, [default: 0, null: true]},
          {:add, :likes, :integer, [default: 0, null: false]},
          {:add, :published_at, :datetime, [null: true]},
-         {:add, :is_active, :boolean, [default: true]}
+         {:add, :is_active, :boolean, [default: true]},
+         {:add, :notes, :text, [collate: :nocase]},
+         {:add, :meta, :text, [check: %{name: "meta_constraint", expr: "meta != 'a'"}]}
        ]}
 
     assert execute_ddl(create) == [
@@ -2181,7 +2183,9 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
              on_hand INTEGER DEFAULT 0 NULL, \
              likes INTEGER DEFAULT 0 NOT NULL, \
              published_at DATETIME NULL, \
-             is_active BOOLEAN DEFAULT true\
+             is_active BOOLEAN DEFAULT true, \
+             notes TEXT COLLATE NOCASE, \
+             meta TEXT CONSTRAINT meta_constraint CHECK (meta != 'a')\
              )\
              """
            ]
@@ -2369,7 +2373,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
   test "drop constraint" do
     assert_raise(
       ArgumentError,
-      ~r/ALTER TABLE with constraints not supported by SQLite3/,
+      ~r/SQLite3 does not support ALTER TABLE DROP CONSTRAINT./,
       fn ->
         execute_ddl(
           {:drop, constraint(:products, "price_must_be_positive", prefix: :foo)}
@@ -2381,7 +2385,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
   test "drop_if_exists constraint" do
     assert_raise(
       ArgumentError,
-      ~r/SQLite3 adapter does not support constraints/,
+      ~r/SQLite3 does not support ALTER TABLE DROP CONSTRAINT./,
       fn ->
         execute_ddl(
           {:drop_if_exists,
@@ -2653,7 +2657,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
   test "create check constraint" do
     assert_raise(
       ArgumentError,
-      "ALTER TABLE with constraints not supported by SQLite3",
+      "SQLite3 does not support ALTER TABLE ADD CONSTRAINT.",
       fn ->
         {:create, constraint(:products, "price_must_be_positive", check: "price > 0")}
         |> execute_ddl()
@@ -2662,7 +2666,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     assert_raise(
       ArgumentError,
-      "ALTER TABLE with constraints not supported by SQLite3",
+      "SQLite3 does not support ALTER TABLE ADD CONSTRAINT.",
       fn ->
         {:create,
          constraint(:products, "price_must_be_positive",
@@ -2677,7 +2681,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
   test "create exclusion constraint" do
     assert_raise(
       ArgumentError,
-      "ALTER TABLE with constraints not supported by SQLite3",
+      "SQLite3 does not support ALTER TABLE ADD CONSTRAINT.",
       fn ->
         {:create,
          constraint(:products, "price_must_be_positive",
@@ -2691,7 +2695,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
   test "create constraint with comment" do
     assert_raise(
       ArgumentError,
-      "ALTER TABLE with constraints not supported by SQLite3",
+      "SQLite3 does not support ALTER TABLE ADD CONSTRAINT.",
       fn ->
         {:create,
          constraint(:products, "price_must_be_positive",
