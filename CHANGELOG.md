@@ -5,7 +5,7 @@ All notable changes will be documented in this file.
 The format is based on [Keep a Changelog][keepachangelog], and this project
 adheres to [Semantic Versioning][semver].
 
-## [0.5.5] - Unreleased
+## [0.5.5] - 2021-04-19
 - Fix "database is locked" issue by setting `journal_mode` at `storage_up` time.
 - Add :check constraint column option.
 
