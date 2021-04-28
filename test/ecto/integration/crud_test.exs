@@ -104,6 +104,29 @@ defmodule Ecto.Integration.CrudTest do
       assert changed.name == "Bob"
     end
 
+    test "update_all with select returns a row count of 0 when no records were updated" do
+      {:ok, _lj} = TestRepo.insert(%User{name: "Lebron James"}, [])
+
+      no_match_query =
+        from(
+          a in Account,
+          where: a.name == "Michael Jordan",
+          select: %{name: a.name}
+        )
+
+      assert {0, nil} = TestRepo.update_all(no_match_query, set: [name: "G.O.A.T"])
+
+      match_query =
+        from(
+          a in Account,
+          where: a.name == "Lebron James",
+          select: %{name: a.name}
+        )
+
+      assert {1, %{name: "Lebron James"}} =
+               TestRepo.update_all(match_query, set: [name: "G.O.A.T"])
+    end
+
     test "update_all handles null<->nil conversion correctly" do
       account = TestRepo.insert!(%Account{name: "hello"})
       assert {1, nil} = TestRepo.update_all(Account, set: [name: nil])
