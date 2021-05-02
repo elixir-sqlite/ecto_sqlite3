@@ -104,6 +104,34 @@ defmodule Ecto.Integration.CrudTest do
       assert changed.name == "Bob"
     end
 
+    test "update_all returns correct rows format" do
+      # update with no return value should have nil rows
+      assert {0, nil} = TestRepo.update_all(User, set: [name: "WOW"])
+
+      {:ok, _lj} = TestRepo.insert(%User{name: "Lebron James"}, [])
+
+      # update with returning that updates nothing should return [] rows
+      no_match_query =
+        from(
+          u in User,
+          where: u.name == "Michael Jordan",
+          select: %{name: u.name}
+        )
+
+      assert {0, []} = TestRepo.update_all(no_match_query, set: [name: "G.O.A.T"])
+
+      # update with returning that updates something should return resulting RETURNING clause correctly
+      match_query =
+        from(
+          u in User,
+          where: u.name == "Lebron James",
+          select: %{name: u.name}
+        )
+
+      assert {1, [%{name: "G.O.A.T"}]} =
+               TestRepo.update_all(match_query, set: [name: "G.O.A.T"])
+    end
+
     test "update_all handles null<->nil conversion correctly" do
       account = TestRepo.insert!(%Account{name: "hello"})
       assert {1, nil} = TestRepo.update_all(Account, set: [name: nil])
