@@ -117,9 +117,9 @@ defmodule Ecto.Adapters.SQLite3 do
   the SQLite3 [CREATE TABLE documentation](https://sqlite.org/lang_createtable.html).
 
   Because of this, you cannot add a constraint via the normal `Ecto.Migration.constraint/3` method, as that
-  operates via ALTER TABLE which SQLite3 does not support. You can however get the full functionality by adding
-  a constraint at the column level, specifying the name and expression. Per the SQLite3 documentation,
-  there is no _functional_ difference between a column or table constraint.
+  operates via ALTER TABLE ADD CONSTRAINT, and this type of ALTER TABLE operation SQLite3 does not support.
+  You can however get the full functionality by adding a constraint at the column level, specifying the name
+  and expression. Per the SQLite3 documentation, there is no _functional_ difference between a column or table constraint.
 
   Thus, adding a check constraint for a new column is as simple as:
 
