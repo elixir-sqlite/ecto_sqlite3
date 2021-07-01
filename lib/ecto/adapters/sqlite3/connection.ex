@@ -1704,7 +1704,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     quote_entity(Atom.to_string(val))
   end
 
-  defp quote_entity(val), do: [val]
+  defp quote_entity(val), do: [[?", val, ?"]]
 
   defp intersperse_map(list, separator, mapper, acc \\ [])
 
