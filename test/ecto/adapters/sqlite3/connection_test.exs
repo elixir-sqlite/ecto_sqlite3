@@ -113,7 +113,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
   test "from" do
     query = Schema |> select([r], r.x) |> plan()
-    assert all(query) == ~s{SELECT s0.x FROM schema AS s0}
+    assert all(query) == ~s{SELECT s0."x" FROM "schema" AS s0}
   end
 
   test "ignores from with hints" do
@@ -123,7 +123,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> select([r], r.x)
       |> plan()
 
-    assert all(query) == ~s{SELECT s0.x FROM schema AS s0}
+    assert all(query) == ~s{SELECT s0."x" FROM "schema" AS s0}
   end
 
   test "from without schema" do
@@ -132,32 +132,32 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> select([r], r.x)
       |> plan()
 
-    assert all(query) == ~s{SELECT p0.x FROM posts AS p0}
+    assert all(query) == ~s{SELECT p0."x" FROM "posts" AS p0}
 
     query =
       "posts"
       |> select([r], fragment("?", r))
       |> plan()
 
-    assert all(query) == ~s{SELECT p0 FROM posts AS p0}
+    assert all(query) == ~s{SELECT p0 FROM "posts" AS p0}
 
     query =
       "Posts"
       |> select([:x])
       |> plan()
 
-    assert all(query) == ~s{SELECT P0.x FROM Posts AS P0}
+    assert all(query) == ~s{SELECT P0."x" FROM "Posts" AS P0}
 
     query =
       "0posts"
       |> select([:x])
       |> plan()
 
-    assert all(query) == ~s{SELECT t0.x FROM 0posts AS t0}
+    assert all(query) == ~s{SELECT t0."x" FROM "0posts" AS t0}
 
     assert_raise(
       Ecto.QueryError,
-      ~r"SQLite3 does not support selecting all fields from posts without a schema",
+      ~r{SQLite3 does not support selecting all fields from "posts" without a schema},
       fn ->
         from(p in "posts", select: p) |> plan() |> all()
       end
@@ -173,8 +173,8 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> plan()
 
     assert all(query) == """
-           SELECT s0.x \
-           FROM (SELECT sp0.x AS x, sp0.y AS y FROM posts AS sp0) AS s0\
+           SELECT s0."x" \
+           FROM (SELECT sp0."x" AS "x", sp0."y" AS "y" FROM "posts" AS sp0) AS s0\
            """
 
     query =
@@ -186,8 +186,8 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     assert all(query) ==
              """
-             SELECT s0.x, s0.z \
-             FROM (SELECT sp0.x AS x, sp0.y AS z FROM posts AS sp0) AS s0\
+             SELECT s0."x", s0."z" \
+             FROM (SELECT sp0."x" AS "x", sp0."y" AS "z" FROM "posts" AS sp0) AS s0\
              """
 
     query =
@@ -201,12 +201,12 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     assert all(query) ==
              """
-             SELECT s0.x, s0.z \
+             SELECT s0."x", s0."z" \
              FROM (\
-             SELECT ss0.x AS x, ss0.z AS z \
+             SELECT ss0."x" AS "x", ss0."z" AS "z" \
              FROM (\
-             SELECT ssp0.x AS x, ssp0.y AS z \
-             FROM posts AS ssp0\
+             SELECT ssp0."x" AS "x", ssp0."y" AS "z" \
+             FROM "posts" AS ssp0\
              ) AS ss0\
              ) AS s0\
              """
@@ -234,14 +234,14 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     assert all(query) ==
              """
-             WITH RECURSIVE tree AS \
-             (SELECT c0.id AS id, 1 AS depth FROM categories AS c0 WHERE (c0.parent_id IS NULL) \
+             WITH RECURSIVE "tree" AS \
+             (SELECT c0."id" AS "id", 1 AS "depth" FROM "categories" AS c0 WHERE (c0."parent_id" IS NULL) \
              UNION ALL \
-             SELECT c0.id, t1.depth + 1 FROM categories AS c0 \
-             INNER JOIN tree AS t1 ON t1.id = c0.parent_id) \
-             SELECT s0.x, t1.id, CAST(t1.depth AS INTEGER) \
-             FROM schema AS s0 \
-             INNER JOIN tree AS t1 ON t1.id = s0.category_id\
+             SELECT c0."id", t1."depth" + 1 FROM "categories" AS c0 \
+             INNER JOIN "tree" AS t1 ON t1."id" = c0."parent_id") \
+             SELECT s0."x", t1."id", CAST(t1."depth" AS INTEGER) \
+             FROM "schema" AS s0 \
+             INNER JOIN "tree" AS t1 ON t1."id" = s0."category_id"\
              """
   end
 
@@ -269,16 +269,16 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     assert all(query) ==
              """
-             WITH comments_scope AS (\
-             SELECT c0.entity_id AS entity_id, c0.text AS text \
-             FROM comments AS c0 WHERE (c0.deleted_at IS NULL)) \
-             SELECT p0.title, c1.text \
-             FROM posts AS p0 \
-             INNER JOIN comments_scope AS c1 ON c1.entity_id = p0.guid \
+             WITH "comments_scope" AS (\
+             SELECT c0."entity_id" AS "entity_id", c0."text" AS "text" \
+             FROM "comments" AS c0 WHERE (c0."deleted_at" IS NULL)) \
+             SELECT p0."title", c1."text" \
+             FROM "posts" AS p0 \
+             INNER JOIN "comments_scope" AS c1 ON c1."entity_id" = p0."guid" \
              UNION ALL \
-             SELECT v0.title, c1.text \
-             FROM videos AS v0 \
-             INNER JOIN comments_scope AS c1 ON c1.entity_id = v0.guid\
+             SELECT v0."title", c1."text" \
+             FROM "videos" AS v0 \
+             INNER JOIN "comments_scope" AS c1 ON c1."entity_id" = v0."guid"\
              """
   end
 
@@ -299,10 +299,10 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     assert all(query) ==
              """
-             WITH RECURSIVE tree AS (#{@raw_sql_cte}) \
-             SELECT s0.x \
-             FROM schema AS s0 \
-             INNER JOIN tree AS t1 ON t1.id = s0.category_id\
+             WITH RECURSIVE "tree" AS (#{@raw_sql_cte}) \
+             SELECT s0."x" \
+             FROM "schema" AS s0 \
+             INNER JOIN "tree" AS t1 ON t1."id" = s0."category_id"\
              """
   end
 
@@ -324,12 +324,12 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     assert update_all(query) ==
              """
-             WITH target_rows AS \
-             (SELECT s0.id AS id FROM schema AS s0 ORDER BY s0.id LIMIT 10) \
-             UPDATE schema AS s0 \
-             SET x = 123 \
-             FROM target_rows AS t1 \
-             WHERE (t1.id = s0.id)\
+             WITH "target_rows" AS \
+             (SELECT s0."id" AS "id" FROM "schema" AS s0 ORDER BY s0."id" LIMIT 10) \
+             UPDATE "schema" AS s0 \
+             SET "x" = 123 \
+             FROM "target_rows" AS t1 \
+             WHERE (t1."id" = s0."id")\
              """
   end
 
@@ -345,10 +345,10 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
     # https://sqlite.org/lang_delete.html
     assert delete_all(query) ==
              """
-             WITH target_rows AS \
-             (SELECT s0.id AS id FROM schema AS s0 ORDER BY s0.id LIMIT 10) \
+             WITH "target_rows" AS \
+             (SELECT s0."id" AS "id" FROM "schema" AS s0 ORDER BY s0."id" LIMIT 10) \
              DELETE \
-             FROM schema AS s0\
+             FROM "schema" AS s0\
              """
   end
 
@@ -358,21 +358,21 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> select([r], {r.x, r.y})
       |> plan()
 
-    assert all(query) == ~s{SELECT s0.x, s0.y FROM schema AS s0}
+    assert all(query) == ~s{SELECT s0."x", s0."y" FROM "schema" AS s0}
 
     query =
       Schema
       |> select([r], [r.x, r.y])
       |> plan()
 
-    assert all(query) == ~s{SELECT s0.x, s0.y FROM schema AS s0}
+    assert all(query) == ~s{SELECT s0."x", s0."y" FROM "schema" AS s0}
 
     query =
       Schema
       |> select([r], struct(r, [:x, :y]))
       |> plan()
 
-    assert all(query) == ~s{SELECT s0.x, s0.y FROM schema AS s0}
+    assert all(query) == ~s{SELECT s0."x", s0."y" FROM "schema" AS s0}
   end
 
   test "aggregates" do
@@ -381,22 +381,24 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> select(count())
       |> plan()
 
-    assert all(query) == ~s{SELECT count(*) FROM schema AS s0}
+    assert all(query) == ~s{SELECT count(*) FROM "schema" AS s0}
   end
 
   test "aggregate filters" do
     query = Schema |> select([r], count(r.x) |> filter(r.x > 10)) |> plan()
 
     assert all(query) ==
-             ~s{SELECT count(s0.x) FILTER (WHERE s0.x > 10) FROM schema AS s0}
+             ~s{SELECT count(s0."x") FILTER (WHERE s0."x" > 10) FROM "schema" AS s0}
 
     query = Schema |> select([r], count(r.x) |> filter(r.x > 10 and r.x < 50)) |> plan()
 
     assert all(query) ==
-             ~s{SELECT count(s0.x) FILTER (WHERE (s0.x > 10) AND (s0.x < 50)) FROM schema AS s0}
+             ~s{SELECT count(s0."x") FILTER (WHERE (s0."x" > 10) AND (s0."x" < 50)) FROM "schema" AS s0}
 
     query = Schema |> select([r], count() |> filter(r.x > 10)) |> plan()
-    assert all(query) == ~s{SELECT count(*) FILTER (WHERE s0.x > 10) FROM schema AS s0}
+
+    assert all(query) ==
+             ~s{SELECT count(*) FILTER (WHERE s0."x" > 10) FROM "schema" AS s0}
   end
 
   test "distinct" do
@@ -406,7 +408,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> select([r], {r.x, r.y})
       |> plan()
 
-    assert all(query) == ~s{SELECT DISTINCT s0.x, s0.y FROM schema AS s0}
+    assert all(query) == ~s{SELECT DISTINCT s0."x", s0."y" FROM "schema" AS s0}
 
     query =
       Schema
@@ -414,7 +416,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> select([r], {r.x, r.y})
       |> plan()
 
-    assert all(query) == ~s{SELECT s0.x, s0.y FROM schema AS s0}
+    assert all(query) == ~s{SELECT s0."x", s0."y" FROM "schema" AS s0}
 
     query =
       Schema
@@ -422,7 +424,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> select([r], {r.x, r.y})
       |> plan()
 
-    assert all(query) == ~s{SELECT DISTINCT s0.x, s0.y FROM schema AS s0}
+    assert all(query) == ~s{SELECT DISTINCT s0."x", s0."y" FROM "schema" AS s0}
 
     query =
       Schema
@@ -430,7 +432,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> select([r], {r.x, r.y})
       |> plan()
 
-    assert all(query) == ~s{SELECT s0.x, s0.y FROM schema AS s0}
+    assert all(query) == ~s{SELECT s0."x", s0."y" FROM "schema" AS s0}
 
     assert_raise(
       Ecto.QueryError,
@@ -451,7 +453,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> select([s], coalesce(s.x, 5))
       |> plan()
 
-    assert all(query) == ~s{SELECT coalesce(s0.x, 5) FROM schema AS s0}
+    assert all(query) == ~s{SELECT coalesce(s0."x", 5) FROM "schema" AS s0}
   end
 
   test "where" do
@@ -463,7 +465,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> plan()
 
     assert all(query) ==
-             ~s{SELECT s0.x FROM schema AS s0 WHERE (s0.x = 42) AND (s0.y != 43)}
+             ~s{SELECT s0."x" FROM "schema" AS s0 WHERE (s0."x" = 42) AND (s0."y" != 43)}
 
     query =
       Schema
@@ -471,7 +473,8 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> select([r], r.x)
       |> plan()
 
-    assert all(query) == ~s{SELECT s0.x FROM schema AS s0 WHERE ((s0.x,s0.y) > (1,2))}
+    assert all(query) ==
+             ~s{SELECT s0."x" FROM "schema" AS s0 WHERE ((s0."x",s0."y") > (1,2))}
   end
 
   test "or_where" do
@@ -483,7 +486,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> plan()
 
     assert all(query) ==
-             ~s{SELECT s0.x FROM schema AS s0 WHERE (s0.x = 42) OR (s0.y != 43)}
+             ~s{SELECT s0."x" FROM "schema" AS s0 WHERE (s0."x" = 42) OR (s0."y" != 43)}
 
     query =
       Schema
@@ -494,7 +497,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> plan()
 
     assert all(query) ==
-             ~s{SELECT s0.x FROM schema AS s0 WHERE ((s0.x = 42) OR (s0.y != 43)) AND (s0.z = 44)}
+             ~s{SELECT s0."x" FROM "schema" AS s0 WHERE ((s0."x" = 42) OR (s0."y" != 43)) AND (s0."z" = 44)}
   end
 
   test "order by" do
@@ -504,7 +507,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> select([r], r.x)
       |> plan()
 
-    assert all(query) == ~s{SELECT s0.x FROM schema AS s0 ORDER BY s0.x}
+    assert all(query) == ~s{SELECT s0."x" FROM "schema" AS s0 ORDER BY s0."x"}
 
     query =
       Schema
@@ -512,7 +515,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> select([r], r.x)
       |> plan()
 
-    assert all(query) == ~s{SELECT s0.x FROM schema AS s0 ORDER BY s0.x, s0.y}
+    assert all(query) == ~s{SELECT s0."x" FROM "schema" AS s0 ORDER BY s0."x", s0."y"}
 
     query =
       Schema
@@ -520,7 +523,8 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> select([r], r.x)
       |> plan()
 
-    assert all(query) == ~s{SELECT s0.x FROM schema AS s0 ORDER BY s0.x, s0.y DESC}
+    assert all(query) ==
+             ~s{SELECT s0."x" FROM "schema" AS s0 ORDER BY s0."x", s0."y" DESC}
 
     query =
       Schema
@@ -528,7 +532,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> select([r], r.x)
       |> plan()
 
-    assert all(query) == ~s{SELECT s0.x FROM schema AS s0}
+    assert all(query) == ~s{SELECT s0."x" FROM "schema" AS s0}
 
     for dir <- [:asc_nulls_first, :asc_nulls_last, :desc_nulls_first, :desc_nulls_last] do
       assert_raise(
@@ -575,9 +579,9 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     assert all(query) ==
              """
-             SELECT s0.x FROM schema AS s0 \
-             UNION SELECT s0.y FROM schema AS s0 ORDER BY s0.y LIMIT 40 OFFSET 20 \
-             UNION SELECT s0.z FROM schema AS s0 ORDER BY s0.z LIMIT 60 OFFSET 30 \
+             SELECT s0."x" FROM "schema" AS s0 \
+             UNION SELECT s0."y" FROM "schema" AS s0 ORDER BY s0."y" LIMIT 40 OFFSET 20 \
+             UNION SELECT s0."z" FROM "schema" AS s0 ORDER BY s0."z" LIMIT 60 OFFSET 30 \
              ORDER BY rand LIMIT 5 OFFSET 10\
              """
 
@@ -589,9 +593,9 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     assert all(query) ==
              """
-             SELECT s0.x FROM schema AS s0 \
-             UNION ALL SELECT s0.y FROM schema AS s0 ORDER BY s0.y LIMIT 40 OFFSET 20 \
-             UNION ALL SELECT s0.z FROM schema AS s0 ORDER BY s0.z LIMIT 60 OFFSET 30 \
+             SELECT s0."x" FROM "schema" AS s0 \
+             UNION ALL SELECT s0."y" FROM "schema" AS s0 ORDER BY s0."y" LIMIT 40 OFFSET 20 \
+             UNION ALL SELECT s0."z" FROM "schema" AS s0 ORDER BY s0."z" LIMIT 60 OFFSET 30 \
              ORDER BY rand LIMIT 5 OFFSET 10\
              """
   end
@@ -626,9 +630,9 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     assert all(query) ==
              """
-             SELECT s0.x FROM schema AS s0 \
-             EXCEPT SELECT s0.y FROM schema AS s0 ORDER BY s0.y LIMIT 40 OFFSET 20 \
-             EXCEPT SELECT s0.z FROM schema AS s0 ORDER BY s0.z LIMIT 60 OFFSET 30 \
+             SELECT s0."x" FROM "schema" AS s0 \
+             EXCEPT SELECT s0."y" FROM "schema" AS s0 ORDER BY s0."y" LIMIT 40 OFFSET 20 \
+             EXCEPT SELECT s0."z" FROM "schema" AS s0 ORDER BY s0."z" LIMIT 60 OFFSET 30 \
              ORDER BY rand LIMIT 5 OFFSET 10\
              """
 
@@ -674,9 +678,9 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     assert all(query) ==
              """
-             SELECT s0.x FROM schema AS s0 \
-             INTERSECT SELECT s0.y FROM schema AS s0 ORDER BY s0.y LIMIT 40 OFFSET 20 \
-             INTERSECT SELECT s0.z FROM schema AS s0 ORDER BY s0.z LIMIT 60 OFFSET 30 \
+             SELECT s0."x" FROM "schema" AS s0 \
+             INTERSECT SELECT s0."y" FROM "schema" AS s0 ORDER BY s0."y" LIMIT 40 OFFSET 20 \
+             INTERSECT SELECT s0."z" FROM "schema" AS s0 ORDER BY s0."z" LIMIT 60 OFFSET 30 \
              ORDER BY rand LIMIT 5 OFFSET 10\
              """
 
@@ -699,7 +703,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> select([], true)
       |> plan()
 
-    assert all(query) == ~s{SELECT 1 FROM schema AS s0 LIMIT 3}
+    assert all(query) == ~s{SELECT 1 FROM "schema" AS s0 LIMIT 3}
 
     query =
       Schema
@@ -707,7 +711,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> select([], true)
       |> plan()
 
-    assert all(query) == ~s{SELECT 1 FROM schema AS s0 OFFSET 5}
+    assert all(query) == ~s{SELECT 1 FROM "schema" AS s0 OFFSET 5}
 
     query =
       Schema
@@ -716,7 +720,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> select([], true)
       |> plan()
 
-    assert all(query) == ~s{SELECT 1 FROM schema AS s0 LIMIT 3 OFFSET 5}
+    assert all(query) == ~s{SELECT 1 FROM "schema" AS s0 LIMIT 3 OFFSET 5}
   end
 
   test "lock" do
@@ -752,7 +756,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> select([], true)
       |> plan()
 
-    assert all(query) == ~s{SELECT 1 FROM schema AS s0 WHERE (s0.foo = '''\\\\  ')}
+    assert all(query) == ~s{SELECT 1 FROM "schema" AS s0 WHERE (s0."foo" = '''\\\\  ')}
 
     query =
       "schema"
@@ -760,7 +764,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> select([], true)
       |> plan()
 
-    assert all(query) == ~s{SELECT 1 FROM schema AS s0 WHERE (s0.foo = '''')}
+    assert all(query) == ~s{SELECT 1 FROM "schema" AS s0 WHERE (s0."foo" = '''')}
   end
 
   test "binary ops" do
@@ -769,49 +773,49 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> select([r], r.x == 2)
       |> plan()
 
-    assert all(query) == ~s{SELECT s0.x = 2 FROM schema AS s0}
+    assert all(query) == ~s{SELECT s0."x" = 2 FROM "schema" AS s0}
 
     query =
       Schema
       |> select([r], r.x != 2)
       |> plan()
 
-    assert all(query) == ~s{SELECT s0.x != 2 FROM schema AS s0}
+    assert all(query) == ~s{SELECT s0."x" != 2 FROM "schema" AS s0}
 
     query =
       Schema
       |> select([r], r.x <= 2)
       |> plan()
 
-    assert all(query) == ~s{SELECT s0.x <= 2 FROM schema AS s0}
+    assert all(query) == ~s{SELECT s0."x" <= 2 FROM "schema" AS s0}
 
     query =
       Schema
       |> select([r], r.x >= 2)
       |> plan()
 
-    assert all(query) == ~s{SELECT s0.x >= 2 FROM schema AS s0}
+    assert all(query) == ~s{SELECT s0."x" >= 2 FROM "schema" AS s0}
 
     query =
       Schema
       |> select([r], r.x < 2)
       |> plan()
 
-    assert all(query) == ~s{SELECT s0.x < 2 FROM schema AS s0}
+    assert all(query) == ~s{SELECT s0."x" < 2 FROM "schema" AS s0}
 
     query =
       Schema
       |> select([r], r.x > 2)
       |> plan()
 
-    assert all(query) == ~s{SELECT s0.x > 2 FROM schema AS s0}
+    assert all(query) == ~s{SELECT s0."x" > 2 FROM "schema" AS s0}
 
     query =
       Schema
       |> select([r], r.x + 2)
       |> plan()
 
-    assert all(query) == ~s{SELECT s0.x + 2 FROM schema AS s0}
+    assert all(query) == ~s{SELECT s0."x" + 2 FROM "schema" AS s0}
   end
 
   test "is_nil" do
@@ -820,21 +824,21 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> select([r], is_nil(r.x))
       |> plan()
 
-    assert all(query) == ~s{SELECT s0.x IS NULL FROM schema AS s0}
+    assert all(query) == ~s{SELECT s0."x" IS NULL FROM "schema" AS s0}
 
     query =
       Schema
       |> select([r], not is_nil(r.x))
       |> plan()
 
-    assert all(query) == ~s{SELECT NOT (s0.x IS NULL) FROM schema AS s0}
+    assert all(query) == ~s{SELECT NOT (s0."x" IS NULL) FROM "schema" AS s0}
 
     query =
       "schema"
       |> select([r], r.x == is_nil(r.y))
       |> plan()
 
-    assert all(query) == ~s{SELECT s0.x = (s0.y IS NULL) FROM schema AS s0}
+    assert all(query) == ~s{SELECT s0."x" = (s0."y" IS NULL) FROM "schema" AS s0}
   end
 
   test "order_by and types" do
@@ -844,7 +848,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> select(true)
       |> plan()
 
-    assert all(query) == "SELECT 1 FROM schema3 AS s0 ORDER BY (s0.binary + 0)"
+    assert all(query) == ~s{SELECT 1 FROM "schema3" AS s0 ORDER BY (s0."binary" + 0)}
   end
 
   test "fragments" do
@@ -853,21 +857,21 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> select([r], fragment("now"))
       |> plan()
 
-    assert all(query) == ~s{SELECT now FROM schema AS s0}
+    assert all(query) == ~s{SELECT now FROM "schema" AS s0}
 
     query =
       Schema
       |> select([r], fragment("fun(?)", r))
       |> plan()
 
-    assert all(query) == ~s{SELECT fun(s0) FROM schema AS s0}
+    assert all(query) == ~s{SELECT fun(s0) FROM "schema" AS s0}
 
     query =
       Schema
       |> select([r], fragment("lcase(?)", r.x))
       |> plan()
 
-    assert all(query) == ~s{SELECT lcase(s0.x) FROM schema AS s0}
+    assert all(query) == ~s{SELECT lcase(s0."x") FROM "schema" AS s0}
 
     query =
       Schema
@@ -875,7 +879,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> where([], fragment(~s|? = "query\\?"|, ^10))
       |> plan()
 
-    assert all(query) == ~s|SELECT s0.x FROM schema AS s0 WHERE (? = "query?")|
+    assert all(query) == ~s|SELECT s0."x" FROM "schema" AS s0 WHERE (? = "query?")|
 
     value = 13
 
@@ -884,7 +888,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> select([r], fragment("lcase(?, ?)", r.x, ^value))
       |> plan()
 
-    assert all(query) == ~s{SELECT lcase(s0.x, ?) FROM schema AS s0}
+    assert all(query) == ~s{SELECT lcase(s0."x", ?) FROM "schema" AS s0}
 
     assert_raise(
       Ecto.QueryError,
@@ -904,7 +908,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> select([], true)
       |> plan()
 
-    assert all(query) == ~s{SELECT 1 FROM schema AS s0 WHERE (s0.foo = 1)}
+    assert all(query) == ~s{SELECT 1 FROM "schema" AS s0 WHERE (s0."foo" = 1)}
 
     query =
       "schema"
@@ -912,7 +916,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> select([], true)
       |> plan()
 
-    assert all(query) == ~s{SELECT 1 FROM schema AS s0 WHERE (s0.foo = 0)}
+    assert all(query) == ~s{SELECT 1 FROM "schema" AS s0 WHERE (s0."foo" = 0)}
 
     query =
       "schema"
@@ -920,7 +924,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> select([], true)
       |> plan()
 
-    assert all(query) == ~s{SELECT 1 FROM schema AS s0 WHERE (s0.foo = 'abc')}
+    assert all(query) == ~s{SELECT 1 FROM "schema" AS s0 WHERE (s0."foo" = 'abc')}
 
     query =
       "schema"
@@ -928,7 +932,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> select([], true)
       |> plan()
 
-    assert all(query) == ~s{SELECT 1 FROM schema AS s0 WHERE (s0.foo = 123)}
+    assert all(query) == ~s{SELECT 1 FROM "schema" AS s0 WHERE (s0."foo" = 123)}
 
     query =
       "schema"
@@ -936,7 +940,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> select([], true)
       |> plan()
 
-    assert all(query) == ~s{SELECT 1 FROM schema AS s0 WHERE (s0.foo = (0 + 123.0))}
+    assert all(query) == ~s{SELECT 1 FROM "schema" AS s0 WHERE (s0."foo" = (0 + 123.0))}
   end
 
   # TODO: We need to determine what format to store the UUID. Is it Text or binary 16?
@@ -947,7 +951,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> select([], type(^"601d74e4-a8d3-4b6e-8365-eddb4c893327", Ecto.UUID))
       |> plan()
 
-    assert all(query) == ~s{SELECT CAST(? AS TEXT) FROM schema AS s0}
+    assert all(query) == ~s{SELECT CAST(? AS TEXT) FROM "schema" AS s0}
   end
 
   test "string type" do
@@ -956,26 +960,30 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> select([], type(^"test", :string))
       |> plan()
 
-    assert all(query) == ~s{SELECT CAST(? AS TEXT) FROM schema AS s0}
+    assert all(query) == ~s{SELECT CAST(? AS TEXT) FROM "schema" AS s0}
   end
 
   test "json_extract_path" do
     query = Schema |> select([s], json_extract_path(s.meta, [0, 1])) |> plan()
-    assert all(query) == ~s{SELECT json_extract(s0.meta, '$[0][1]') FROM schema AS s0}
+
+    assert all(query) ==
+             ~s{SELECT json_extract(s0."meta", '$[0][1]') FROM "schema" AS s0}
 
     query = Schema |> select([s], json_extract_path(s.meta, ["a", "b"])) |> plan()
-    assert all(query) == ~s{SELECT json_extract(s0.meta, '$.a.b') FROM schema AS s0}
+    assert all(query) == ~s{SELECT json_extract(s0."meta", '$.a.b') FROM "schema" AS s0}
 
     query = Schema |> select([s], json_extract_path(s.meta, ["'a"])) |> plan()
-    assert all(query) == ~s{SELECT json_extract(s0.meta, '$.''a') FROM schema AS s0}
+    assert all(query) == ~s{SELECT json_extract(s0."meta", '$.''a') FROM "schema" AS s0}
 
     query = Schema |> select([s], json_extract_path(s.meta, ["\"a"])) |> plan()
-    assert all(query) == ~s{SELECT json_extract(s0.meta, '$.\\"a') FROM schema AS s0}
+
+    assert all(query) ==
+             ~s{SELECT json_extract(s0."meta", '$.\\"a') FROM "schema" AS s0}
 
     query = Schema |> select([s], s.meta["author"]["name"]) |> plan()
 
     assert all(query) ==
-             ~s{SELECT json_extract(s0.meta, '$.author.name') FROM schema AS s0}
+             ~s{SELECT json_extract(s0."meta", '$.author.name') FROM "schema" AS s0}
   end
 
   test "nested expressions" do
@@ -987,7 +995,8 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> select([r], (r.x > 0 and r.y > ^(-z)) or true)
       |> plan()
 
-    assert all(query) == ~s{SELECT ((s0.x > 0) AND (s0.y > ?)) OR 1 FROM schema AS s0}
+    assert all(query) ==
+             ~s{SELECT ((s0."x" > 0) AND (s0."y" > ?)) OR 1 FROM "schema" AS s0}
   end
 
   test "in expression" do
@@ -996,28 +1005,28 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> select([e], 1 in [1, e.x, 3])
       |> plan()
 
-    assert all(query) == ~s{SELECT 1 IN (1,s0.x,3) FROM schema AS s0}
+    assert all(query) == ~s{SELECT 1 IN (1,s0."x",3) FROM "schema" AS s0}
 
     query =
       Schema
       |> select([e], 1 in ^[])
       |> plan()
 
-    assert all(query) == ~s{SELECT 0 FROM schema AS s0}
+    assert all(query) == ~s{SELECT 0 FROM "schema" AS s0}
 
     query =
       Schema
       |> select([e], 1 in ^[1, 2, 3])
       |> plan()
 
-    assert all(query) == ~s{SELECT 1 IN (?,?,?) FROM schema AS s0}
+    assert all(query) == ~s{SELECT 1 IN (?,?,?) FROM "schema" AS s0}
 
     query =
       Schema
       |> select([e], 1 in [1, ^2, 3])
       |> plan()
 
-    assert all(query) == ~s{SELECT 1 IN (1,?,3) FROM schema AS s0}
+    assert all(query) == ~s{SELECT 1 IN (1,?,3) FROM "schema" AS s0}
 
     query =
       Schema
@@ -1025,7 +1034,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> plan()
 
     assert all(query) ==
-             ~s{SELECT ((s0.x = ?) OR s0.x IN (?,?,?)) OR (s0.x = ?) FROM schema AS s0}
+             ~s{SELECT ((s0."x" = ?) OR s0."x" IN (?,?,?)) OR (s0."x" = ?) FROM "schema" AS s0}
 
     query =
       Schema
@@ -1033,7 +1042,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> plan()
 
     assert all(query) ==
-             "SELECT s0 IN (SELECT value FROM JSON_EACH('[1,2,3]')) FROM schema AS s0"
+             ~s{SELECT s0 IN (SELECT value FROM JSON_EACH('[1,2,3]')) FROM "schema" AS s0}
   end
 
   test "in subquery" do
@@ -1051,8 +1060,8 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     assert all(query) ==
              """
-             SELECT c0.x FROM comments AS c0 \
-             WHERE (c0.post_id IN (SELECT sp0.id FROM posts AS sp0 WHERE (sp0.title = ?)))\
+             SELECT c0."x" FROM "comments" AS c0 \
+             WHERE (c0."post_id" IN (SELECT sp0."id" FROM "posts" AS sp0 WHERE (sp0."title" = ?)))\
              """
 
     posts =
@@ -1070,8 +1079,8 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     assert all(query) ==
              """
-             SELECT c0.x FROM comments AS c0 \
-             WHERE (c0.post_id IN (SELECT sp0.id FROM posts AS sp0 WHERE (sp0.title = c0.subtitle)))\
+             SELECT c0."x" FROM "comments" AS c0 \
+             WHERE (c0."post_id" IN (SELECT sp0."id" FROM "posts" AS sp0 WHERE (sp0."title" = c0."subtitle")))\
              """
   end
 
@@ -1082,7 +1091,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> select([p], p.x)
       |> plan()
 
-    assert all(query) == ~s{SELECT s0.x FROM schema AS s0 HAVING (s0.x = s0.x)}
+    assert all(query) == ~s{SELECT s0."x" FROM "schema" AS s0 HAVING (s0."x" = s0."x")}
 
     query =
       Schema
@@ -1093,10 +1102,10 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     assert all(query) ==
              """
-             SELECT s0.y, s0.x \
-             FROM schema AS s0 \
-             HAVING (s0.x = s0.x) \
-             AND (s0.y = s0.y)\
+             SELECT s0."y", s0."x" \
+             FROM "schema" AS s0 \
+             HAVING (s0."x" = s0."x") \
+             AND (s0."y" = s0."y")\
              """
   end
 
@@ -1107,7 +1116,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> select([p], p.x)
       |> plan()
 
-    assert all(query) == ~s{SELECT s0.x FROM schema AS s0 HAVING (s0.x = s0.x)}
+    assert all(query) == ~s{SELECT s0."x" FROM "schema" AS s0 HAVING (s0."x" = s0."x")}
 
     query =
       Schema
@@ -1118,10 +1127,10 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     assert all(query) ==
              """
-             SELECT s0.y, s0.x \
-             FROM schema AS s0 \
-             HAVING (s0.x = s0.x) \
-             OR (s0.y = s0.y)\
+             SELECT s0."y", s0."x" \
+             FROM "schema" AS s0 \
+             HAVING (s0."x" = s0."x") \
+             OR (s0."y" = s0."y")\
              """
   end
 
@@ -1132,7 +1141,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> select([r], r.x)
       |> plan()
 
-    assert all(query) == ~s{SELECT s0.x FROM schema AS s0 GROUP BY s0.x}
+    assert all(query) == ~s{SELECT s0."x" FROM "schema" AS s0 GROUP BY s0."x"}
 
     query =
       Schema
@@ -1140,7 +1149,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> select([r], r.x)
       |> plan()
 
-    assert all(query) == ~s{SELECT s0.x FROM schema AS s0 GROUP BY 2}
+    assert all(query) == ~s{SELECT s0."x" FROM "schema" AS s0 GROUP BY 2}
 
     query =
       Schema
@@ -1148,7 +1157,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> select([r], r.x)
       |> plan()
 
-    assert all(query) == ~s{SELECT s0.x FROM schema AS s0 GROUP BY s0.x, s0.y}
+    assert all(query) == ~s{SELECT s0."x" FROM "schema" AS s0 GROUP BY s0."x", s0."y"}
 
     query =
       Schema
@@ -1156,7 +1165,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> select([r], r.x)
       |> plan()
 
-    assert all(query) == ~s{SELECT s0.x FROM schema AS s0}
+    assert all(query) == ~s{SELECT s0."x" FROM "schema" AS s0}
   end
 
   test "interpolated values" do
@@ -1197,13 +1206,13 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     assert all(query) ==
              """
-             WITH cte1 AS (SELECT s0.id AS id, ? AS smth FROM schema1 AS s0 WHERE (?)), \
-             cte2 AS (SELECT * FROM schema WHERE ?) \
-             SELECT s0.id, ? FROM schema AS s0 INNER JOIN schema2 AS s1 ON ? \
-             INNER JOIN schema2 AS s2 ON ? WHERE (?) AND (?) \
+             WITH "cte1" AS (SELECT s0."id" AS "id", ? AS "smth" FROM "schema1" AS s0 WHERE (?)), \
+             "cte2" AS (SELECT * FROM schema WHERE ?) \
+             SELECT s0."id", ? FROM "schema" AS s0 INNER JOIN "schema2" AS s1 ON ? \
+             INNER JOIN "schema2" AS s2 ON ? WHERE (?) AND (?) \
              GROUP BY ?, ? HAVING (?) AND (?) \
-             UNION SELECT s0.id, ? FROM schema1 AS s0 WHERE (?) \
-             UNION ALL SELECT s0.id, ? FROM schema2 AS s0 WHERE (?) \
+             UNION SELECT s0."id", ? FROM "schema1" AS s0 WHERE (?) \
+             UNION ALL SELECT s0."id", ? FROM "schema2" AS s0 WHERE (?) \
              ORDER BY ? LIMIT ? OFFSET ?\
              """
   end
@@ -1217,7 +1226,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       )
       |> plan()
 
-    result = ~s|SELECT 1 FROM schema AS s0 WHERE (s0.start_time = "query?")|
+    result = ~s|SELECT 1 FROM "schema" AS s0 WHERE (s0."start_time" = "query?")|
 
     assert all(query) == result
   end
@@ -1232,23 +1241,23 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> from(update: [set: [x: 0]])
       |> plan(:update_all)
 
-    assert update_all(query) == ~s{UPDATE schema AS s0 SET x = 0}
+    assert update_all(query) == ~s{UPDATE "schema" AS s0 SET "x" = 0}
 
     query =
       (m in Schema)
       |> from(update: [set: [x: 0], inc: [y: 1, z: -3]])
       |> plan(:update_all)
 
-    # TODO: should probably be "y = s0.y + 1"
+    # TODO: should probably be "y = s0."y" + 1"
     # table-name.column-name is not allowed on the left hand side of SET
     # but is allowed on right hand side, and we should err towards being more explicit
     assert update_all(query) ==
              """
-             UPDATE schema AS s0 \
+             UPDATE "schema" AS s0 \
              SET \
-             x = 0, \
-             y = y + 1, \
-             z = z + -3\
+             "x" = 0, \
+             "y" = "y" + 1, \
+             "z" = "z" + -3\
              """
 
     query =
@@ -1258,9 +1267,9 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     assert update_all(query) ==
              """
-             UPDATE schema AS s0 \
-             SET x = 0 \
-             WHERE (s0.x = 123)\
+             UPDATE "schema" AS s0 \
+             SET "x" = 0 \
+             WHERE (s0."x" = 123)\
              """
 
     query =
@@ -1268,7 +1277,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> from(update: [set: [x: ^0]])
       |> plan(:update_all)
 
-    assert update_all(query) == ~s|UPDATE schema AS s0 SET x = ?|
+    assert update_all(query) == ~s|UPDATE "schema" AS s0 SET "x" = ?|
 
     query =
       Schema
@@ -1278,11 +1287,11 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     assert update_all(query) ==
              """
-             UPDATE schema AS s0 \
+             UPDATE "schema" AS s0 \
              SET \
-             x = 0 \
-             FROM schema2 AS s1 \
-             WHERE (s0.x = s1.z)\
+             "x" = 0 \
+             FROM "schema2" AS s1 \
+             WHERE (s0."x" = s1."z")\
              """
 
     query =
@@ -1297,11 +1306,11 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     assert update_all(query) ==
              """
-             UPDATE schema AS s0 \
-             SET x = 0 \
-             FROM schema2 AS s1 \
-             WHERE (s0.x = s1.z) \
-             AND (s0.x = 123)\
+             UPDATE "schema" AS s0 \
+             SET "x" = 0 \
+             FROM "schema2" AS s1 \
+             WHERE (s0."x" = s1."z") \
+             AND (s0."x" = 123)\
              """
 
     query =
@@ -1315,10 +1324,10 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     assert update_all(query) ==
              """
-             UPDATE posts AS p0 \
-             SET title = 'bar' \
-             WHERE (p0.title = ?) \
-             RETURNING content\
+             UPDATE "posts" AS p0 \
+             SET "title" = 'bar' \
+             WHERE (p0."title" = ?) \
+             RETURNING "content"\
              """
   end
 
@@ -1329,7 +1338,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> Map.put(:prefix, "prefix")
       |> plan(:update_all)
 
-    assert update_all(query) == ~s{UPDATE prefix.schema AS s0 SET x = 0}
+    assert update_all(query) == ~s{UPDATE "prefix"."schema" AS s0 SET "x" = 0}
 
     query =
       (m in Schema)
@@ -1337,7 +1346,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> Map.put(:prefix, "prefix")
       |> plan(:update_all)
 
-    assert update_all(query) == ~s{UPDATE first.schema AS s0 SET x = 0}
+    assert update_all(query) == ~s{UPDATE "first"."schema" AS s0 SET "x" = 0}
   end
 
   test "update all with returning" do
@@ -1348,9 +1357,9 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     assert update_all(query) ==
              """
-             UPDATE posts AS p0 \
-             SET title = 'foo' \
-             RETURNING id, title, content\
+             UPDATE "posts" AS p0 \
+             SET "title" = 'foo' \
+             RETURNING "id", "title", "content"\
              """
 
     query =
@@ -1361,10 +1370,10 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     assert update_all(query) ==
              """
-             UPDATE schema AS s0 \
-             SET x = ? \
-             WHERE (s0.x = ?) \
-             RETURNING x = ?\
+             UPDATE "schema" AS s0 \
+             SET "x" = ? \
+             WHERE (s0."x" = ?) \
+             RETURNING "x" = ?\
              """
   end
 
@@ -1374,14 +1383,14 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> Ecto.Queryable.to_query()
       |> plan()
 
-    assert delete_all(query) == ~s{DELETE FROM schema AS s0}
+    assert delete_all(query) == ~s{DELETE FROM "schema" AS s0}
 
     query =
       (e in Schema)
       |> from(where: e.x == 123)
       |> plan()
 
-    assert delete_all(query) == ~s{DELETE FROM schema AS s0 WHERE (s0.x = 123)}
+    assert delete_all(query) == ~s{DELETE FROM "schema" AS s0 WHERE (s0."x" = 123)}
 
     query =
       (e in Schema)
@@ -1390,8 +1399,8 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     assert delete_all(query) ==
              """
-             DELETE FROM schema AS s0 \
-             WHERE (s0.x = 123) RETURNING x\
+             DELETE FROM "schema" AS s0 \
+             WHERE (s0."x" = 123) RETURNING "x"\
              """
   end
 
@@ -1400,8 +1409,8 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     assert delete_all(query) ==
              """
-             DELETE FROM posts AS p0 \
-             RETURNING id, title, content\
+             DELETE FROM "posts" AS p0 \
+             RETURNING "id", "title", "content"\
              """
   end
 
@@ -1412,7 +1421,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> Map.put(:prefix, "prefix")
       |> plan()
 
-    assert delete_all(query) == ~s{DELETE FROM prefix.schema AS s0}
+    assert delete_all(query) == ~s{DELETE FROM "prefix"."schema" AS s0}
 
     query =
       Schema
@@ -1420,7 +1429,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> Map.put(:prefix, "prefix")
       |> plan()
 
-    assert delete_all(query) == ~s{DELETE FROM first.schema AS s0}
+    assert delete_all(query) == ~s{DELETE FROM "first"."schema" AS s0}
   end
 
   ##
@@ -1437,8 +1446,8 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
       assert all(query) ==
                """
-               SELECT s0.x \
-               FROM schema AS s0 WINDOW w AS (PARTITION BY s0.x)\
+               SELECT s0."x" \
+               FROM "schema" AS s0 WINDOW "w" AS (PARTITION BY s0."x")\
                """
     end
 
@@ -1451,9 +1460,9 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
       assert all(query) ==
                """
-               SELECT s0.x \
-               FROM schema AS s0 WINDOW w1 AS (PARTITION BY s0.x), \
-               w2 AS (PARTITION BY s0.y)\
+               SELECT s0."x" \
+               FROM "schema" AS s0 WINDOW "w1" AS (PARTITION BY s0."x"), \
+               "w2" AS (PARTITION BY s0."y")\
                """
     end
 
@@ -1466,8 +1475,8 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
       assert all(query) ==
                """
-               SELECT count(s0.x) OVER w \
-               FROM schema AS s0 WINDOW w AS (PARTITION BY s0.x)\
+               SELECT count(s0."x") OVER "w" \
+               FROM "schema" AS s0 WINDOW "w" AS (PARTITION BY s0."x")\
                """
     end
 
@@ -1477,7 +1486,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
         |> select([r], count(r.x) |> over)
         |> plan()
 
-      assert all(query) == ~s{SELECT count(s0.x) OVER () FROM schema AS s0}
+      assert all(query) == ~s{SELECT count(s0."x") OVER () FROM "schema" AS s0}
     end
 
     test "row_number over all" do
@@ -1486,7 +1495,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
         |> select(row_number |> over)
         |> plan()
 
-      assert all(query) == ~s{SELECT row_number() OVER () FROM schema AS s0}
+      assert all(query) == ~s{SELECT row_number() OVER () FROM "schema" AS s0}
     end
 
     test "nth_value over all" do
@@ -1497,8 +1506,8 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
       assert all(query) ==
                """
-               SELECT nth_value(s0.x, 42) OVER () \
-               FROM schema AS s0\
+               SELECT nth_value(s0."x", 42) OVER () \
+               FROM "schema" AS s0\
                """
     end
 
@@ -1508,7 +1517,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
         |> select([r], lag(r.x, 42) |> over)
         |> plan()
 
-      assert all(query) == ~s{SELECT lag(s0.x, 42) OVER () FROM schema AS s0}
+      assert all(query) == ~s{SELECT lag(s0."x", 42) OVER () FROM "schema" AS s0}
     end
 
     test "custom aggregation over all" do
@@ -1519,8 +1528,8 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
       assert all(query) ==
                """
-               SELECT custom_function(s0.x) OVER () \
-               FROM schema AS s0\
+               SELECT custom_function(s0."x") OVER () \
+               FROM "schema" AS s0\
                """
     end
 
@@ -1533,8 +1542,8 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
       assert all(query) ==
                """
-               SELECT s0.x \
-               FROM schema AS s0 WINDOW w AS (PARTITION BY s0.x, s0.z ORDER BY s0.x)\
+               SELECT s0."x" \
+               FROM "schema" AS s0 WINDOW "w" AS (PARTITION BY s0."x", s0."z" ORDER BY s0."x")\
                """
     end
 
@@ -1546,8 +1555,8 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
       assert all(query) ==
                """
-               SELECT count(s0.x) OVER (PARTITION BY s0.x, s0.z ORDER BY s0.x) \
-               FROM schema AS s0\
+               SELECT count(s0."x") OVER (PARTITION BY s0."x", s0."z" ORDER BY s0."x") \
+               FROM "schema" AS s0\
                """
     end
 
@@ -1567,13 +1576,13 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
       assert all(query) ==
                """
-               SELECT count(s0.x) OVER (\
-               PARTITION BY s0.x, \
-               s0.z \
-               ORDER BY s0.x \
+               SELECT count(s0."x") OVER (\
+               PARTITION BY s0."x", \
+               s0."z" \
+               ORDER BY s0."x" \
                ROWS BETWEEN 2 PRECEDING AND 2 FOLLOWING\
                ) \
-               FROM schema AS s0\
+               FROM "schema" AS s0\
                """
     end
   end
@@ -1592,8 +1601,8 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
     assert all(query) ==
              """
              SELECT 1 \
-             FROM schema AS s0 \
-             INNER JOIN schema2 AS s1 ON s0.x = s1.z\
+             FROM "schema" AS s0 \
+             INNER JOIN "schema2" AS s1 ON s0."x" = s1."z"\
              """
 
     query =
@@ -1605,8 +1614,8 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     assert all(query) ==
              """
-             SELECT 1 FROM schema AS s0 INNER JOIN schema2 AS s1 ON s0.x = s1.z \
-             INNER JOIN schema AS s2 ON 1\
+             SELECT 1 FROM "schema" AS s0 INNER JOIN "schema2" AS s1 ON s0."x" = s1."z" \
+             INNER JOIN "schema" AS s2 ON 1\
              """
   end
 
@@ -1620,8 +1629,8 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
     assert all(query) ==
              """
              SELECT 1 \
-             FROM schema AS s0 \
-             INNER JOIN schema2 AS s1 ON 1\
+             FROM "schema" AS s0 \
+             INNER JOIN "schema2" AS s1 ON 1\
              """
   end
 
@@ -1635,8 +1644,8 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
     assert all(query) ==
              """
              SELECT 1 \
-             FROM schema AS s0 \
-             INNER JOIN schema2 AS s1 ON s1.z = s1.z\
+             FROM "schema" AS s0 \
+             INNER JOIN "schema2" AS s1 ON s1."z" = s1."z"\
              """
   end
 
@@ -1650,8 +1659,8 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
     assert all(query) ==
              """
              SELECT 1 \
-             FROM posts AS p0 \
-             INNER JOIN comments AS c1 ON p0.x = c1.z\
+             FROM "posts" AS p0 \
+             INNER JOIN "comments" AS c1 ON p0."x" = c1."z"\
              """
   end
 
@@ -1670,11 +1679,11 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     assert all(query) ==
              """
-             SELECT s1.x FROM comments AS c0 \
+             SELECT s1."x" FROM "comments" AS c0 \
              INNER JOIN (\
-             SELECT sp0.x AS x, sp0.y AS y \
-             FROM posts AS sp0 \
-             WHERE (sp0.title = ?)\
+             SELECT sp0."x" AS "x", sp0."y" AS "y" \
+             FROM "posts" AS sp0 \
+             WHERE (sp0."title" = ?)\
              ) AS s1 ON 1\
              """
 
@@ -1692,11 +1701,11 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     assert all(query) ==
              """
-             SELECT s1.x, s1.z FROM comments AS c0 \
+             SELECT s1."x", s1."z" FROM "comments" AS c0 \
              INNER JOIN (\
-             SELECT sp0.x AS x, sp0.y AS z \
-             FROM posts AS sp0 \
-             WHERE (sp0.title = ?)\
+             SELECT sp0."x" AS "x", sp0."y" AS "z" \
+             FROM "posts" AS sp0 \
+             WHERE (sp0."title" = ?)\
              ) AS s1 ON 1\
              """
 
@@ -1715,12 +1724,12 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     assert all(query) ==
              """
-             SELECT s1.title \
-             FROM comments AS c0 \
+             SELECT s1."title" \
+             FROM "comments" AS c0 \
              INNER JOIN (\
-             SELECT sp0.title AS title \
-             FROM posts AS sp0 \
-             WHERE (sp0.title = c0.subtitle)\
+             SELECT sp0."title" AS "title" \
+             FROM "posts" AS sp0 \
+             WHERE (sp0."title" = c0."subtitle")\
              ) AS s1 ON 1\
              """
   end
@@ -1736,8 +1745,8 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
     assert all(query) ==
              """
              SELECT 1 \
-             FROM prefix.schema AS s0 \
-             INNER JOIN prefix.schema2 AS s1 ON s0.x = s1.z\
+             FROM "prefix"."schema" AS s0 \
+             INNER JOIN "prefix"."schema2" AS s1 ON s0."x" = s1."z"\
              """
 
     query =
@@ -1751,8 +1760,8 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
     assert all(query) ==
              """
              SELECT 1 \
-             FROM first.schema AS s0 \
-             INNER JOIN second.schema2 AS s1 ON s0.x = s1.z\
+             FROM "first"."schema" AS s0 \
+             INNER JOIN "second"."schema2" AS s1 ON s0."x" = s1."z"\
              """
   end
 
@@ -1774,15 +1783,15 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     assert all(query) ==
              """
-             SELECT s0.id, ? \
-             FROM schema AS s0 \
+             SELECT s0."id", ? \
+             FROM "schema" AS s0 \
              INNER JOIN \
              (\
              SELECT * \
              FROM schema2 AS s2 \
-             WHERE s2.id = s0.x AND s2.field = ?\
+             WHERE s2.id = s0."x" AND s2.field = ?\
              ) AS f1 ON 1 \
-             WHERE ((s0.id > 0) AND (s0.id < ?))\
+             WHERE ((s0."id" > 0) AND (s0."id" < ?))\
              """
   end
 
@@ -1795,10 +1804,10 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     assert all(query) ==
              """
-             SELECT s0.id, ? \
-             FROM schema AS s0 \
+             SELECT s0."id", ? \
+             FROM "schema" AS s0 \
              INNER JOIN \
-             (SELECT * FROM schema2) AS f1 ON f1.id = s0.id\
+             (SELECT * FROM schema2) AS f1 ON f1."id" = s0."id"\
              """
   end
 
@@ -1812,9 +1821,9 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     assert all(query) ==
              """
-             SELECT s0.id, s1.id \
-             FROM schema AS s0 \
-             LEFT OUTER JOIN schema2 AS s1 ON 1\
+             SELECT s0."id", s1."id" \
+             FROM "schema" AS s0 \
+             LEFT OUTER JOIN "schema2" AS s1 ON 1\
              """
   end
 
@@ -1826,9 +1835,9 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     assert all(query) ==
              """
-             SELECT s0.id, s1.id \
-             FROM schema AS s0 \
-             CROSS JOIN schema2 AS s1\
+             SELECT s0."id", s1."id" \
+             FROM "schema" AS s0 \
+             CROSS JOIN "schema2" AS s1\
              """
   end
 
@@ -1839,10 +1848,10 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     assert all(query) ==
              """
-             SELECT s0.id, s2.id \
-             FROM schema AS s0 \
-             INNER JOIN schema2 AS s1 ON 1 \
-             INNER JOIN schema2 AS s2 ON 1\
+             SELECT s0."id", s2."id" \
+             FROM "schema" AS s0 \
+             INNER JOIN "schema2" AS s1 ON 1 \
+             INNER JOIN "schema2" AS s2 ON 1\
              """
   end
 
@@ -1858,9 +1867,9 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
       assert query ==
                """
-               SELECT s0.x, s0.y \
-               FROM schema AS s0 \
-               INNER JOIN (SELECT ss0.x AS x, ss0.y AS y FROM schema AS ss0) \
+               SELECT s0."x", s0."y" \
+               FROM "schema" AS s0 \
+               INNER JOIN (SELECT ss0."x" AS "x", ss0."y" AS "y" FROM "schema" AS ss0) \
                AS s1 ON 1\
                """
     end
@@ -1877,8 +1886,8 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       assert query ==
                """
                SELECT downcase(?) \
-               FROM schema AS s0 \
-               INNER JOIN (SELECT downcase(?) AS string FROM schema AS ss0) \
+               FROM "schema" AS s0 \
+               INNER JOIN (SELECT downcase(?) AS "string" FROM "schema" AS ss0) \
                AS s1 ON 1\
                """
     end
@@ -1897,9 +1906,9 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       assert query ==
                """
                SELECT ? \
-               FROM schema AS s0 \
-               INNER JOIN (SELECT ? AS x, ? AS w FROM schema AS ss0) AS s1 ON 1 \
-               WHERE (s0.x = ?)\
+               FROM "schema" AS s0 \
+               INNER JOIN (SELECT ? AS "x", ? AS "w" FROM "schema" AS ss0) AS s1 ON 1 \
+               WHERE (s0."x" = ?)\
                """
     end
   end
@@ -1918,8 +1927,8 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
     assert all(query) ==
              """
              SELECT 1 \
-             FROM schema2 AS s0 \
-             INNER JOIN schema AS s1 ON s1.x = s0.z\
+             FROM "schema2" AS s0 \
+             INNER JOIN "schema" AS s1 ON s1."x" = s0."z"\
              """
   end
 
@@ -1933,8 +1942,8 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
     assert all(query) ==
              """
              SELECT 1 \
-             FROM schema AS s0 \
-             INNER JOIN schema2 AS s1 ON s1.z = s0.x\
+             FROM "schema" AS s0 \
+             INNER JOIN "schema2" AS s1 ON s1."z" = s0."x"\
              """
   end
 
@@ -1948,8 +1957,8 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
     assert all(query) ==
              """
              SELECT 1 \
-             FROM schema AS s0 \
-             INNER JOIN schema3 AS s1 ON s1.id = s0.y\
+             FROM "schema" AS s0 \
+             INNER JOIN "schema3" AS s1 ON s1."id" = s0."y"\
              """
   end
 
@@ -1959,7 +1968,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
   test "insert" do
     query = insert(nil, "schema", [:x, :y], [[:x, :y]], {:raise, [], []}, [])
-    assert query == ~s{INSERT INTO schema (x,y) VALUES (?,?)}
+    assert query == ~s{INSERT INTO "schema" ("x","y") VALUES (?,?)}
 
     assert_raise(
       ArgumentError,
@@ -1977,13 +1986,13 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
     )
 
     query = insert(nil, "schema", [], [[]], {:raise, [], []}, [])
-    assert query == ~s{INSERT INTO schema DEFAULT VALUES}
+    assert query == ~s{INSERT INTO "schema" DEFAULT VALUES}
 
     query = insert("prefix", "schema", [], [[]], {:raise, [], []}, [])
-    assert query == ~s{INSERT INTO prefix.schema DEFAULT VALUES}
+    assert query == ~s{INSERT INTO "prefix"."schema" DEFAULT VALUES}
 
     query = insert(nil, "schema", [:x, :y], [[:x, :y]], {:raise, [], []}, [:id])
-    assert query == ~s{INSERT INTO schema (x,y) VALUES (?,?) RETURNING id}
+    assert query == ~s{INSERT INTO "schema" ("x","y") VALUES (?,?) RETURNING "id"}
 
     assert_raise(
       ArgumentError,
@@ -2002,7 +2011,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     assert query ==
              """
-             INSERT INTO schema (x,y) \
+             INSERT INTO "schema" ("x","y") \
              VALUES (?,?) \
              ON CONFLICT DO NOTHING\
              """
@@ -2011,9 +2020,9 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     assert query ==
              """
-             INSERT INTO schema (x,y) \
+             INSERT INTO "schema" ("x","y") \
              VALUES (?,?) \
-             ON CONFLICT (x,y) DO NOTHING\
+             ON CONFLICT ("x","y") DO NOTHING\
              """
 
     # For :update
@@ -2082,10 +2091,10 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     assert query ==
              """
-             INSERT INTO schema (x,y) \
+             INSERT INTO "schema" ("x","y") \
              VALUES (?,?) \
-             ON CONFLICT (id) \
-             DO UPDATE SET x = EXCLUDED.x,y = EXCLUDED.y\
+             ON CONFLICT ("id") \
+             DO UPDATE SET "x" = EXCLUDED."x","y" = EXCLUDED."y"\
              """
   end
 
@@ -2116,7 +2125,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
     query = insert(nil, "schema", [:foo, :bar], query, {:raise, [], []}, [])
 
     assert query ==
-             ~s{INSERT INTO schema (foo,bar) SELECT 3, s0.bar FROM schema AS s0 WHERE (1)}
+             ~s{INSERT INTO "schema" ("foo","bar") SELECT 3, s0."bar" FROM "schema" AS s0 WHERE (1)}
 
     assert_raise(ArgumentError, fn ->
       query =
@@ -2141,13 +2150,13 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
   test "delete" do
     query = delete(nil, "schema", [x: 1, y: 2], [])
-    assert query == ~s{DELETE FROM schema WHERE x = ? AND y = ?}
+    assert query == ~s{DELETE FROM "schema" WHERE "x" = ? AND "y" = ?}
 
     query = delete("prefix", "schema", [x: 1, y: 2], [])
-    assert query == ~s{DELETE FROM prefix.schema WHERE x = ? AND y = ?}
+    assert query == ~s{DELETE FROM "prefix"."schema" WHERE "x" = ? AND "y" = ?}
 
     query = delete(nil, "schema", [x: nil, y: 1], [])
-    assert query == ~s{DELETE FROM schema WHERE x IS NULL AND y = ?}
+    assert query == ~s{DELETE FROM "schema" WHERE "x" IS NULL AND "y" = ?}
   end
 
   ##
@@ -2176,16 +2185,16 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     assert execute_ddl(create) == [
              """
-             CREATE TABLE posts (\
-             name TEXT DEFAULT 'Untitled' NOT NULL, \
-             token BLOB NOT NULL, \
-             price NUMERIC DEFAULT expr, \
-             on_hand INTEGER DEFAULT 0 NULL, \
-             likes INTEGER DEFAULT 0 NOT NULL, \
-             published_at DATETIME NULL, \
-             is_active BOOLEAN DEFAULT true, \
-             notes TEXT COLLATE NOCASE, \
-             meta TEXT CONSTRAINT meta_constraint CHECK (meta != 'a')\
+             CREATE TABLE "posts" (\
+             "name" TEXT DEFAULT 'Untitled' NOT NULL, \
+             "token" BLOB NOT NULL, \
+             "price" NUMERIC DEFAULT expr, \
+             "on_hand" INTEGER DEFAULT 0 NULL, \
+             "likes" INTEGER DEFAULT 0 NOT NULL, \
+             "published_at" DATETIME NULL, \
+             "is_active" BOOLEAN DEFAULT true, \
+             "notes" TEXT COLLATE NOCASE, \
+             "meta" TEXT CONSTRAINT meta_constraint CHECK (meta != 'a')\
              )\
              """
            ]
@@ -2194,7 +2203,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
   test "create empty table" do
     create = {:create, table(:posts), []}
 
-    assert execute_ddl(create) == ["CREATE TABLE posts ()"]
+    assert execute_ddl(create) == [~s{CREATE TABLE "posts" ()}]
   end
 
   test "create table with prefix" do
@@ -2204,8 +2213,8 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     assert execute_ddl(create) == [
              """
-             CREATE TABLE foo.posts (\
-             category_0 INTEGER CONSTRAINT posts_category_0_fkey REFERENCES foo.categories(id)\
+             CREATE TABLE "foo"."posts" (\
+             "category_0" INTEGER CONSTRAINT "posts_category_0_fkey" REFERENCES "foo"."categories"("id")\
              )\
              """
            ]
@@ -2234,18 +2243,18 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     assert execute_ddl(create) == [
              """
-             CREATE TABLE posts (\
-             id INTEGER PRIMARY KEY AUTOINCREMENT, \
-             category_0 INTEGER CONSTRAINT posts_category_0_fkey REFERENCES categories(id), \
-             category_1 INTEGER CONSTRAINT foo_bar REFERENCES categories(id), \
-             category_2 INTEGER CONSTRAINT posts_category_2_fkey REFERENCES categories(id), \
-             category_3 INTEGER NOT NULL CONSTRAINT posts_category_3_fkey REFERENCES categories(id) ON DELETE CASCADE, \
-             category_4 INTEGER CONSTRAINT posts_category_4_fkey REFERENCES categories(id) ON DELETE SET NULL, \
-             category_5 INTEGER CONSTRAINT posts_category_5_fkey REFERENCES foo.categories(id) ON DELETE SET NULL, \
-             category_6 INTEGER, \
-             category_7 INTEGER, \
-             FOREIGN KEY (category_6,here) REFERENCES categories(id,there) ON DELETE SET NULL, \
-             FOREIGN KEY (category_7,that) REFERENCES tags(id,this) ON DELETE SET NULL\
+             CREATE TABLE "posts" (\
+             "id" INTEGER PRIMARY KEY AUTOINCREMENT, \
+             "category_0" INTEGER CONSTRAINT "posts_category_0_fkey" REFERENCES "categories"("id"), \
+             "category_1" INTEGER CONSTRAINT "foo_bar" REFERENCES "categories"("id"), \
+             "category_2" INTEGER CONSTRAINT "posts_category_2_fkey" REFERENCES "categories"("id"), \
+             "category_3" INTEGER NOT NULL CONSTRAINT "posts_category_3_fkey" REFERENCES "categories"("id") ON DELETE CASCADE, \
+             "category_4" INTEGER CONSTRAINT "posts_category_4_fkey" REFERENCES "categories"("id") ON DELETE SET NULL, \
+             "category_5" INTEGER CONSTRAINT "posts_category_5_fkey" REFERENCES "foo"."categories"("id") ON DELETE SET NULL, \
+             "category_6" INTEGER, \
+             "category_7" INTEGER, \
+             FOREIGN KEY ("category_6","here") REFERENCES "categories"("id","there") ON DELETE SET NULL, \
+             FOREIGN KEY ("category_7","that") REFERENCES "tags"("id","this") ON DELETE SET NULL\
              )\
              """
            ]
@@ -2274,11 +2283,11 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     assert execute_ddl(create) == [
              """
-             CREATE TABLE posts (\
-             a INTEGER, \
-             b INTEGER, \
-             name TEXT, \
-             PRIMARY KEY (a, b)\
+             CREATE TABLE "posts" (\
+             "a" INTEGER, \
+             "b" INTEGER, \
+             "name" TEXT, \
+             PRIMARY KEY ("a", "b")\
              )\
              """
            ]
@@ -2293,7 +2302,19 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     assert execute_ddl(create) == [
              """
-             CREATE TABLE posts (a JSON DEFAULT ('{\"baz\":\"boom\",\"foo\":\"bar\"}'))\
+             CREATE TABLE "posts" ("a" JSON DEFAULT ('{\"baz\":\"boom\",\"foo\":\"bar\"}'))\
+             """
+           ]
+  end
+
+  test "create table with sql keyword as column name" do
+    create = {:create, table(:posts), [{:add, :order, :integer, []}]}
+
+    assert execute_ddl(create) == [
+             """
+             CREATE TABLE "posts" (\
+             "order" INTEGER\
+             )\
              """
            ]
   end
@@ -2305,9 +2326,9 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     assert execute_ddl(create) == [
              """
-             CREATE TABLE posts (\
-             published_at TIME, \
-             submitted_at TIME\
+             CREATE TABLE "posts" (\
+             "published_at" TIME, \
+             "submitted_at" TIME\
              )\
              """
            ]
@@ -2323,9 +2344,9 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     assert execute_ddl(create) == [
              """
-             CREATE TABLE posts (\
-             published_at TEXT_DATETIME, \
-             submitted_at TEXT_DATETIME\
+             CREATE TABLE "posts" (\
+             "published_at" TEXT_DATETIME, \
+             "submitted_at" TEXT_DATETIME\
              )\
              """
            ]
@@ -2340,7 +2361,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
        ]}
 
     assert execute_ddl(create) == [
-             "CREATE TABLE posts (published_at TEXT_DATETIME, submitted_at TEXT_DATETIME)"
+             ~s{CREATE TABLE "posts" ("published_at" TEXT_DATETIME, "submitted_at" TEXT_DATETIME)}
            ]
   end
 
@@ -2361,13 +2382,13 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
   test "drop table" do
     drop = {:drop, table(:posts)}
 
-    assert execute_ddl(drop) == [~s|DROP TABLE posts|]
+    assert execute_ddl(drop) == [~s|DROP TABLE "posts"|]
   end
 
   test "drop table with prefixes" do
     drop = {:drop, table(:posts, prefix: :foo)}
 
-    assert execute_ddl(drop) == [~s|DROP TABLE foo.posts|]
+    assert execute_ddl(drop) == [~s|DROP TABLE "foo"."posts"|]
   end
 
   test "drop constraint" do
@@ -2405,12 +2426,12 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     assert execute_ddl(alter) == [
              """
-             ALTER TABLE posts \
-             ADD COLUMN title TEXT DEFAULT 'Untitled' NOT NULL\
+             ALTER TABLE "posts" \
+             ADD COLUMN "title" TEXT DEFAULT 'Untitled' NOT NULL\
              """,
              """
-             ALTER TABLE posts \
-             ADD COLUMN author_id INTEGER CONSTRAINT posts_author_id_fkey REFERENCES author(id)\
+             ALTER TABLE "posts" \
+             ADD COLUMN "author_id" INTEGER CONSTRAINT "posts_author_id_fkey" REFERENCES "author"("id")\
              """
            ]
   end
@@ -2425,12 +2446,12 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     assert execute_ddl(alter) == [
              """
-             ALTER TABLE posts \
-             ADD COLUMN title TEXT DEFAULT 'Untitled' NOT NULL\
+             ALTER TABLE "posts" \
+             ADD COLUMN "title" TEXT DEFAULT 'Untitled' NOT NULL\
              """,
              """
-             ALTER TABLE posts \
-             ADD COLUMN when TEXT_DATETIME\
+             ALTER TABLE "posts" \
+             ADD COLUMN "when" TEXT_DATETIME\
              """
            ]
   end
@@ -2445,13 +2466,13 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     assert execute_ddl(alter) == [
              """
-             ALTER TABLE foo.posts \
-             ADD COLUMN title TEXT DEFAULT 'Untitled' NOT NULL\
+             ALTER TABLE "foo"."posts" \
+             ADD COLUMN "title" TEXT DEFAULT 'Untitled' NOT NULL\
              """,
              """
-             ALTER TABLE foo.posts \
-             ADD COLUMN author_id INTEGER \
-             CONSTRAINT posts_author_id_fkey REFERENCES foo.author(id)\
+             ALTER TABLE "foo"."posts" \
+             ADD COLUMN "author_id" INTEGER \
+             CONSTRAINT "posts_author_id_fkey" REFERENCES "foo"."author"("id")\
              """
            ]
   end
@@ -2479,8 +2500,8 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     assert execute_ddl(alteration) == [
              """
-             ALTER TABLE posts \
-             DROP COLUMN price\
+             ALTER TABLE "posts" \
+             DROP COLUMN "price"\
              """
            ]
   end
@@ -2490,8 +2511,8 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     assert execute_ddl(alter) == [
              """
-             ALTER TABLE posts \
-             ADD COLUMN my_pk INTEGER PRIMARY KEY AUTOINCREMENT\
+             ALTER TABLE "posts" \
+             ADD COLUMN "my_pk" INTEGER PRIMARY KEY AUTOINCREMENT\
              """
            ]
   end
@@ -2502,8 +2523,8 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
     assert execute_ddl(create) ==
              [
                """
-               CREATE INDEX posts_category_id_permalink_index \
-               ON posts (category_id, permalink)\
+               CREATE INDEX "posts_category_id_permalink_index" \
+               ON "posts" ("category_id", "permalink")\
                """
              ]
 
@@ -2511,7 +2532,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     assert execute_ddl(create) == [
              """
-             CREATE INDEX posts$main ON posts (lower(permalink))\
+             CREATE INDEX "posts$main" ON "posts" (lower(permalink))\
              """
            ]
   end
@@ -2522,8 +2543,8 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     assert query == [
              """
-             CREATE INDEX IF NOT EXISTS posts_category_id_permalink_index \
-             ON posts (category_id, permalink)\
+             CREATE INDEX IF NOT EXISTS "posts_category_id_permalink_index" \
+             ON "posts" ("category_id", "permalink")\
              """
            ]
   end
@@ -2533,8 +2554,8 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     assert execute_ddl(create) == [
              """
-             CREATE INDEX posts_category_id_permalink_index \
-             ON foo.posts (category_id, permalink)\
+             CREATE INDEX "posts_category_id_permalink_index" \
+             ON "foo"."posts" ("category_id", "permalink")\
              """
            ]
 
@@ -2543,7 +2564,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     assert execute_ddl(create) == [
              """
-             CREATE INDEX posts$main ON foo.posts (lower(permalink))\
+             CREATE INDEX "posts$main" ON "foo"."posts" (lower(permalink))\
              """
            ]
   end
@@ -2555,8 +2576,8 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     assert execute_ddl(create) == [
              """
-             CREATE INDEX posts_category_id_permalink_index \
-             ON foo.posts (category_id, permalink)\
+             CREATE INDEX "posts_category_id_permalink_index" \
+             ON "foo"."posts" ("category_id", "permalink")\
              """
            ]
 
@@ -2568,8 +2589,8 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     assert execute_ddl(create) == [
              """
-             CREATE UNIQUE INDEX posts_permalink_index \
-             ON posts (permalink)\
+             CREATE UNIQUE INDEX "posts_permalink_index" \
+             ON "posts" ("permalink")\
              """
            ]
   end
@@ -2580,8 +2601,8 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     assert query == [
              """
-             CREATE UNIQUE INDEX IF NOT EXISTS posts_permalink_index \
-             ON posts (permalink)\
+             CREATE UNIQUE INDEX IF NOT EXISTS "posts_permalink_index" \
+             ON "posts" ("permalink")\
              """
            ]
   end
@@ -2591,8 +2612,8 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     assert execute_ddl(create) == [
              """
-             CREATE UNIQUE INDEX posts_permalink_index \
-             ON posts (permalink) WHERE public IS 1\
+             CREATE UNIQUE INDEX "posts_permalink_index" \
+             ON "posts" ("permalink") WHERE public IS 1\
              """
            ]
 
@@ -2600,8 +2621,8 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     assert execute_ddl(create) == [
              """
-             CREATE UNIQUE INDEX posts_permalink_index \
-             ON posts (permalink) WHERE public\
+             CREATE UNIQUE INDEX "posts_permalink_index" \
+             ON "posts" ("permalink") WHERE public\
              """
            ]
   end
@@ -2611,7 +2632,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
     create = {:create, index(:posts, [:permalink], concurrently: true)}
 
     assert execute_ddl(create) == [
-             ~s|CREATE INDEX posts_permalink_index ON posts (permalink)|
+             ~s|CREATE INDEX "posts_permalink_index" ON "posts" ("permalink")|
            ]
   end
 
@@ -2620,7 +2641,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
     create = {:create, index(:posts, [:permalink], concurrently: true, unique: true)}
 
     assert execute_ddl(create) == [
-             ~s|CREATE UNIQUE INDEX posts_permalink_index ON posts (permalink)|
+             ~s|CREATE UNIQUE INDEX "posts_permalink_index" ON "posts" ("permalink")|
            ]
   end
 
@@ -2629,29 +2650,29 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
     create = {:create, index(:posts, [:permalink], using: :hash)}
 
     assert execute_ddl(create) == [
-             ~s|CREATE INDEX posts_permalink_index ON posts (permalink)|
+             ~s|CREATE INDEX "posts_permalink_index" ON "posts" ("permalink")|
            ]
   end
 
   test "drop index" do
     drop = {:drop, index(:posts, [:id], name: "posts$main")}
-    assert execute_ddl(drop) == [~s|DROP INDEX posts$main|]
+    assert execute_ddl(drop) == [~s|DROP INDEX "posts$main"|]
   end
 
   test "drop index with prefix" do
     drop = {:drop, index(:posts, [:id], name: "posts$main", prefix: :foo)}
-    assert execute_ddl(drop) == [~s|DROP INDEX foo.posts$main|]
+    assert execute_ddl(drop) == [~s|DROP INDEX "foo"."posts$main"|]
   end
 
   test "drop index if exists" do
     drop = {:drop_if_exists, index(:posts, [:id], name: "posts$main")}
-    assert execute_ddl(drop) == [~s|DROP INDEX IF EXISTS posts$main|]
+    assert execute_ddl(drop) == [~s|DROP INDEX IF EXISTS "posts$main"|]
   end
 
   test "drop index concurrently" do
     # NOTE: SQLite doesn't support CONCURRENTLY, so this isn't included in generated SQL.
     drop = {:drop, index(:posts, [:id], name: "posts$main", concurrently: true)}
-    assert execute_ddl(drop) == [~s|DROP INDEX posts$main|]
+    assert execute_ddl(drop) == [~s|DROP INDEX "posts$main"|]
   end
 
   test "create check constraint" do
@@ -2712,7 +2733,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
     rename = {:rename, table(:posts), table(:new_posts)}
 
     assert execute_ddl(rename) == [
-             ~s|ALTER TABLE posts RENAME TO new_posts|
+             ~s|ALTER TABLE "posts" RENAME TO "new_posts"|
            ]
   end
 
@@ -2720,7 +2741,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
     rename = {:rename, table(:posts, prefix: :foo), table(:new_posts, prefix: :foo)}
 
     assert execute_ddl(rename) == [
-             ~s|ALTER TABLE foo.posts RENAME TO new_posts|
+             ~s|ALTER TABLE "foo"."posts" RENAME TO "new_posts"|
            ]
   end
 
@@ -2728,7 +2749,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
     rename = {:rename, table(:posts), :given_name, :first_name}
 
     assert execute_ddl(rename) == [
-             ~s|ALTER TABLE posts RENAME COLUMN given_name TO first_name|
+             ~s|ALTER TABLE "posts" RENAME COLUMN "given_name" TO "first_name"|
            ]
   end
 
@@ -2736,7 +2757,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
     rename = {:rename, table(:posts, prefix: :foo), :given_name, :first_name}
 
     assert execute_ddl(rename) == [
-             ~s|ALTER TABLE foo.posts RENAME COLUMN given_name TO first_name|
+             ~s|ALTER TABLE "foo"."posts" RENAME COLUMN "given_name" TO "first_name"|
            ]
   end
 
@@ -2745,8 +2766,8 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     assert execute_ddl(drop_column) == [
              """
-             ALTER TABLE posts \
-             DROP COLUMN summary\
+             ALTER TABLE "posts" \
+             DROP COLUMN "summary"\
              """
            ]
   end
@@ -2770,6 +2791,6 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> plan()
       |> all()
 
-    assert query == "SELECT p0.id, p0.title, p0.content FROM posts AS p0"
+    assert query == ~s{SELECT p0."id", p0."title", p0."content" FROM "posts" AS p0}
   end
 end
