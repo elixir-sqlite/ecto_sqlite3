@@ -5,6 +5,11 @@ All notable changes will be documented in this file.
 The format is based on [Keep a Changelog][keepachangelog], and this project
 adheres to [Semantic Versioning][semver].
 
+
+## [0.5.6] - 2021-07-02
+- Fix double quote missing from sql query generation. https://github.com/elixir-sqlite/ecto_sqlite3/pull/39
+
+
 ## [0.5.5] - 2021-04-19
 - Fix "database is locked" issue by setting `journal_mode` at `storage_up` time.
 - Add :check constraint column option.
@@ -32,6 +37,8 @@ adheres to [Semantic Versioning][semver].
 
 [keepachangelog]: <https://keepachangelog.com/en/1.0.0/>
 [semver]: <https://semver.org/spec/v2.0.0.html>
+[0.5.6]: https://github.com/elixir-sqlite/ecto_sqlite3/compare/v0.5.5...v0.5.6
+[0.5.5]: https://github.com/elixir-sqlite/ecto_sqlite3/compare/v0.5.4...v0.5.5
 [0.5.4]: https://github.com/elixir-sqlite/ecto_sqlite3/compare/v0.5.3...v0.5.4
 [0.5.3]: https://github.com/elixir-sqlite/ecto_sqlite3/compare/v0.5.1...v0.5.3
 [0.5.1]: https://github.com/elixir-sqlite/ecto_sqlite3/compare/v0.5.0...v0.5.1
