@@ -9,7 +9,7 @@ as the driver to communicate with sqlite3.
 
 ## Caveats and limitations
 
-See [Limitations](https://hexdocs.pm/ecto_sqlite3/Ecto.Adapters.SQLite3.html#module-limitations)
+See [Limitations](https://hexdocs.pm/ecto_sqlite3/Ecto.Adapters.SQLite3.html#module-limitations-and-caveats)
 in Hexdocs.
 
 ## Installation
