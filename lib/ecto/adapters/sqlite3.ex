@@ -137,7 +137,7 @@ defmodule Ecto.Adapters.SQLite3 do
   Since we cannot get the name of the violated constraint back from SQLite3 at `INSERT` or `UPDATE` time,
   there is no way to effectively use these changeset functions. This is a SQLite3 limitation.
 
-  See or [this GitHub issue](https://github.com/elixir-sqlite/ecto_sqlite3/issues/42) for more details.
+  See [this GitHub issue](https://github.com/elixir-sqlite/ecto_sqlite3/issues/42) for more details.
 
   ### Schemaless queries
 
