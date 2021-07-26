@@ -125,6 +125,20 @@ defmodule Ecto.Adapters.SQLite3 do
 
       add :email, :string, check: %{name: "test_constraint", expr: "email != 'test@example.com')"}
 
+  ### Handling foreign key constraints in changesets
+
+  Unfortunately, unlike other databases, SQLite3 does not provide the precise name of the constraint violated,
+  but only the columns within that constraint (if it provides any information at all). Because of this, changeset
+  functions like `Ecto.Changeset.foreign_key_constraint/3` may not work at all.
+
+  This is because the above functions depend on the Ecto Adapter returning the name of the violated constraint,
+  which you annotate in your changeset so that Ecto can convert the constraint violation into the correct
+  updated changeset when the constraint is hit during a `Ecto.Repo.update/2` or `Ecto.Repo.insert/2` operation.
+  Since we cannot get the name of the violated constraint back from SQLite3 at `INSERT` or `UPDATE` time,
+  there is no way to effectively use these changeset functions. This is a SQLite3 limitation.
+
+  See or [this GitHub issue](https://github.com/elixir-sqlite/ecto_sqlite3/issues/42) for more details.
+
   ### Schemaless queries
 
   Using [schemaless Ecto queries][7] will not work well with SQLite. This is because
