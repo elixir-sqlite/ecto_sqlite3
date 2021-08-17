@@ -1007,8 +1007,20 @@ defmodule Ecto.Adapters.SQLite3.Connection do
       :asc ->
         str
 
+      :asc_nulls_last ->
+        [str | " ASC NULLS LAST"]
+
+      :asc_nulls_first ->
+        [str | " ASC NULLS FIRST"]
+
       :desc ->
         [str | " DESC"]
+
+      :desc_nulls_last ->
+        [str | " DESC NULLS LAST"]
+
+      :desc_nulls_first ->
+        [str | " DESC NULLS FIRST"]
 
       _ ->
         raise Ecto.QueryError,

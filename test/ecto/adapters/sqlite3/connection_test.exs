@@ -534,19 +534,23 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     assert all(query) == ~s{SELECT s0."x" FROM "schema" AS s0}
 
-    for dir <- [:asc_nulls_first, :asc_nulls_last, :desc_nulls_first, :desc_nulls_last] do
-      assert_raise(
-        Ecto.QueryError,
-        ~r"#{dir} is not supported in ORDER BY in SQLite3",
-        fn ->
-          Schema
-          |> order_by([r], [{^dir, r.x}])
-          |> select([r], r.x)
-          |> plan()
-          |> all()
-        end
-      )
-    end
+    query =
+      Schema
+      |> order_by([r], asc_nulls_first: r.x, desc_nulls_first: r.y)
+      |> select([r], r.x)
+      |> plan()
+
+    assert all(query) ==
+             ~s{SELECT s0."x" FROM "schema" AS s0 ORDER BY s0."x" ASC NULLS FIRST, s0."y" DESC NULLS FIRST}
+
+    query =
+      Schema
+      |> order_by([r], asc_nulls_last: r.x, desc_nulls_last: r.y)
+      |> select([r], r.x)
+      |> plan()
+
+    assert all(query) ==
+             ~s{SELECT s0."x" FROM "schema" AS s0 ORDER BY s0."x" ASC NULLS LAST, s0."y" DESC NULLS LAST}
   end
 
   test "union and union all" do
