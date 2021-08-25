@@ -5,7 +5,12 @@ All notable changes will be documented in this file.
 The format is based on [Keep a Changelog][keepachangelog], and this project
 adheres to [Semantic Versioning][semver].
 
-## [Unreleased]
+## [0.6.0] - 2021-08-25
+### Changed
+- `:utc_datetime` handling has been updated to completely remove the `Z` supplied and
+  made to conform closer to what is done for Postgrex and MyXQL. https://github.com/elixir-sqlite/ecto_sqlite3/pull/49
+- Updated error message for OTP24 https://github.com/elixir-sqlite/ecto_sqlite3/pull/47
+
 
 ## [0.5.7] - 2021-08-17
 ### Changed
