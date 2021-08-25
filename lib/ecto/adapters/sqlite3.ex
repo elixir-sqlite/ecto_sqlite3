@@ -241,22 +241,17 @@ defmodule Ecto.Adapters.SQLite3 do
 
   @impl Ecto.Adapter
   def loaders(:utc_datetime_usec, type) do
-    [&Codec.datetime_decode/1, type]
+    [&Codec.utc_datetime_decode/1, type]
   end
 
   @impl Ecto.Adapter
   def loaders(:utc_datetime, type) do
-    [&Codec.datetime_decode/1, type]
+    [&Codec.utc_datetime_decode/1, type]
   end
 
   @impl Ecto.Adapter
   def loaders(:naive_datetime, type) do
     [&Codec.naive_datetime_decode/1, type]
-  end
-
-  @impl Ecto.Adapter
-  def loaders(:datetime, type) do
-    [&Codec.datetime_decode/1, type]
   end
 
   @impl Ecto.Adapter
@@ -327,7 +322,22 @@ defmodule Ecto.Adapters.SQLite3 do
   end
 
   @impl Ecto.Adapter
+  def dumpers(:utc_datetime, type) do
+    [type, &Codec.utc_datetime_encode/1]
+  end
+
+  @impl Ecto.Adapter
+  def dumpers(:utc_datetime_usec, type) do
+    [type, &Codec.utc_datetime_encode/1]
+  end
+
+  @impl Ecto.Adapter
   def dumpers(:naive_datetime, type) do
+    [type, &Codec.naive_datetime_encode/1]
+  end
+
+  @impl Ecto.Adapter
+  def dumpers(:naive_datetime_usec, type) do
     [type, &Codec.naive_datetime_encode/1]
   end
 
