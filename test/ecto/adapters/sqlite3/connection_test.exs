@@ -2370,9 +2370,20 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
   end
 
   test "create table with an unsupported type" do
+    msg =
+      if :erlang.system_info(:otp_release) >= '24' do
+        """
+        errors were found at the given arguments:
+
+          * 1st argument: not an atom
+        """
+      else
+        "argument error"
+      end
+
     assert_raise(
       ArgumentError,
-      "argument error",
+      msg,
       fn ->
         {:create, table(:posts),
          [
