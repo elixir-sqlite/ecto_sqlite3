@@ -89,7 +89,7 @@ defmodule Ecto.Integration.MathTest do
 
       query = from(p in Product, select: fragment("acos(?)", p.price))
 
-      [nil] = TestRepo.all(query)
+      assert [nil] = TestRepo.all(query)
     end
 
     test "decimal below -1.0" do
@@ -98,7 +98,7 @@ defmodule Ecto.Integration.MathTest do
 
       query = from(p in Product, select: fragment("acos(?)", p.price))
 
-      [nil] = TestRepo.all(query)
+      assert [nil] = TestRepo.all(query)
     end
 
     test "decimal at 0.3" do
@@ -108,7 +108,8 @@ defmodule Ecto.Integration.MathTest do
       query = from(p in Product, select: fragment("acos(?)", p.price))
 
       # Right now, sqlite will return the acos function as an IEEE float
-      [1.2661036727794992] = TestRepo.all(query)
+      [num] = TestRepo.all(query)
+      assert_in_delta num, 1.266103672779499, 0.000000000000001
     end
 
     test "float above 1.0" do
@@ -116,7 +117,7 @@ defmodule Ecto.Integration.MathTest do
 
       query = from(v in Vec3f, select: fragment("acos(?)", v.x))
 
-      [nil] = TestRepo.all(query)
+      assert [nil] = TestRepo.all(query)
     end
 
     test "float below -1.0" do
@@ -124,7 +125,7 @@ defmodule Ecto.Integration.MathTest do
 
       query = from(v in Vec3f, select: fragment("acos(?)", v.x))
 
-      [nil] = TestRepo.all(query)
+      assert [nil] = TestRepo.all(query)
     end
 
     test "float at 0.3" do
@@ -132,7 +133,9 @@ defmodule Ecto.Integration.MathTest do
 
       query = from(v in Vec3f, select: fragment("acos(?)", v.x))
 
-      [1.2661036727794992] = TestRepo.all(query)
+      [num] = TestRepo.all(query)
+
+      assert_in_delta num, 1.266103672779499, 0.000000000000001
     end
   end
 end
