@@ -83,25 +83,21 @@ defmodule Ecto.Adapters.SQLite3.CodecTest do
 
   describe ".utc_datetime_decode/1" do
     test "nil" do
-      {:ok, nil} = Codec.utc_datetime_decode(nil)
+      assert {:ok, nil} = Codec.utc_datetime_decode(nil)
     end
 
     test "string" do
-      {:ok, ~U[2021-08-25 10:58:59Z]} = Codec.utc_datetime_decode("2021-08-25 10:58:59")
+      {:ok, dt} = DateTime.from_naive(~N[2021-08-25 10:58:59Z], "Etc/UTC")
+      assert {:ok, ^dt} = Codec.utc_datetime_decode("2021-08-25 10:58:59")
 
-      {:ok, ~U[2021-08-25 10:58:59.111111Z]} =
-        Codec.utc_datetime_decode("2021-08-25 10:58:59.111111")
-
-      {:ok, ~U[2021-08-25 10:58:59.111111Z]} =
-        Codec.utc_datetime_decode("2021-08-25 10:58:59.111111Z")
+      {:ok, dt} = DateTime.from_naive(~N[2021-08-25 10:58:59.111111], "Etc/UTC")
+      assert {:ok, ^dt} = Codec.utc_datetime_decode("2021-08-25 10:58:59.111111")
     end
 
     test "ignores timezone offset if present" do
-      {:ok, ~U[2021-08-25 10:58:59.111111Z]} =
-        Codec.utc_datetime_decode("2021-08-25 10:58:59.111111Z")
-
-      {:ok, ~U[2021-08-25 10:58:59.111111Z]} =
-        Codec.utc_datetime_decode("2021-08-25 10:58:59.111111+02:30")
+      {:ok, dt} = DateTime.from_naive(~N[2021-08-25 10:58:59.111111], "Etc/UTC")
+      assert {:ok, ^dt} = Codec.utc_datetime_decode("2021-08-25 10:58:59.111111Z")
+      assert {:ok, ^dt} = Codec.utc_datetime_decode("2021-08-25 10:58:59.111111+02:30")
     end
   end
 end
