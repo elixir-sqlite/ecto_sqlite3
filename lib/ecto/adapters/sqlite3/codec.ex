@@ -43,17 +43,13 @@ defmodule Ecto.Adapters.SQLite3.Codec do
 
   def decimal_decode(_), do: :error
 
-  def datetime_decode(nil), do: {:ok, nil}
+  def utc_datetime_decode(nil), do: {:ok, nil}
 
-  def datetime_decode(val) do
-    # TODO: Should we be preserving the timezone? SQLite3 stores everything
-    #       shifted to UTC. sqlite_ecto2 used a custom field type "TEXT_DATETIME"
-    #       to preserve the original string inserted. But I don't know if that
-    #       is desirable or not.
-    #
-    #       @warmwaffles 2021-02-28
-    case DateTime.from_iso8601(val) do
-      {:ok, dt, _offset} -> {:ok, dt}
+  def utc_datetime_decode(val) do
+    with {:ok, naive} <- NaiveDateTime.from_iso8601(val),
+         {:ok, dt} <- DateTime.from_naive(naive, "Etc/UTC") do
+      {:ok, dt}
+    else
       _ -> :error
     end
   end
@@ -93,6 +89,11 @@ defmodule Ecto.Adapters.SQLite3.Codec do
 
   def time_encode(value) do
     {:ok, value}
+  end
+
+  # Ecto does check this already, so there should be no need to handle errors
+  def utc_datetime_encode(%{time_zone: "Etc/UTC"} = value) do
+    {:ok, NaiveDateTime.to_iso8601(value)}
   end
 
   def naive_datetime_encode(value) do
