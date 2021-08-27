@@ -7,44 +7,49 @@ on:
       - main
 
 jobs:
+  lint:
+    runs-on: ubuntu-20.04
+    env:
+      MIX_ENV: test
+    name: Lint
+    steps:
+      - uses: actions/checkout@v2
+      - uses: erlef/setup-elixir@v1
+        with:
+          otp-version: "24"
+          elixir-version: "1.12"
+      - run: mix deps.get && mix deps.unlock --check-unused
+      - run: mix format --check-formatted
   test:
     runs-on: ubuntu-20.04
     env:
       MIX_ENV: test
+    name: Ubuntu / OTP ${{matrix.otp}} / Elixir ${{matrix.elixir}}
     strategy:
       fail-fast: false
       matrix:
         include:
-          - pair:
-              elixir: 1.8.2
-              otp: 20.3.8.26
-          - pair:
-              elixir: 1.11.4
-              otp: 23.2.7
-            lint: lint
+          - elixir: "1.12"
+            otp: "24"
+          - elixir: "1.12"
+            otp: "23"
+          - elixir: "1.11"
+            otp: "24"
+          - elixir: "1.11"
+            otp: "23"
+          - elixir: "1.10"
+            otp: "24"
+          - elixir: "1.10"
+            otp: "23"
+          - elixir: "1.8"
+            otp: "20"
     steps:
       - uses: actions/checkout@v2
-
       - uses: erlef/setup-elixir@v1
         with:
-          otp-version: ${{matrix.pair.otp}}
-          elixir-version: ${{matrix.pair.elixir}}
-
-      - name: Install Dependencies
-        run: mix deps.get --only test
-
-      - run: mix format --check-formatted
-        if: ${{ matrix.lint }}
-
-      - run: mix deps.get && mix deps.unlock --check-unused
-        if: ${{ matrix.lint }}
-
+          otp-version: ${{matrix.otp}}
+          elixir-version: ${{matrix.elixir}}
+      - run: mix deps.get --only test
       - run: mix deps.compile
-
-      # test/support throwing compile errors, but will soon be refactored
-      # - run: mix compile --warnings-as-errors
-      #   if: ${{ matrix.lint }}
-
-      - run: mix test --trace
-
-      - run: EXQLITE_INTEGRATION=true mix test --trace
+      - run: mix compile
+      - run: mix test
