@@ -42,7 +42,7 @@ jobs:
           - elixir: "1.10"
             otp: "23"
           - elixir: "1.8"
-            otp: "20"
+            otp: "21"
     steps:
       - uses: actions/checkout@v2
       - uses: erlef/setup-elixir@v1
