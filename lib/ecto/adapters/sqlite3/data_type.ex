@@ -12,14 +12,9 @@ defmodule Ecto.Adapters.SQLite3.DataType do
   def column_type(:serial, _opts), do: "INTEGER"
   def column_type(:bigserial, _opts), do: "INTEGER"
   def column_type(:bigint, _opts), do: "INTEGER"
-  # TODO: We should make this configurable
-  def column_type(:binary_id, _opts), do: "TEXT"
   def column_type(:string, _opts), do: "TEXT"
   def column_type(:float, _opts), do: "NUMERIC"
   def column_type(:binary, _opts), do: "BLOB"
-  # TODO: We should make this configurable
-  # SQLite3 does not support uuid
-  def column_type(:uuid, _opts), do: "TEXT"
   def column_type(:map, _opts), do: "JSON"
   def column_type(:array, _opts), do: "JSON"
   def column_type({:map, _}, _opts), do: "JSON"
@@ -39,6 +34,20 @@ defmodule Ecto.Adapters.SQLite3.DataType do
       "DECIMAL(#{precision},#{scale})"
     else
       "DECIMAL"
+    end
+  end
+
+  def column_type(:binary_id, _opts) do
+    case Application.get_env(:ecto_sqlite3, :binary_id_type, :string) do
+      :string -> "TEXT_UUID"
+      :binary -> "UUID"
+    end
+  end
+
+  def column_type(:uuid, _opts) do
+    case Application.get_env(:ecto_sqlite3, :uuid_type, :string) do
+      :string -> "TEXT_UUID"
+      :binary -> "UUID"
     end
   end
 

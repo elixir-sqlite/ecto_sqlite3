@@ -947,15 +947,13 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
     assert all(query) == ~s{SELECT 1 FROM "schema" AS s0 WHERE (s0."foo" = (0 + 123.0))}
   end
 
-  # TODO: We need to determine what format to store the UUID. Is it Text or binary 16?
-  #       Are we going for readability or for compactness?
   test "tagged type" do
     query =
       Schema
       |> select([], type(^"601d74e4-a8d3-4b6e-8365-eddb4c893327", Ecto.UUID))
       |> plan()
 
-    assert all(query) == ~s{SELECT CAST(? AS TEXT) FROM "schema" AS s0}
+    assert all(query) == ~s{SELECT CAST(? AS TEXT_UUID) FROM "schema" AS s0}
   end
 
   test "string type" do
