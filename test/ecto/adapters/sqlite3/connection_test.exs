@@ -235,7 +235,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
     assert all(query) ==
              """
              WITH RECURSIVE "tree" AS \
-             (SELECT c0."id" AS "id", 1 AS "depth" FROM "categories" AS c0 WHERE (c0."parent_id" IS NULL) \
+             (SELECT sc0."id" AS "id", 1 AS "depth" FROM "categories" AS sc0 WHERE (sc0."parent_id" IS NULL) \
              UNION ALL \
              SELECT c0."id", t1."depth" + 1 FROM "categories" AS c0 \
              INNER JOIN "tree" AS t1 ON t1."id" = c0."parent_id") \
@@ -270,8 +270,8 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
     assert all(query) ==
              """
              WITH "comments_scope" AS (\
-             SELECT c0."entity_id" AS "entity_id", c0."text" AS "text" \
-             FROM "comments" AS c0 WHERE (c0."deleted_at" IS NULL)) \
+             SELECT sc0."entity_id" AS "entity_id", sc0."text" AS "text" \
+             FROM "comments" AS sc0 WHERE (sc0."deleted_at" IS NULL)) \
              SELECT p0."title", c1."text" \
              FROM "posts" AS p0 \
              INNER JOIN "comments_scope" AS c1 ON c1."entity_id" = p0."guid" \
@@ -325,7 +325,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
     assert update_all(query) ==
              """
              WITH "target_rows" AS \
-             (SELECT s0."id" AS "id" FROM "schema" AS s0 ORDER BY s0."id" LIMIT 10) \
+             (SELECT ss0."id" AS "id" FROM "schema" AS ss0 ORDER BY ss0."id" LIMIT 10) \
              UPDATE "schema" AS s0 \
              SET "x" = 123 \
              FROM "target_rows" AS t1 \
@@ -346,7 +346,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
     assert delete_all(query) ==
              """
              WITH "target_rows" AS \
-             (SELECT s0."id" AS "id" FROM "schema" AS s0 ORDER BY s0."id" LIMIT 10) \
+             (SELECT ss0."id" AS "id" FROM "schema" AS ss0 ORDER BY ss0."id" LIMIT 10) \
              DELETE \
              FROM "schema" AS s0\
              """
@@ -1208,7 +1208,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     assert all(query) ==
              """
-             WITH "cte1" AS (SELECT s0."id" AS "id", ? AS "smth" FROM "schema1" AS s0 WHERE (?)), \
+             WITH "cte1" AS (SELECT ss0."id" AS "id", ? AS "smth" FROM "schema1" AS ss0 WHERE (?)), \
              "cte2" AS (SELECT * FROM schema WHERE ?) \
              SELECT s0."id", ? FROM "schema" AS s0 INNER JOIN "schema2" AS s1 ON ? \
              INNER JOIN "schema2" AS s2 ON ? WHERE (?) AND (?) \

@@ -834,10 +834,14 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     ]
   end
 
-  defp cte_query(%Ecto.Query{} = query, _, _), do: ["(", all(query), ")"]
+  defp cte_query(%Ecto.Query{} = query, sources, parent_query) do
+    query = put_in(query.aliases[@parent_as], {parent_query, sources})
+    ["(", all(query, subquery_as_prefix(sources)), ")"]
+  end
 
-  defp cte_query(%QueryExpr{expr: expression}, sources, query),
-    do: expr(expression, sources, query)
+  defp cte_query(%QueryExpr{expr: expr}, sources, query) do
+    expr(expr, sources, query)
+  end
 
   defp update_fields(type, %{updates: updates} = query, sources) do
     fields =
@@ -1131,13 +1135,11 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     quote_name(field)
   end
 
-  def expr(
-        {{:., _, [{:parent_as, _, [{:&, _, [idx]}]}, field]}, _, []},
-        _sources,
-        query
-      )
+  # def expr({{:., _, [{:parent_as, _, [{:&, _, [idx]}]}, field]}, _, []}, _sources, query)
+  def expr({{:., _, [{:parent_as, _, [as]}, field]}, _, []}, _sources, query)
       when is_atom(field) do
-    {_, name, _} = elem(query.aliases[@parent_as], idx)
+    {ix, sources} = get_parent_sources_ix(query, as)
+    {_, name, _} = elem(sources, ix)
     [name, ?. | quote_name(field)]
   end
 
@@ -1197,8 +1199,8 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     [aggregate, " FILTER (WHERE ", expr(filter, sources, query), ?)]
   end
 
-  def expr(%Ecto.SubQuery{query: query}, sources, _query) do
-    query = put_in(query.aliases[@parent_as], sources)
+  def expr(%Ecto.SubQuery{query: query}, sources, parent_query) do
+    query = put_in(query.aliases[@parent_as], {parent_query, sources})
     [?(, all(query, subquery_as_prefix(sources)), ?)]
   end
 
@@ -1701,6 +1703,13 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   defp get_source(query, sources, ix, source) do
     {expression, name, _schema} = elem(sources, ix)
     {expression || expr(source, sources, query), name}
+  end
+
+  defp get_parent_sources_ix(query, as) do
+    case query.aliases[@parent_as] do
+      {%{aliases: %{^as => ix}}, sources} -> {ix, sources}
+      {%{} = parent, _sources} -> get_parent_sources_ix(parent, as)
+    end
   end
 
   defp quote_names(names), do: intersperse_map(names, ?,, &quote_name/1)
