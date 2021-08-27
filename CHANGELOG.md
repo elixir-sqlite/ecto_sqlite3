@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog][keepachangelog], and this project
 adheres to [Semantic Versioning][semver].
 
 ## [Unreleased]
+### Changed
+- Update dependencies to the latest.
+- Drop support for OTP 20. It is not supported by `telemetry` and won't compile. For now we will just support Elixir 1.8 and OTP 21.
 
 ## [0.6.1] - 2021-08-27
 ### Changed
