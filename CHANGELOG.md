@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog][keepachangelog], and this project
 adheres to [Semantic Versioning][semver].
 
 ## [Unreleased]
+
+## [0.6.1] - 2021-08-27
 ### Changed
 - UUID encoding for both `:binary_id` and `:uuid`/`Ecto.UUID` is now configurable
 - `:uuid`/`Ecto.UUID` is now encoded as a string by default
