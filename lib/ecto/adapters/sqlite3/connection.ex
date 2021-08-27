@@ -377,7 +377,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   end
 
   @impl true
-  def execute_ddl({:drop, %Table{} = table}) do
+  def execute_ddl({:drop, %Table{} = table, _mode}) do
     [
       [
         "DROP TABLE ",
@@ -387,7 +387,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   end
 
   @impl true
-  def execute_ddl({:drop_if_exists, %Table{} = table}) do
+  def execute_ddl({:drop_if_exists, %Table{} = table, _mode}) do
     [
       [
         "DROP TABLE IF EXISTS ",
@@ -449,7 +449,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   end
 
   @impl true
-  def execute_ddl({:drop, %Index{} = index}) do
+  def execute_ddl({:drop, %Index{} = index, _mode}) do
     [
       [
         "DROP INDEX ",
@@ -459,7 +459,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   end
 
   @impl true
-  def execute_ddl({:drop_if_exists, %Index{} = index}) do
+  def execute_ddl({:drop_if_exists, %Index{} = index, _mode}) do
     [
       [
         "DROP INDEX IF EXISTS ",
@@ -552,7 +552,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   end
 
   @impl true
-  def execute_ddl({:drop, %Index{} = index}) do
+  def execute_ddl({:drop, %Index{} = index, _mode}) do
     [
       [
         "DROP INDEX ",
@@ -562,7 +562,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   end
 
   @impl true
-  def execute_ddl({:drop_if_exists, %Index{} = index}) do
+  def execute_ddl({:drop_if_exists, %Index{} = index, _mode}) do
     [
       [
         "DROP INDEX IF EXISTS ",
@@ -572,12 +572,12 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   end
 
   @impl true
-  def execute_ddl({:drop, %Constraint{}}) do
+  def execute_ddl({:drop, %Constraint{}, _mode}) do
     raise ArgumentError, "SQLite3 does not support ALTER TABLE DROP CONSTRAINT."
   end
 
   @impl true
-  def execute_ddl({:drop_if_exists, %Constraint{}}) do
+  def execute_ddl({:drop_if_exists, %Constraint{}, _mode}) do
     raise ArgumentError, "SQLite3 does not support ALTER TABLE DROP CONSTRAINT."
   end
 

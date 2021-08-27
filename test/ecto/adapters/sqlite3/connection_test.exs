@@ -2381,13 +2381,13 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
   end
 
   test "drop table" do
-    drop = {:drop, table(:posts)}
+    drop = {:drop, table(:posts), :restrict}
 
     assert execute_ddl(drop) == [~s|DROP TABLE "posts"|]
   end
 
   test "drop table with prefixes" do
-    drop = {:drop, table(:posts, prefix: :foo)}
+    drop = {:drop, table(:posts, prefix: :foo), :restrict}
 
     assert execute_ddl(drop) == [~s|DROP TABLE "foo"."posts"|]
   end
@@ -2398,7 +2398,8 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       ~r/SQLite3 does not support ALTER TABLE DROP CONSTRAINT./,
       fn ->
         execute_ddl(
-          {:drop, constraint(:products, "price_must_be_positive", prefix: :foo)}
+          {:drop, constraint(:products, "price_must_be_positive", prefix: :foo),
+           :restrict}
         )
       end
     )
@@ -2411,7 +2412,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       fn ->
         execute_ddl(
           {:drop_if_exists,
-           constraint(:products, "price_must_be_positive", prefix: :foo)}
+           constraint(:products, "price_must_be_positive", prefix: :foo), :restrict}
         )
       end
     )
@@ -2656,23 +2657,25 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
   end
 
   test "drop index" do
-    drop = {:drop, index(:posts, [:id], name: "posts$main")}
+    drop = {:drop, index(:posts, [:id], name: "posts$main"), :restrict}
     assert execute_ddl(drop) == [~s|DROP INDEX "posts$main"|]
   end
 
   test "drop index with prefix" do
-    drop = {:drop, index(:posts, [:id], name: "posts$main", prefix: :foo)}
+    drop = {:drop, index(:posts, [:id], name: "posts$main", prefix: :foo), :restrict}
     assert execute_ddl(drop) == [~s|DROP INDEX "foo"."posts$main"|]
   end
 
   test "drop index if exists" do
-    drop = {:drop_if_exists, index(:posts, [:id], name: "posts$main")}
+    drop = {:drop_if_exists, index(:posts, [:id], name: "posts$main"), :restrict}
     assert execute_ddl(drop) == [~s|DROP INDEX IF EXISTS "posts$main"|]
   end
 
   test "drop index concurrently" do
     # NOTE: SQLite doesn't support CONCURRENTLY, so this isn't included in generated SQL.
-    drop = {:drop, index(:posts, [:id], name: "posts$main", concurrently: true)}
+    drop =
+      {:drop, index(:posts, [:id], name: "posts$main", concurrently: true), :restrict}
+
     assert execute_ddl(drop) == [~s|DROP INDEX "posts$main"|]
   end
 
