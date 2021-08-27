@@ -1,7 +1,17 @@
 defmodule Ecto.Adapters.SQLite3.DataTypeTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
 
   alias Ecto.Adapters.SQLite3.DataType
+
+  setup do
+    Application.put_env(:ecto_sqlite3, :binary_id_type, :string)
+    Application.put_env(:ecto_sqlite3, :uuid_type, :string)
+
+    on_exit(fn ->
+      Application.put_env(:ecto_sqlite3, :binary_id_type, :string)
+      Application.put_env(:ecto_sqlite3, :uuid_type, :string)
+    end)
+  end
 
   describe ".column_type/2" do
     test ":id is INTEGER" do
@@ -16,16 +26,24 @@ defmodule Ecto.Adapters.SQLite3.DataTypeTest do
       assert DataType.column_type(:bigserial, nil) == "INTEGER"
     end
 
-    test ":binary_id is TEXT" do
-      assert DataType.column_type(:binary_id, nil) == "TEXT"
+    test ":binary_id is TEXT_UUID OR UUID" do
+      assert DataType.column_type(:binary_id, nil) == "TEXT_UUID"
+
+      Application.put_env(:ecto_sqlite3, :binary_id_type, :binary)
+
+      assert DataType.column_type(:binary_id, nil) == "UUID"
     end
 
     test ":string is TEXT" do
       assert DataType.column_type(:string, nil) == "TEXT"
     end
 
-    test ":uuid is TEXT" do
-      assert DataType.column_type(:uuid, nil) == "TEXT"
+    test ":uuid is TEXT_UUID or UUID" do
+      assert DataType.column_type(:uuid, nil) == "TEXT_UUID"
+
+      Application.put_env(:ecto_sqlite3, :uuid_type, :binary)
+
+      assert DataType.column_type(:uuid, nil) == "UUID"
     end
 
     test ":map is JSON" do

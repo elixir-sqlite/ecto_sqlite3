@@ -284,6 +284,22 @@ defmodule Ecto.Adapters.SQLite3 do
     [&Codec.decimal_decode/1, type]
   end
 
+  @impl Ecto.Adapter
+  def loaders(:binary_id, type) do
+    case Application.get_env(:ecto_sqlite3, :binary_id_type, :string) do
+      :string -> [type]
+      :binary -> [Ecto.UUID, type]
+    end
+  end
+
+  @impl Ecto.Adapter
+  def loaders(:uuid, type) do
+    case Application.get_env(:ecto_sqlite3, :uuid_type, :string) do
+      :string -> []
+      :binary -> [type]
+    end
+  end
+
   # when we have an e.g., max(created_date) function
   # Ecto does not truly know the return type, hence :maybe
   # see Ecto.Query.Planner.collect_fields
@@ -314,6 +330,22 @@ defmodule Ecto.Adapters.SQLite3 do
   @impl Ecto.Adapter
   def dumpers(:decimal, type) do
     [type, &Codec.decimal_encode/1]
+  end
+
+  @impl Ecto.Adapter
+  def dumpers(:binary_id, type) do
+    case Application.get_env(:ecto_sqlite3, :binary_id_type, :string) do
+      :string -> [type]
+      :binary -> [type, Ecto.UUID]
+    end
+  end
+
+  @impl Ecto.Adapter
+  def dumpers(:uuid, type) do
+    case Application.get_env(:ecto_sqlite3, :uuid_type, :string) do
+      :string -> []
+      :binary -> [type]
+    end
   end
 
   @impl Ecto.Adapter
