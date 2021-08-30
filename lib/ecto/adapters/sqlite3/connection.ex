@@ -377,7 +377,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   end
 
   @impl true
-  def execute_ddl({:drop, %Table{} = table, _mode}) do
+  def execute_ddl({:drop, %Table{} = table}) do
     [
       [
         "DROP TABLE ",
@@ -387,13 +387,23 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   end
 
   @impl true
-  def execute_ddl({:drop_if_exists, %Table{} = table, _mode}) do
+  def execute_ddl({:drop, %Table{} = table, _mode}) do
+    execute_ddl({:drop, table})
+  end
+
+  @impl true
+  def execute_ddl({:drop_if_exists, %Table{} = table}) do
     [
       [
         "DROP TABLE IF EXISTS ",
         quote_table(table.prefix, table.name)
       ]
     ]
+  end
+
+  @impl true
+  def execute_ddl({:drop_if_exists, %Table{} = table, _mode}) do
+    execute_ddl({:drop_if_exists, table})
   end
 
   @impl true
@@ -449,7 +459,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   end
 
   @impl true
-  def execute_ddl({:drop, %Index{} = index, _mode}) do
+  def execute_ddl({:drop, %Index{} = index}) do
     [
       [
         "DROP INDEX ",
@@ -459,13 +469,23 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   end
 
   @impl true
-  def execute_ddl({:drop_if_exists, %Index{} = index, _mode}) do
+  def execute_ddl({:drop, %Index{} = index, _mode}) do
+    execute_ddl({:drop, index})
+  end
+
+  @impl true
+  def execute_ddl({:drop_if_exists, %Index{} = index}) do
     [
       [
         "DROP INDEX IF EXISTS ",
         quote_table(index.prefix, index.name)
       ]
     ]
+  end
+
+  @impl true
+  def execute_ddl({:drop_if_exists, %Index{} = index, _mode}) do
+    execute_ddl({:drop_if_exists, index})
   end
 
   @impl true
@@ -552,7 +572,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   end
 
   @impl true
-  def execute_ddl({:drop, %Index{} = index, _mode}) do
+  def execute_ddl({:drop, %Index{} = index}) do
     [
       [
         "DROP INDEX ",
@@ -562,13 +582,23 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   end
 
   @impl true
-  def execute_ddl({:drop_if_exists, %Index{} = index, _mode}) do
+  def execute_ddl({:drop, %Index{} = index, _mode}) do
+    execute_ddl({:drop, index})
+  end
+
+  @impl true
+  def execute_ddl({:drop_if_exists, %Index{} = index}) do
     [
       [
         "DROP INDEX IF EXISTS ",
         quote_table(index.prefix, index.name)
       ]
     ]
+  end
+
+  @impl true
+  def execute_ddl({:drop_if_exists, %Index{} = index, _mode}) do
+    execute_ddl({:drop_if_exists, index})
   end
 
   @impl true
