@@ -53,3 +53,4 @@ jobs:
       - run: mix deps.compile
       - run: mix compile
       - run: mix test
+      - run: EXQLITE_INTEGRATION=true mix test --trace
