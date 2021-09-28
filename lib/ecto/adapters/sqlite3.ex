@@ -240,6 +240,11 @@ defmodule Ecto.Adapters.SQLite3 do
   end
 
   @impl Ecto.Adapter
+  def loaders(:time, type) do
+    [&Codec.time_decode/1, type]
+  end
+
+  @impl Ecto.Adapter
   def loaders(:utc_datetime_usec, type) do
     [&Codec.utc_datetime_decode/1, type]
   end
