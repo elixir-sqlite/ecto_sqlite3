@@ -72,6 +72,15 @@ defmodule Ecto.Adapters.SQLite3.Codec do
     end
   end
 
+  def time_decode(nil), do: {:ok, nil}
+
+  def time_decode(value) do
+    case Time.from_iso8601(value) do
+      {:ok, _time} = result -> result
+      {:error, _} -> :error
+    end
+  end
+
   def json_encode(value) do
     Application.get_env(:ecto_sqlite3, :json_library, Jason).encode(value)
   end

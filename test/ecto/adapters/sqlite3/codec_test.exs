@@ -81,6 +81,32 @@ defmodule Ecto.Adapters.SQLite3.CodecTest do
     end
   end
 
+  describe ".time_decode/1" do
+    test "nil" do
+      {:ok, nil} = Codec.time_decode(nil)
+    end
+
+    test "string" do
+      {:ok, time} = Time.from_iso8601("23:50:07")
+      assert {:ok, ^time} = Codec.time_decode("23:50:07")
+
+      {:ok, time} = Time.from_iso8601("23:50:07Z")
+      assert {:ok, ^time} = Codec.time_decode("23:50:07Z")
+
+      {:ok, time} = Time.from_iso8601("T23:50:07Z")
+      assert {:ok, ^time} = Codec.time_decode("T23:50:07Z")
+
+      {:ok, time} = Time.from_iso8601("23:50:07,0123456")
+      assert {:ok, ^time} = Codec.time_decode("23:50:07,0123456")
+
+      {:ok, time} = Time.from_iso8601("23:50:07.0123456")
+      assert {:ok, ^time} = Codec.time_decode("23:50:07.0123456")
+
+      {:ok, time} = Time.from_iso8601("23:50:07.123Z")
+      assert {:ok, ^time} = Codec.time_decode("23:50:07.123Z")
+    end
+  end
+
   describe ".utc_datetime_decode/1" do
     test "nil" do
       assert {:ok, nil} = Codec.utc_datetime_decode(nil)
