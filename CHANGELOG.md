@@ -7,6 +7,10 @@ adheres to [Semantic Versioning][semver].
 
 ## [Unreleased]
 
+## [0.7.2] - 2021-09-29
+### Added
+- Add `:time` decode support. [#58](https://github.com/elixir-sqlite/ecto_sqlite3/pull/58)
+
 ## [0.7.1] - 2021-08-30
 ### Fixed
 - Backport of default drops to `:restrict` are now backwards compatible with older versions of `ecto_sql`. We don't really have support for `drop index ... cascade` as it is not in the grammer of sqlite.
