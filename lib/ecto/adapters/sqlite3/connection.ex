@@ -198,27 +198,14 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     cte = cte(query, sources)
     {from, name} = get_source(query, sources, 0, source)
 
-    fields =
-      if prefix do
-        update_fields(:on_conflict, query, sources)
-      else
-        update_fields(:update, query, sources)
-      end
-
     # TODO: Add support for `update or rollback foo`
 
-    {join, wheres} = using_join(query, :update_all, "FROM", sources)
     prefix = prefix || ["UPDATE ", from, " AS ", name, " SET "]
+    fields = update_fields(query, sources)
+    {join, wheres} = using_join(query, :update_all, "FROM", sources)
     where = where(%{query | wheres: wheres ++ query.wheres}, sources)
 
-    [
-      cte,
-      prefix,
-      fields,
-      join,
-      where,
-      returning(query, sources)
-    ]
+    [cte, prefix, fields, join, where | returning(query, sources)]
   end
 
   @impl true
@@ -661,41 +648,27 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   ## Query generation
   ##
 
-  defp on_conflict({:raise, _, []}, _header), do: []
-
-  defp on_conflict({:nothing, _, targets}, _header) do
-    [" ON CONFLICT ", conflict_target(targets) | "DO NOTHING"]
-  end
-
-  defp on_conflict({:replace_all, _, {:constraint, _}}, _header) do
+  defp on_conflict({:raise, _, []}, _header),
+    do: []
+  defp on_conflict({:nothing, _, targets}, _header),
+    do: [" ON CONFLICT ", conflict_target(targets) | "DO NOTHING"]
+  defp on_conflict({:replace_all, _, {:constraint, _}}, _header), do:
     raise ArgumentError, "Upsert in SQLite3 does not support ON CONSTRAINT"
-  end
+  defp on_conflict({fields, _, targets}, _header) when is_list(fields),
+    do: [" ON CONFLICT ", conflict_target!(targets), "DO " | replace(fields)]
+  defp on_conflict({query, _, targets}, _header),
+    do: [" ON CONFLICT ", conflict_target!(targets), "DO " | update_all(query, "UPDATE SET ")]
 
-  defp on_conflict({:replace_all, _, []}, _header) do
-    raise ArgumentError, "Upsert in SQLite3 requires :conflict_target"
-  end
+  defp conflict_target!([]),
+    do: error!(nil, "the :conflict_target option is required on upserts by SQLite3")
+  defp conflict_target!(target),
+    do: conflict_target(target)
 
-  defp on_conflict({:replace_all, _, targets}, header) do
-    [" ON CONFLICT ", conflict_target(targets), "DO " | replace(header)]
-  end
-
-  defp on_conflict({fields, _, targets}, _header) when is_list(fields) do
-    [" ON CONFLICT ", conflict_target(targets), "DO " | replace(fields)]
-  end
-
-  defp on_conflict({query, _, targets}, _header) do
-    [
-      " ON CONFLICT ",
-      conflict_target(targets),
-      "DO " | update_all(query, "UPDATE SET ")
-    ]
-  end
-
-  defp conflict_target([]), do: ""
-
-  defp conflict_target(targets) do
-    [?(, intersperse_map(targets, ?,, &quote_name/1), ?), ?\s]
-  end
+  defp conflict_target({:unsafe_fragment, fragment}),
+    do: [fragment, ?\s]
+  defp conflict_target([]), do: []
+  defp conflict_target(targets),
+      do: [?(, quote_names(targets), ?), ?\s]
 
   defp replace(fields) do
     [
@@ -873,20 +846,11 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     expr(expr, sources, query)
   end
 
-  defp update_fields(type, %{updates: updates} = query, sources) do
-    fields =
-      for(
-        %{expr: expression} <- updates,
-        {op, kw} <- expression,
-        {key, value} <- kw,
-        do: update_op(op, update_key(type, key, query, sources), value, sources, query)
-      )
-
-    Enum.intersperse(fields, ", ")
-  end
-
-  defp update_key(_kind, key, _query, _sources) do
-    quote_name(key)
+  defp update_fields(%{updates: updates} = query, sources) do
+    for(%{expr: expr} <- updates,
+    {op, kw} <- expr,
+    {key, value} <- kw,
+    do: update_op(op, key, value, sources, query)) |> Enum.intersperse(", ")
   end
 
   defp update_op(:set, quoted_key, value, sources, query) do
@@ -1800,5 +1764,12 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     value
     |> escape_string()
     |> :binary.replace("\"", "\\\"", [:global])
+  end
+
+  defp error!(nil, message) do
+    raise ArgumentError, message
+  end
+  defp error!(query, message) do
+    raise Ecto.QueryError, query: query, message: message
   end
 end
