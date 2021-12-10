@@ -1366,6 +1366,12 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     ["(0 + ", Float.to_string(literal), ?)]
   end
 
+  def expr(expr, _sources, query) do
+    raise Ecto.QueryError,
+      query: query,
+      message: "unsupported expression #{inspect(expr)}"
+  end
+
   def interval(_, "microsecond", _sources) do
     raise ArgumentError,
           "SQLite does not support microsecond precision in datetime intervals"
