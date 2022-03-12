@@ -37,5 +37,9 @@ defmodule EctoSQLite3.Integration.Migration do
       add(:y, :float)
       add(:z, :float)
     end
+
+    create table(:settings) do
+      add(:properties, :map)
+    end
   end
 end
