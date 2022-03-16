@@ -1,54 +1,60 @@
 name: CI
 
 on:
-  pull_request:
   push:
     branches:
-      - main
+      - "*"
 
 jobs:
   lint:
-    runs-on: ubuntu-20.04
+    runs-on: ${{ matrix.os }}
     env:
-      MIX_ENV: test
+      MIX_ENV: dev
     name: Lint
+    strategy:
+      matrix:
+        os: ["ubuntu-20.04"]
+        elixir: ["1.13"]
+        otp: ["24"]
     steps:
       - uses: actions/checkout@v2
-      - uses: erlef/setup-elixir@v1
+      - uses: erlef/setup-beam@v1
         with:
-          otp-version: "24"
-          elixir-version: "1.12"
-      - run: mix deps.get && mix deps.unlock --check-unused
+          otp-version: ${{ matrix.otp }}
+          elixir-version: ${{ matrix.elixir }}
+      - uses: actions/cache@v2
+        with:
+          path: deps
+          key: ${{ matrix.os }}-otp_${{ matrix.otp }}-elixir_${{ matrix.elixir }}-mix_${{ hashFiles('**/mix.lock') }}
+          restore-keys: ${{ matrix.os }}-otp_${{ matrix.otp }}-elixir_${{ matrix.elixir }}-mix_
+      - run: mix deps.get
+      - run: mix deps.compile
       - run: mix format --check-formatted
+      - run: mix deps.unlock --check-unused
+      - run: mix credo --strict --all
+
   test:
-    runs-on: ubuntu-20.04
+    runs-on: ${{ matrix.os }}
+    name: Test Elixir ${{ matrix.elixir }}, OTP ${{ matrix.otp }}, OS ${{ matrix.os }}
     env:
       MIX_ENV: test
-    name: Ubuntu / OTP ${{matrix.otp}} / Elixir ${{matrix.elixir}}
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - elixir: "1.12"
-            otp: "24"
-          - elixir: "1.12"
-            otp: "23"
-          - elixir: "1.11"
-            otp: "24"
-          - elixir: "1.11"
-            otp: "23"
-          - elixir: "1.10"
-            otp: "24"
-          - elixir: "1.10"
-            otp: "23"
-          - elixir: "1.8"
-            otp: "21"
+        os: ["ubuntu-20.04"]
+        elixir: ["1.13", "1.12", "1.11"]
+        otp: ["24", "23", "22"]
     steps:
       - uses: actions/checkout@v2
-      - uses: erlef/setup-elixir@v1
+      - uses: erlef/setup-beam@v1
         with:
-          otp-version: ${{matrix.otp}}
-          elixir-version: ${{matrix.elixir}}
+          otp-version: ${{ matrix.otp }}
+          elixir-version: ${{ matrix.elixir }}
+      - uses: actions/cache@v2
+        with:
+          path: deps
+          key: ${{ matrix.os }}-otp_${{ matrix.otp }}-elixir_${{ matrix.elixir }}-mix_${{ hashFiles('**/mix.lock') }}
+          restore-keys: ${{ matrix.os }}-otp_${{ matrix.otp }}-elixir_${{ matrix.elixir }}-mix_
       - run: mix deps.get --only test
       - run: mix deps.compile
       - run: mix compile
