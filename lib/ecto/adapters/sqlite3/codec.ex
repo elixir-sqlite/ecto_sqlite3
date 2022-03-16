@@ -81,6 +81,8 @@ defmodule Ecto.Adapters.SQLite3.Codec do
     end
   end
 
+  def json_encode(value) when is_bitstring(value), do: {:ok, value}
+
   def json_encode(value) do
     Application.get_env(:ecto_sqlite3, :json_library, Jason).encode(value)
   end
