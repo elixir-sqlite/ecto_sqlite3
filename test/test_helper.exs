@@ -18,8 +18,10 @@ Application.put_env(:ecto_sqlite3, TestRepo,
 defmodule Ecto.Integration.Case do
   use ExUnit.CaseTemplate
 
+  alias Ecto.Adapters.SQL.Sandbox
+
   setup do
-    :ok = Ecto.Adapters.SQL.Sandbox.checkout(TestRepo)
+    :ok = Sandbox.checkout(TestRepo)
     # on_exit(fn -> Ecto.Adapters.SQL.Sandbox.checkin(TestRepo) end)
   end
 end

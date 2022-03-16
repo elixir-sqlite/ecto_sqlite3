@@ -165,12 +165,14 @@ defmodule Ecto.Adapters.SQLite3 do
   def storage_down(options) do
     db_path = Keyword.fetch!(options, :database)
 
-    with :ok <- File.rm(db_path) do
-      File.rm(db_path <> "-shm")
-      File.rm(db_path <> "-wal")
-      :ok
-    else
-      _ -> {:error, :already_down}
+    case File.rm(db_path) do
+      :ok ->
+        File.rm(db_path <> "-shm")
+        File.rm(db_path <> "-wal")
+        :ok
+
+      _otherwise ->
+        {:error, :already_down}
     end
   end
 
@@ -194,7 +196,7 @@ defmodule Ecto.Adapters.SQLite3 do
   end
 
   @impl Ecto.Adapter.Migration
-  def supports_ddl_transaction?(), do: false
+  def supports_ddl_transaction?, do: false
 
   @impl Ecto.Adapter.Migration
   def lock_for_migrations(_meta, _options, fun) do

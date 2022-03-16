@@ -1,10 +1,12 @@
 defmodule EctoSQLite3.Integration.Account do
+  @moduledoc false
+
   use Ecto.Schema
 
   import Ecto.Changeset
 
-  alias EctoSQLite3.Integration.User
   alias EctoSQLite3.Integration.Product
+  alias EctoSQLite3.Integration.User
 
   schema "accounts" do
     field(:name, :string)
@@ -24,6 +26,8 @@ defmodule EctoSQLite3.Integration.Account do
 end
 
 defmodule EctoSQLite3.Integration.User do
+  @moduledoc false
+
   use Ecto.Schema
 
   import Ecto.Changeset
@@ -46,6 +50,8 @@ defmodule EctoSQLite3.Integration.User do
 end
 
 defmodule EctoSQLite3.Integration.AccountUser do
+  @moduledoc false
+
   use Ecto.Schema
 
   import Ecto.Changeset
@@ -68,6 +74,8 @@ defmodule EctoSQLite3.Integration.AccountUser do
 end
 
 defmodule EctoSQLite3.Integration.Product do
+  @moduledoc false
+
   use Ecto.Schema
 
   import Ecto.Changeset
@@ -104,6 +112,8 @@ defmodule EctoSQLite3.Integration.Product do
 end
 
 defmodule EctoSQLite3.Integration.Vec3f do
+  @moduledoc false
+
   use Ecto.Schema
 
   schema "vec3f" do
@@ -114,7 +124,10 @@ defmodule EctoSQLite3.Integration.Vec3f do
 end
 
 defmodule EctoSQLite3.Integration.Setting do
+  @moduledoc false
+
   use Ecto.Schema
+
   import Ecto.Changeset
 
   schema "settings" do

@@ -1,13 +1,12 @@
 defmodule Ecto.Adapters.SQLite3.ConnectionTest do
   use ExUnit.Case
 
-  alias Ecto.Adapters.SQLite3.Connection
   alias Ecto.Adapters.SQLite3
-  # alias Ecto.Migration.Table
+  alias Ecto.Adapters.SQLite3.Connection
+  alias Ecto.Migration.Reference
 
   import Ecto.Query
   import Ecto.Migration, only: [table: 1, table: 2, index: 2, index: 3, constraint: 3]
-  alias Ecto.Migration.Reference
 
   defmodule Comment do
     use Ecto.Schema
@@ -2026,35 +2025,6 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
              VALUES (?,?) \
              ON CONFLICT ("x","y") DO NOTHING\
              """
-
-    # For :update
-    # update =
-    #   from("schema", update: [set: [z: "foo"]])
-    #   |> plan(:update_all)
-    #   |> all()
-    # query = insert(nil, "schema", [:x, :y], [[:x, :y]], {update, [], [:x, :y]}, [:z])
-    # assert query == ~s{INSERT INTO schema (x,y) VALUES (?,?) ON CONFLICT (x,y) DO UPDATE SET z = 'foo'}
-
-    # update =
-    #   from("schema", update: [set: [z: ^"foo"]], where: [w: true])
-    #   |> plan(:update_all)
-    #   |> all()
-    # query = insert(nil, "schema", [:x, :y], [[:x, :y]], {update, [], [:x, :y]}, [:z])
-    # assert query =  ~s{INSERT INTO schema (x,y) VALUES (?,?) ON CONFLICT (x,y) DO UPDATE SET z = ? WHERE (schema.w = 1)}
-
-    # update =
-    #   from("schema", update: [set: [z: "foo"]])
-    #   |> plan(:update_all)
-    #   |> all()
-    # query = insert(nil, "schema", [:x, :y], [[:x, :y]], {update, [], [:x, :y]}, [:z])
-    # assert query = ~s{INSERT INTO schema (x,y) VALUES (?,?) ON CONFLICT (x,y) DO UPDATE SET z = 'foo'}
-
-    # update =
-    #   from("schema", update: [set: [z: ^"foo"]], where: [w: true])
-    #   |> plan(:update_all)
-    #   |> all()
-    # query = insert(nil, "schema", [:x, :y], [[:x, :y]], {update, [], [:x, :y]}, [:z])
-    # assert query = ~s{INSERT INTO schema (x,y) VALUES (?,?) ON CONFLICT (x,y) DO UPDATE SET z = ? WHERE (schema.w = 1)}
 
     # For :replace_all
     assert_raise(

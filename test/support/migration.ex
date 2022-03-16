@@ -1,4 +1,6 @@
 defmodule EctoSQLite3.Integration.Migration do
+  @moduledoc false
+
   use Ecto.Migration
 
   def change do
