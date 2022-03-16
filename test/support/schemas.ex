@@ -112,3 +112,16 @@ defmodule EctoSQLite3.Integration.Vec3f do
     field(:z, :float)
   end
 end
+
+defmodule EctoSQLite3.Integration.Setting do
+  use Ecto.Schema
+  import Ecto.Changeset
+
+  schema "settings" do
+    field(:properties, :map)
+  end
+
+  def changeset(struct, attrs) do
+    cast(struct, attrs, [:properties])
+  end
+end
