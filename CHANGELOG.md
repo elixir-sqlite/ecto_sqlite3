@@ -7,6 +7,10 @@ adheres to [Semantic Versioning][semver].
 
 ## [Unreleased]
 
+## [0.7.4] - 2022-03-16
+### Fixed
+- Fixed double encoding of a string when converting to json. [#65](https://github.com/elixir-sqlite/ecto_sqlite3/pull/65)
+
 
 ## [0.7.3] - 2022-01-21
 ### Added
@@ -84,7 +88,8 @@ adheres to [Semantic Versioning][semver].
 
 [keepachangelog]: <https://keepachangelog.com/en/1.0.0/>
 [semver]: <https://semver.org/spec/v2.0.0.html>
-[Unreleased]: https://github.com/elixir-sqlite/ecto_sqlite3/compare/v0.7.3...HEAD
+[Unreleased]: https://github.com/elixir-sqlite/ecto_sqlite3/compare/v0.7.4...HEAD
+[0.7.4]: https://github.com/elixir-sqlite/ecto_sqlite3/compare/v0.7.3...v0.7.4
 [0.7.3]: https://github.com/elixir-sqlite/ecto_sqlite3/compare/v0.7.2...v0.7.3
 [0.7.2]: https://github.com/elixir-sqlite/ecto_sqlite3/compare/v0.7.1...v0.7.2
 [0.7.1]: https://github.com/elixir-sqlite/ecto_sqlite3/compare/v0.7.0...v0.7.1
