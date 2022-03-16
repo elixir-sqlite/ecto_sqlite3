@@ -38,14 +38,15 @@ defmodule EctoSQLite3.MixProject do
       {:ecto, "~> 3.7"},
       {:exqlite, "~> 0.9"},
       {:ex_doc, "~> 0.27", only: [:dev], runtime: false},
-      {:jason, ">= 0.0.0", only: [:bench, :test, :docs]},
+      {:jason, ">= 0.0.0", only: [:dev, :test, :docs]},
       {:temp, "~> 0.4", only: [:test]},
+      {:credo, "~> 1.6", only: [:dev, :test, :docs]},
 
       # Benchmarks
-      {:benchee, "~> 1.0", only: :bench},
-      {:benchee_markdown, "~> 0.2", only: :bench},
-      {:postgrex, "~> 0.15.0", only: :bench},
-      {:myxql, "~> 0.5.0", only: :bench}
+      {:benchee, "~> 1.0", only: :dev},
+      {:benchee_markdown, "~> 0.2", only: :dev},
+      {:postgrex, "~> 0.15.0", only: :dev},
+      {:myxql, "~> 0.5.0", only: :dev}
     ]
   end
 
