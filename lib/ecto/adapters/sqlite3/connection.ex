@@ -3,6 +3,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
 
   @behaviour Ecto.Adapters.SQL.Connection
 
+  alias Ecto.Adapters.SQL
   alias Ecto.Migration.Constraint
   alias Ecto.Migration.Index
   alias Ecto.Migration.Reference
@@ -19,7 +20,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   defp default_opts(opts) do
     opts
     |> Keyword.put_new(:journal_mode, :wal)
-    |> Keyword.put_new(:cache_size, -64000)
+    |> Keyword.put_new(:cache_size, -64_000)
     |> Keyword.put_new(:temp_store, :memory)
     |> Keyword.put_new(:pool_size, 5)
   end
@@ -320,7 +321,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   def explain_query(conn, query, params, opts) do
     case query(conn, build_explain_query(query), params, opts) do
       {:ok, %Exqlite.Result{} = result} ->
-        {:ok, Ecto.Adapters.SQL.format_table(result)}
+        {:ok, SQL.format_table(result)}
 
       error ->
         error

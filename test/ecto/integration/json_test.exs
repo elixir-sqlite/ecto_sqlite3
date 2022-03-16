@@ -1,8 +1,9 @@
 defmodule Ecto.Integration.JsonTest do
   use Ecto.Integration.Case
 
-  alias EctoSQLite3.Integration.Setting
+  alias Ecto.Adapters.SQL
   alias Ecto.Integration.TestRepo
+  alias EctoSQLite3.Integration.Setting
 
   test "serializes json correctly" do
     # Insert a record purposefully with atoms as the map key. We are going to
@@ -17,7 +18,7 @@ defmodule Ecto.Integration.JsonTest do
              TestRepo.get(Setting, setting.id)
 
     assert %{num_rows: 1, rows: [["bar"]]} =
-             Ecto.Adapters.SQL.query!(
+             SQL.query!(
                TestRepo,
                "select json_extract(properties, '$.foo') from settings where id = ?1",
                [setting.id]

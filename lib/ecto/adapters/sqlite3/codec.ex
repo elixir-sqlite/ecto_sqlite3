@@ -26,19 +26,15 @@ defmodule Ecto.Adapters.SQLite3.Codec do
   def decimal_decode(nil), do: {:ok, nil}
 
   def decimal_decode(x) when is_float(x) do
-    try do
-      {:ok, Decimal.from_float(x)}
-    catch
-      Decimal.Error -> :error
-    end
+    {:ok, Decimal.from_float(x)}
+  catch
+    Decimal.Error -> :error
   end
 
   def decimal_decode(x) when is_binary(x) or is_integer(x) do
-    try do
-      {:ok, Decimal.new(x)}
-    catch
-      Decimal.Error -> :error
-    end
+    {:ok, Decimal.new(x)}
+  catch
+    Decimal.Error -> :error
   end
 
   def decimal_decode(_), do: :error

@@ -3,9 +3,9 @@ defmodule Ecto.Integration.CrudTest do
 
   alias Ecto.Integration.TestRepo
   alias EctoSQLite3.Integration.Account
-  alias EctoSQLite3.Integration.User
   alias EctoSQLite3.Integration.AccountUser
   alias EctoSQLite3.Integration.Product
+  alias EctoSQLite3.Integration.User
 
   import Ecto.Query
 
