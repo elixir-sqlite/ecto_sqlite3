@@ -2232,6 +2232,23 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
            ]
   end
 
+  test "create table with options" do
+    create =
+      {:create, table(:posts, options: "WITH FOO=BAR"),
+       [
+         {:add, :id, :serial, [primary_key: true]}
+       ]}
+
+    assert execute_ddl(create) == [
+             """
+             CREATE TABLE "posts" (\
+             "id" INTEGER PRIMARY KEY AUTOINCREMENT\
+             ) \
+             WITH FOO=BAR\
+             """
+           ]
+  end
+
   test "create table with list as options" do
     assert_raise(
       ArgumentError,
