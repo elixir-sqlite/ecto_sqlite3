@@ -333,7 +333,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   ##
 
   @impl true
-  def execute_ddl({_command, %Table{options: keyword}, _}) when keyword != nil do
+  def execute_ddl({_command, %Table{options: options}, _}) when is_list(options) do
     raise ArgumentError, "SQLite3 adapter does not support keyword lists in :options"
   end
 
@@ -1624,7 +1624,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
 
   defp options_expr(nil), do: []
 
-  defp options_expr(keyword) when is_list(keyword) do
+  defp options_expr(options) when is_list(options) do
     raise ArgumentError, "SQLite3 adapter does not support keyword lists in :options"
   end
 
