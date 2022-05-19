@@ -4,6 +4,11 @@ on:
   push:
     branches:
       - "*"
+  pull_request:
+    types:
+      - opened
+    branches:
+      - "*"
 
 jobs:
   lint:
