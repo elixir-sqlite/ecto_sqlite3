@@ -227,6 +227,17 @@ defmodule Ecto.Adapters.SQLite3 do
     end
   end
 
+  @impl Ecto.Adapter.Schema
+  def autogenerate(:id), do: nil
+  def autogenerate(:embed_id), do: Ecto.UUID.generate()
+
+  def autogenerate(:binary_id) do
+    case Application.get_env(:ecto_sqlite3, :binary_id_type, :string) do
+      :string -> Ecto.UUID.generate()
+      :binary -> Ecto.UUID.bingenerate()
+    end
+  end
+
   ##
   ## Loaders
   ##
