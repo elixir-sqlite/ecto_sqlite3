@@ -7,6 +7,7 @@ defmodule Ecto.Adapters.SQLite3Test do
 
   setup do
     original_binary_id_type = Application.get_env(:ecto_sqlite3, :binary_id_type)
+
     on_exit(fn ->
       Application.put_env(:ecto_sqlite3, :binary_id_type, original_binary_id_type)
     end)
