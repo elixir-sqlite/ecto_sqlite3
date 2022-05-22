@@ -7,6 +7,11 @@ adheres to [Semantic Versioning][semver].
 
 ## [Unreleased]
 
+## [0.7.5] - 2022-05-21
+### Fixed
+- Generate binary_id values according to the binary_id_type config. [#72](https://github.com/elixir-sqlite/ecto_sqlite3/pull/72)
+
+
 ## [0.7.4] - 2022-03-16
 ### Fixed
 - Fixed double encoding of a string when converting to json. [#65](https://github.com/elixir-sqlite/ecto_sqlite3/pull/65)
