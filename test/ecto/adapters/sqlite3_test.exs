@@ -3,6 +3,15 @@ defmodule Ecto.Adapters.SQLite3Test do
 
   alias Ecto.Adapters.SQLite3
 
+  @uuid_regex ~R/^[[:xdigit:]]{8}\b-[[:xdigit:]]{4}\b-[[:xdigit:]]{4}\b-[[:xdigit:]]{4}\b-[[:xdigit:]]{12}$/
+
+  setup do
+    original_binary_id_type = Application.get_env(:ecto_sqlite3, :binary_id_type)
+    on_exit(fn ->
+      Application.put_env(:ecto_sqlite3, :binary_id_type, original_binary_id_type)
+    end)
+  end
+
   describe ".storage_up/1" do
     test "create database" do
       opts = [database: Temp.path!()]
@@ -51,4 +60,27 @@ defmodule Ecto.Adapters.SQLite3Test do
       File.rm(opts[:database])
     end
   end
+
+  describe ".autogenerate/1" do
+    test ":id must be generated from storage" do
+      assert SQLite3.autogenerate(:id) == nil
+    end
+
+    test ":embed_id is a UUID in string form" do
+      assert string_uuid?(SQLite3.autogenerate(:embed_id))
+    end
+
+    test ":binary_id with type :string is a UUID in string form" do
+      Application.put_env(:ecto_sqlite3, :binary_id_type, :string)
+      assert string_uuid?(SQLite3.autogenerate(:binary_id))
+    end
+
+    test ":binary_id with type :binary is a UUID in binary form" do
+      Application.put_env(:ecto_sqlite3, :binary_id_type, :binary)
+      assert binary_uuid?(SQLite3.autogenerate(:binary_id))
+    end
+  end
+
+  defp string_uuid?(uuid), do: Regex.match?(@uuid_regex, uuid)
+  defp binary_uuid?(uuid), do: bit_size(uuid) == 128
 end
