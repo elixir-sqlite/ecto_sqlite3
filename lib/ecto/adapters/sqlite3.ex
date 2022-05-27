@@ -44,6 +44,10 @@ defmodule Ecto.Adapters.SQLite3 do
     * `:busy_timeout` - Sets the busy timeout in milliseconds for a connection.
       Default is `2000`.
     * `:pool_size` - the size of the connection pool. Defaults to `5`.
+    * `:binary_id_type` - Defaults to `:string`. Determines how binary IDs are stored in the database and the type of
+    `:binary_id` columns. See the [section on binary ID types](#module-binary-id-types) for more details.
+    * `:uuid_type` - Defaults to `:string`. Determines the type of `:uuid` columns. Possible values and
+      column types are the same as for [binary IDs](#module-binary-id-types).
 
   For more information about the options above, see [sqlite documentation][1]
 
@@ -71,6 +75,19 @@ defmodule Ecto.Adapters.SQLite3 do
 
   [1]: https://www.sqlite.org/pragma.html
   [2]: https://sqlite.org/wal.html
+
+  ### Binary ID types
+
+  The `:binary_id_type` configuration option allows configuring how `:binary_id` fields are stored in the database as
+  well as the type of the column in which these IDs will be stored. The possible values are:
+  * `:string` (default): IDs are stored as strings, and the type of the column is `TEXT_UUID`.
+  * `:binary`: IDs are stored in their raw binary form, and the type of the column is `UUID`.
+
+  The main differences between the two formats are as follows:
+  * When stored as binary, UUIDs require much less space in the database. IDs stored as strings require 36 bytes each,
+    while IDs stored as binary only require 16 bytes.
+  * Because SQLite does not have a dedicated UUID type, most clients cannot represent UUIDs stored as binary in a human
+    readable format. Therefore, IDs stored as strings may be easier to work with if manual manipulation is required.
 
   ## Limitations and caveats
 
