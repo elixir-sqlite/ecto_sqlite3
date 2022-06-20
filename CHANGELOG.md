@@ -7,6 +7,11 @@ adheres to [Semantic Versioning][semver].
 
 ## [Unreleased]
 
+## [0.7.6] - 2022-06-20
+### Changed
+- Changed explain query to `EXPLAIN QUERY PLAN`. [#77](https://github.com/elixir-sqlite/ecto_sqlite3/pull/77)
+
+
 ## [0.7.5] - 2022-05-21
 ### Fixed
 - Generate binary_id values according to the binary_id_type config. [#72](https://github.com/elixir-sqlite/ecto_sqlite3/pull/72)
