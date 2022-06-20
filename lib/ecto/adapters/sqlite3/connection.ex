@@ -319,13 +319,46 @@ defmodule Ecto.Adapters.SQLite3.Connection do
 
   @impl true
   def explain_query(conn, query, params, opts) do
-    case query(conn, build_explain_query(query), params, opts) do
+    type = Keyword.get(opts, :type, :query_plan)
+
+    case query(conn, build_explain_query(query, type), params, opts) do
       {:ok, %Exqlite.Result{} = result} ->
-        {:ok, SQL.format_table(result)}
+        case type do
+          :query_plan -> {:ok, format_query_plan_explain(result)}
+          :instructions -> {:ok, SQL.format_table(result)}
+        end
 
       error ->
         error
     end
+  end
+
+  defp build_explain_query(query, :query_plan) do
+    IO.iodata_to_binary(["EXPLAIN QUERY PLAN", query])
+  end
+
+  defp build_explain_query(query, :instructions) do
+    IO.iodata_to_binary(["EXPLAIN ", query])
+  end
+
+  # Mimics the ASCII format of the sqlite CLI
+  defp format_query_plan_explain(%{rows: rows}) do
+    {lines, _} =
+      rows
+      |> Enum.chunk_every(2, 1, [nil])
+      |> Enum.map_reduce(0, fn [[id, parent, _, text], next], depth ->
+        {branch, next_depth} =
+          case {id, parent, next} do
+            {id, _, [_, id, _, _]} -> {"|--", depth + 1}
+            {_, p, [_, p, _, _]} -> {"|--", depth}
+            _ -> {"`--", depth - 1}
+          end
+
+        formatted_line = String.duplicate("|  ", depth) <> branch <> text
+        {formatted_line, next_depth}
+      end)
+
+    Enum.join(["QUERY PLAN" | lines], "\n")
   end
 
   ##
@@ -652,10 +685,6 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   @impl true
   def table_exists_query(table) do
     {"SELECT name FROM sqlite_master WHERE type='table' AND name=? LIMIT 1", [table]}
-  end
-
-  def build_explain_query(query) do
-    IO.iodata_to_binary(["EXPLAIN ", query])
   end
 
   ##
