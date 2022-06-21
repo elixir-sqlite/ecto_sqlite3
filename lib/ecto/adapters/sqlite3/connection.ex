@@ -334,7 +334,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   end
 
   defp build_explain_query(query, :query_plan) do
-    IO.iodata_to_binary(["EXPLAIN QUERY PLAN", query])
+    IO.iodata_to_binary(["EXPLAIN QUERY PLAN ", query])
   end
 
   defp build_explain_query(query, :instructions) do
