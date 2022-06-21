@@ -7,6 +7,11 @@ adheres to [Semantic Versioning][semver].
 
 ## [Unreleased]
 
+## [0.7.7] - 2022-06-21
+### Fixed
+- Fixed issue with missing space in `EXPLAIN QUERY PLAN`. [#78](https://github.com/elixir-sqlite/ecto_sqlite3/pull/78)
+
+
 ## [0.7.6] - 2022-06-20
 ### Changed
 - Changed explain query to `EXPLAIN QUERY PLAN`. [#77](https://github.com/elixir-sqlite/ecto_sqlite3/pull/77)
@@ -98,7 +103,10 @@ adheres to [Semantic Versioning][semver].
 
 [keepachangelog]: <https://keepachangelog.com/en/1.0.0/>
 [semver]: <https://semver.org/spec/v2.0.0.html>
-[Unreleased]: https://github.com/elixir-sqlite/ecto_sqlite3/compare/v0.7.4...HEAD
+[Unreleased]: https://github.com/elixir-sqlite/ecto_sqlite3/compare/v0.7.7...HEAD
+[0.7.7]: https://github.com/elixir-sqlite/ecto_sqlite3/compare/v0.7.6...v0.7.7
+[0.7.6]: https://github.com/elixir-sqlite/ecto_sqlite3/compare/v0.7.5...v0.7.6
+[0.7.5]: https://github.com/elixir-sqlite/ecto_sqlite3/compare/v0.7.4...v0.7.5
 [0.7.4]: https://github.com/elixir-sqlite/ecto_sqlite3/compare/v0.7.3...v0.7.4
 [0.7.3]: https://github.com/elixir-sqlite/ecto_sqlite3/compare/v0.7.2...v0.7.3
 [0.7.2]: https://github.com/elixir-sqlite/ecto_sqlite3/compare/v0.7.1...v0.7.2
