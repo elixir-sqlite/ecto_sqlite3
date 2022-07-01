@@ -113,5 +113,8 @@ ExUnit.start(
     :concat,
 
     :placeholders
+    
+    # Fails the regex matching because it uses square brackets outside of the parameter list
+    :parameter_logging
   ]
 )
