@@ -112,6 +112,9 @@ ExUnit.start(
     # SQLite3 does not support the concat function
     :concat,
 
-    :placeholders
+    :placeholders,
+    
+    # Fails the regex matching because it uses square brackets outside of the parameter list
+    :parameter_logging
   ]
 )
