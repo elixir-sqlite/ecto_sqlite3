@@ -46,7 +46,7 @@ defmodule EctoSQLite3.MixProject do
       {:benchee, "~> 1.0", only: :dev},
       {:benchee_markdown, "~> 0.2", only: :dev},
       {:postgrex, "~> 0.15.0", only: :dev},
-      {:myxql, "~> 0.5.0", only: :dev}
+      {:myxql, "~> 0.6.0", only: :dev}
     ]
   end
 
