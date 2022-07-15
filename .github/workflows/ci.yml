@@ -2,13 +2,9 @@ name: CI
 
 on:
   push:
-    branches:
-      - "*"
+    branches: ["*"]
   pull_request:
-    types:
-      - opened
-    branches:
-      - "*"
+    branches: ["*"]
 
 jobs:
   lint:
