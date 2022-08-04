@@ -111,10 +111,9 @@ ExUnit.start(
 
     # SQLite3 does not support the concat function
     :concat,
-
+    # SQLite3 does not support placeholders
     :placeholders,
-    
-    # Fails the regex matching because it uses square brackets outside of the parameter list
-    :parameter_logging
+    # SQLite3 stores booleans as integers, causing Ecto's json_extract_path tests to fail
+    :json_extract_path
   ]
 )
