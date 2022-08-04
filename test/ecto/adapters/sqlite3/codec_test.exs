@@ -143,7 +143,8 @@ defmodule Ecto.Adapters.SQLite3.CodecTest do
     end
 
     test "unknown datetime type", %{dt: dt} do
-      msg = "expected datetime type to be either `:iso8601` or `:text_datetime`, but received `:whatsthis`"
+      msg =
+        "expected datetime type to be either `:iso8601` or `:text_datetime`, but received `:whatsthis`"
 
       assert_raise ArgumentError, msg, fn ->
         Codec.naive_datetime_encode(dt, :whatsthis)
@@ -167,7 +168,8 @@ defmodule Ecto.Adapters.SQLite3.CodecTest do
     end
 
     test "unknown datetime type", %{dt: dt} do
-      msg = "expected datetime type to be either `:iso8601` or `:text_datetime`, but received `:whatsthis`"
+      msg =
+        "expected datetime type to be either `:iso8601` or `:text_datetime`, but received `:whatsthis`"
 
       assert_raise ArgumentError, msg, fn ->
         Codec.naive_datetime_encode(dt, :whatsthis)

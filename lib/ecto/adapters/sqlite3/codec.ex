@@ -108,7 +108,7 @@ defmodule Ecto.Adapters.SQLite3.Codec do
     {:ok, Calendar.strftime(value, @text_datetime_format)}
   end
 
-  def utc_datetime_encode(%{time_zone: "Etc/UTC"} , type) do
+  def utc_datetime_encode(%{time_zone: "Etc/UTC"}, type) do
     raise ArgumentError,
           "expected datetime type to be either `:iso8601` or `:text_datetime`, but received #{inspect(type)}"
   end

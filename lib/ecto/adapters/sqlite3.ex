@@ -396,25 +396,25 @@ defmodule Ecto.Adapters.SQLite3 do
   @impl Ecto.Adapter
   def dumpers(:utc_datetime, type) do
     dt_type = Application.get_env(:ecto_sqlite3, :datetime_type, @default_datetime_type)
-    [type, &(Codec.utc_datetime_encode(&1, dt_type))]
+    [type, &Codec.utc_datetime_encode(&1, dt_type)]
   end
 
   @impl Ecto.Adapter
   def dumpers(:utc_datetime_usec, type) do
     dt_type = Application.get_env(:ecto_sqlite3, :datetime_type, @default_datetime_type)
-    [type, &(Codec.utc_datetime_encode(&1, dt_type))]
+    [type, &Codec.utc_datetime_encode(&1, dt_type)]
   end
 
   @impl Ecto.Adapter
   def dumpers(:naive_datetime, type) do
     dt_type = Application.get_env(:ecto_sqlite3, :datetime_type, @default_datetime_type)
-    [type, &(Codec.naive_datetime_encode(&1, dt_type))]
+    [type, &Codec.naive_datetime_encode(&1, dt_type)]
   end
 
   @impl Ecto.Adapter
   def dumpers(:naive_datetime_usec, type) do
     dt_type = Application.get_env(:ecto_sqlite3, :datetime_type, @default_datetime_type)
-    [type, &(Codec.naive_datetime_encode(&1, dt_type))]
+    [type, &Codec.naive_datetime_encode(&1, dt_type)]
   end
 
   @impl Ecto.Adapter
