@@ -7,7 +7,7 @@ defmodule EctoSQLite3.MixProject do
     [
       app: :ecto_sqlite3,
       version: @version,
-      elixir: "~> 1.8",
+      elixir: "~> 1.11",
       start_permanent: Mix.env() == :prod,
       source_url: "https://github.com/elixir-sqlite/ecto_sqlite3",
       homepage_url: "https://github.com/elixir-sqlite/ecto_sqlite3",
