@@ -1620,7 +1620,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
              """
   end
 
-  test "join  hints" do
+  test "join hints" do
     query =
       Schema
       |> join(:inner, [p], q in Schema2, hints: ["INDEXED BY FOO", "INDEXED BY BAR"])
