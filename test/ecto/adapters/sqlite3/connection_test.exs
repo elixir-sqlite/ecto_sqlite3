@@ -1623,7 +1623,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
   test "join ignores hints" do
     query =
       Schema
-      |> join(:inner, [p], q in Schema2, hints: ["USE INDEX FOO", "USE INDEX BAR"])
+      |> join(:inner, [p], q in Schema2, hints: ["INDEXED BY FOO", "INDEXED BY BAR"])
       |> select([], true)
       |> plan()
 

@@ -976,7 +976,8 @@ defmodule Ecto.Adapters.SQLite3.Connection do
         on: %QueryExpr{expr: expression},
         qual: qual,
         ix: ix,
-        source: source
+        source: source,
+        hints: hints
       } ->
         {join, name} = get_source(query, sources, ix, source)
 
@@ -985,6 +986,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
           join,
           " AS ",
           name,
+          Enum.map(hints, &[?\s | &1]),
           join_on(qual, expression, sources, query)
         ]
     end)
