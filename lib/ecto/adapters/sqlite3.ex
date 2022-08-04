@@ -48,6 +48,9 @@ defmodule Ecto.Adapters.SQLite3 do
     `:binary_id` columns. See the [section on binary ID types](#module-binary-id-types) for more details.
     * `:uuid_type` - Defaults to `:string`. Determines the type of `:uuid` columns. Possible values and
       column types are the same as for [binary IDs](#module-binary-id-types).
+    * `:datetime_type` - Defaults to `:iso8601`. Determines how datetime fields are stored in the database.
+      The allowed values are `:iso8601` and `:text_datetime`. `:iso8601` corresponds to a string of the form
+      `YYYY-MM-DDThh:mm:ss` and `:text_datetime` corresponds to a string of the form YYYY-MM-DD hh:mm:ss`
 
   For more information about the options above, see [sqlite documentation][1]
 
@@ -259,6 +262,8 @@ defmodule Ecto.Adapters.SQLite3 do
   ## Loaders
   ##
 
+  @default_datetime_type :iso8601
+
   @impl Ecto.Adapter
   def loaders(:boolean, type) do
     [&Codec.bool_decode/1, type]
@@ -390,22 +395,26 @@ defmodule Ecto.Adapters.SQLite3 do
 
   @impl Ecto.Adapter
   def dumpers(:utc_datetime, type) do
-    [type, &Codec.utc_datetime_encode/1]
+    dt_type = Application.get_env(:ecto_sqlite3, :datetime_type, @default_datetime_type)
+    [type, &Codec.utc_datetime_encode(&1, dt_type)]
   end
 
   @impl Ecto.Adapter
   def dumpers(:utc_datetime_usec, type) do
-    [type, &Codec.utc_datetime_encode/1]
+    dt_type = Application.get_env(:ecto_sqlite3, :datetime_type, @default_datetime_type)
+    [type, &Codec.utc_datetime_encode(&1, dt_type)]
   end
 
   @impl Ecto.Adapter
   def dumpers(:naive_datetime, type) do
-    [type, &Codec.naive_datetime_encode/1]
+    dt_type = Application.get_env(:ecto_sqlite3, :datetime_type, @default_datetime_type)
+    [type, &Codec.naive_datetime_encode(&1, dt_type)]
   end
 
   @impl Ecto.Adapter
   def dumpers(:naive_datetime_usec, type) do
-    [type, &Codec.naive_datetime_encode/1]
+    dt_type = Application.get_env(:ecto_sqlite3, :datetime_type, @default_datetime_type)
+    [type, &Codec.naive_datetime_encode(&1, dt_type)]
   end
 
   @impl Ecto.Adapter

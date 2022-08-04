@@ -126,4 +126,54 @@ defmodule Ecto.Adapters.SQLite3.CodecTest do
       assert {:ok, ^dt} = Codec.utc_datetime_decode("2021-08-25 10:58:59.111111+02:30")
     end
   end
+
+  describe ".utc_datetime_encode/2" do
+    setup do
+      [dt: ~U[2021-08-25 10:58:59Z]]
+    end
+
+    test "iso8601", %{dt: dt} do
+      dt_str = "2021-08-25T10:58:59"
+      assert {:ok, ^dt_str} = Codec.utc_datetime_encode(dt, :iso8601)
+    end
+
+    test ":text_datetime", %{dt: dt} do
+      dt_str = "2021-08-25 10:58:59"
+      assert {:ok, ^dt_str} = Codec.utc_datetime_encode(dt, :text_datetime)
+    end
+
+    test "unknown datetime type", %{dt: dt} do
+      msg =
+        "expected datetime type to be either `:iso8601` or `:text_datetime`, but received `:whatsthis`"
+
+      assert_raise ArgumentError, msg, fn ->
+        Codec.naive_datetime_encode(dt, :whatsthis)
+      end
+    end
+  end
+
+  describe ".naive_datetime_encode/2" do
+    setup do
+      [dt: ~U[2021-08-25 10:58:59Z], dt_str: "2021-08-25T10:58:59"]
+    end
+
+    test "iso8601", %{dt: dt} do
+      dt_str = "2021-08-25T10:58:59"
+      assert {:ok, ^dt_str} = Codec.naive_datetime_encode(dt, :iso8601)
+    end
+
+    test ":text_datetime", %{dt: dt} do
+      dt_str = "2021-08-25 10:58:59"
+      assert {:ok, ^dt_str} = Codec.naive_datetime_encode(dt, :text_datetime)
+    end
+
+    test "unknown datetime type", %{dt: dt} do
+      msg =
+        "expected datetime type to be either `:iso8601` or `:text_datetime`, but received `:whatsthis`"
+
+      assert_raise ArgumentError, msg, fn ->
+        Codec.naive_datetime_encode(dt, :whatsthis)
+      end
+    end
+  end
 end
