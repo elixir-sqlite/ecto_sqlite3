@@ -7,6 +7,15 @@ adheres to [Semantic Versioning][semver].
 
 ## [Unreleased]
 
+## [0.8.0] - 2022-08-04
+### Changed
+- Change minimum elixir version to `~> 1.11`
+
+### Added
+- Allow index hints on joins. [#83](https://github.com/elixir-sqlite/ecto_sqlite3/pull/83)
+- Allow datetime type to be configurable. [#84](https://github.com/elixir-sqlite/ecto_sqlite3/pull/84)
+
+
 ## [0.7.7] - 2022-06-21
 ### Fixed
 - Fixed issue with missing space in `EXPLAIN QUERY PLAN`. [#78](https://github.com/elixir-sqlite/ecto_sqlite3/pull/78)
@@ -104,6 +113,7 @@ adheres to [Semantic Versioning][semver].
 [keepachangelog]: <https://keepachangelog.com/en/1.0.0/>
 [semver]: <https://semver.org/spec/v2.0.0.html>
 [Unreleased]: https://github.com/elixir-sqlite/ecto_sqlite3/compare/v0.7.7...HEAD
+[0.8.0]: https://github.com/elixir-sqlite/ecto_sqlite3/compare/v0.8.0...v0.7.7
 [0.7.7]: https://github.com/elixir-sqlite/ecto_sqlite3/compare/v0.7.6...v0.7.7
 [0.7.6]: https://github.com/elixir-sqlite/ecto_sqlite3/compare/v0.7.5...v0.7.6
 [0.7.5]: https://github.com/elixir-sqlite/ecto_sqlite3/compare/v0.7.4...v0.7.5
