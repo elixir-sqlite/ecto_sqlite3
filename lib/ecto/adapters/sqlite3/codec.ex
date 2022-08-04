@@ -98,12 +98,31 @@ defmodule Ecto.Adapters.SQLite3.Codec do
     {:ok, value}
   end
 
-  # Ecto does check this already, so there should be no need to handle errors
-  def utc_datetime_encode(%{time_zone: "Etc/UTC"} = value) do
+  @text_datetime_format "%Y-%m-%d %H:%M:%S"
+
+  def utc_datetime_encode(%{time_zone: "Etc/UTC"} = value, :iso8601) do
     {:ok, NaiveDateTime.to_iso8601(value)}
   end
 
-  def naive_datetime_encode(value) do
+  def utc_datetime_encode(%{time_zone: "Etc/UTC"} = value, :text_datetime) do
+    {:ok, Calendar.strftime(value, @text_datetime_format)}
+  end
+
+  def utc_datetime_encode(%{time_zone: "Etc/UTC"} , type) do
+    raise ArgumentError,
+          "expected datetime type to be either `:iso8601` or `:text_datetime`, but received #{inspect(type)}"
+  end
+
+  def naive_datetime_encode(value, :iso8601) do
     {:ok, NaiveDateTime.to_iso8601(value)}
+  end
+
+  def naive_datetime_encode(value, :text_datetime) do
+    {:ok, Calendar.strftime(value, @text_datetime_format)}
+  end
+
+  def naive_datetime_encode(_value, type) do
+    raise ArgumentError,
+          "expected datetime type to be either `:iso8601` or `:text_datetime`, but received `#{inspect(type)}`"
   end
 end

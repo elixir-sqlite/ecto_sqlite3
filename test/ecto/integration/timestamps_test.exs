@@ -37,7 +37,28 @@ defmodule Ecto.Integration.TimestampsTest do
     end
   end
 
+  setup do
+    on_exit(fn -> Application.delete_env(:ecto_sqlite3, :datetime_type) end)
+  end
+
   test "insert and fetch naive datetime" do
+    # iso8601 type
+    {:ok, user} =
+      %UserNaiveDatetime{}
+      |> UserNaiveDatetime.changeset(%{name: "Bob"})
+      |> TestRepo.insert()
+
+    user =
+      UserNaiveDatetime
+      |> select([u], u)
+      |> where([u], u.id == ^user.id)
+      |> TestRepo.one()
+
+    assert user
+
+    # text_datetime type
+    Application.put_env(:ecto_sqlite3, :datetime_type, :text_datetime)
+
     {:ok, user} =
       %UserNaiveDatetime{}
       |> UserNaiveDatetime.changeset(%{name: "Bob"})
@@ -53,6 +74,15 @@ defmodule Ecto.Integration.TimestampsTest do
   end
 
   test "max of naive datetime" do
+    # iso8601 type
+    datetime = ~N[2014-01-16 20:26:51]
+    TestRepo.insert!(%UserNaiveDatetime{inserted_at: datetime})
+    query = from(p in UserNaiveDatetime, select: max(p.inserted_at))
+    assert [^datetime] = TestRepo.all(query)
+
+    # text_datetime type
+    Application.put_env(:ecto_sqlite3, :datetime_type, :text_datetime)
+
     datetime = ~N[2014-01-16 20:26:51]
     TestRepo.insert!(%UserNaiveDatetime{inserted_at: datetime})
     query = from(p in UserNaiveDatetime, select: max(p.inserted_at))
@@ -60,6 +90,23 @@ defmodule Ecto.Integration.TimestampsTest do
   end
 
   test "insert and fetch utc datetime" do
+    # iso8601 type
+    {:ok, user} =
+      %UserUtcDatetime{}
+      |> UserUtcDatetime.changeset(%{name: "Bob"})
+      |> TestRepo.insert()
+
+    user =
+      UserUtcDatetime
+      |> select([u], u)
+      |> where([u], u.id == ^user.id)
+      |> TestRepo.one()
+
+    assert user
+
+    # text_datetime type
+    Application.put_env(:ecto_sqlite3, :datetime_type, :text_datetime)
+
     {:ok, user} =
       %UserUtcDatetime{}
       |> UserUtcDatetime.changeset(%{name: "Bob"})
