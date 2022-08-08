@@ -50,7 +50,7 @@ defmodule Ecto.Adapters.SQLite3 do
       column types are the same as for [binary IDs](#module-binary-id-types).
     * `:datetime_type` - Defaults to `:iso8601`. Determines how datetime fields are stored in the database.
       The allowed values are `:iso8601` and `:text_datetime`. `:iso8601` corresponds to a string of the form
-      `YYYY-MM-DDThh:mm:ss` and `:text_datetime` corresponds to a string of the form YYYY-MM-DD hh:mm:ss`
+      `YYYY-MM-DDThh:mm:ss` and `:text_datetime` corresponds to a string of the form `YYYY-MM-DD hh:mm:ss`
 
   For more information about the options above, see [sqlite documentation][1]
 
