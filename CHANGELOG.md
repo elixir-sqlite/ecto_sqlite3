@@ -2,131 +2,74 @@
 
 All notable changes will be documented in this file.
 
-The format is based on [Keep a Changelog][keepachangelog], and this project
-adheres to [Semantic Versioning][semver].
+The format is loosely based on [Keep a Changelog][keepachangelog], and this
+project adheres to [Semantic Versioning][semver].
 
-## [Unreleased]
+## v0.8.0 - 2022-08-04
+- changed: Set minimum elixir version to `~> 1.11`
+- added: Allow index hints on joins. [#83](https://github.com/elixir-sqlite/ecto_sqlite3/pull/83)
+- added: Allow datetime type to be configurable. [#84](https://github.com/elixir-sqlite/ecto_sqlite3/pull/84)
 
-## [0.8.0] - 2022-08-04
-### Changed
-- Change minimum elixir version to `~> 1.11`
+## v0.7.7 - 2022-06-21
+- fixed: issue with missing space in `EXPLAIN QUERY PLAN`. [#78](https://github.com/elixir-sqlite/ecto_sqlite3/pull/78)
 
-### Added
-- Allow index hints on joins. [#83](https://github.com/elixir-sqlite/ecto_sqlite3/pull/83)
-- Allow datetime type to be configurable. [#84](https://github.com/elixir-sqlite/ecto_sqlite3/pull/84)
+## v0.7.6 - 2022-06-20
+- changed: explain query to `EXPLAIN QUERY PLAN`. [#77](https://github.com/elixir-sqlite/ecto_sqlite3/pull/77)
 
+## v0.7.5 - 2022-05-21
+- fixed: generate `binary_id` values according to the `binary_id_type` config. [#72](https://github.com/elixir-sqlite/ecto_sqlite3/pull/72)
 
-## [0.7.7] - 2022-06-21
-### Fixed
-- Fixed issue with missing space in `EXPLAIN QUERY PLAN`. [#78](https://github.com/elixir-sqlite/ecto_sqlite3/pull/78)
+## v0.7.4 - 2022-03-16
+- fixed: double encoding of a string when converting to json. [#65](https://github.com/elixir-sqlite/ecto_sqlite3/pull/65)
 
+## v0.7.3 - 2022-01-21
+- added: information to the help docs about utilizing `exqlite` with database encryption.
+- changed: raise more meaningful error when an expression fails to match. Backported from [ecto_sql#362](https://github.com/elixir-ecto/ecto_sql/commit/93038c2cac16706b642121a5839d1068d5b45212).
 
-## [0.7.6] - 2022-06-20
-### Changed
-- Changed explain query to `EXPLAIN QUERY PLAN`. [#77](https://github.com/elixir-sqlite/ecto_sqlite3/pull/77)
+## v0.7.2 - 2021-09-29
+- added: `:time` decode support. [#58](https://github.com/elixir-sqlite/ecto_sqlite3/pull/58)
 
+## v0.7.1 - 2021-08-30
+- fixed: Backport of default drops to `:restrict` are now backwards compatible with older versions of `ecto_sql`. We don't really have support for `drop index ... cascade` as it is not in the grammer of sqlite.
 
-## [0.7.5] - 2022-05-21
-### Fixed
-- Generate binary_id values according to the binary_id_type config. [#72](https://github.com/elixir-sqlite/ecto_sqlite3/pull/72)
+## v0.7.0 - 2021-08-27
+- changed: update dependencies to the latest.
+- changed: drop support for OTP 20. It is not supported by `telemetry` and won't compile. For now we will just support Elixir 1.8 and OTP 21.
 
+## v0.6.1 - 2021-08-27
+- changed: UUID encoding for both `:binary_id` and `:uuid`/`Ecto.UUID` is now configurable
+- changed: `:uuid`/`Ecto.UUID` is now encoded as a string by default
 
-## [0.7.4] - 2022-03-16
-### Fixed
-- Fixed double encoding of a string when converting to json. [#65](https://github.com/elixir-sqlite/ecto_sqlite3/pull/65)
+## v0.6.0 - 2021-08-25
+- changed: `:utc_datetime` handling has been updated to completely remove the `Z` supplied and made to conform closer to what is done for Postgrex and MyXQL. [#49](https://github.com/elixir-sqlite/ecto_sqlite3/pull/49)
+- changed: updated error message for OTP24 [#47](https://github.com/elixir-sqlite/ecto_sqlite3/pull/47)
 
+## v0.5.7 - 2021-08-17
+- changed: prepared statements can now be released manually.
+- changed: added ability to specify `:asc_nulls_last`, `:asc_nulls_first`, `:desc_nulls_last`, and `:desc_nulls_first`.
 
-## [0.7.3] - 2022-01-21
-### Added
-- Information to the help docs about utilizing `exqlite` with database encryption.
+## v0.5.6 - 2021-07-02
+- fixed: double quote missing from sql query generation. [#39](https://github.com/elixir-sqlite/ecto_sqlite3/pull/39)
 
-### Changed
-- Raise more meaningful error when an expression fails to match. Backported from [ecto_sql#362](https://github.com/elixir-ecto/ecto_sql/commit/93038c2cac16706b642121a5839d1068d5b45212).
+## v0.5.5 - 2021-04-19
+- added: `:check` constraint column option.
+- fixed: "database is locked" issue by setting `journal_mode` at `storage_up` time.
 
+## v0.5.4 - 2021-04-06
+- changed: upgrade `ecto_sql` dependency to `3.6.0``
+- changed: removed old `Ecto.Adapters.SQLite3.Connection.insert/6` was replaced with `Ecto.Adapters.SQLite3.Connection.insert/7`.
 
-## [0.7.2] - 2021-09-29
-### Added
-- Add `:time` decode support. [#58](https://github.com/elixir-sqlite/ecto_sqlite3/pull/58)
+## v0.5.3 - 2021-03-20
+- added: `collate:` opts support to `:string` column type
 
-## [0.7.1] - 2021-08-30
-### Fixed
-- Backport of default drops to `:restrict` are now backwards compatible with older versions of `ecto_sql`. We don't really have support for `drop index ... cascade` as it is not in the grammer of sqlite.
+## v0.5.1 - 2021-03-18
+- changed: updated exqlite to `0.5.0`
+- changed: updated documentation
+- changed: updated git repository url
 
-## [0.7.0] - 2021-08-27
-### Changed
-- Update dependencies to the latest.
-- Drop support for OTP 20. It is not supported by `telemetry` and won't compile. For now we will just support Elixir 1.8 and OTP 21.
-
-
-## [0.6.1] - 2021-08-27
-### Changed
-- UUID encoding for both `:binary_id` and `:uuid`/`Ecto.UUID` is now configurable
-- `:uuid`/`Ecto.UUID` is now encoded as a string by default
-
-
-## [0.6.0] - 2021-08-25
-### Changed
-- `:utc_datetime` handling has been updated to completely remove the `Z` supplied and made to conform closer to what is done for Postgrex and MyXQL. [#49](https://github.com/elixir-sqlite/ecto_sqlite3/pull/49)
-- Updated error message for OTP24 [#47](https://github.com/elixir-sqlite/ecto_sqlite3/pull/47)
-
-
-## [0.5.7] - 2021-08-17
-### Changed
-- Prepared statements can now be released manually.
-- Added ability to specify `:asc_nulls_last`, `:asc_nulls_first`, `:desc_nulls_last`, and `:desc_nulls_first`.
-
-## [0.5.6] - 2021-07-02
-### Fixed
-- Fix double quote missing from sql query generation. [#39](https://github.com/elixir-sqlite/ecto_sqlite3/pull/39)
-
-
-## [0.5.5] - 2021-04-19
-### Added
-- Add :check constraint column option.
-
-### Fixed
-- Fix "database is locked" issue by setting `journal_mode` at `storage_up` time.
-
-
-## [0.5.4] - 2021-04-06
-### Changed
-- Upgrade `ecto_sql` dependency to `3.6.0``
-- Removed old `Ecto.Adapters.SQLite3.Connection.insert/6` was replaced with `Ecto.Adapters.SQLite3.Connection.insert/7`.
-
-
-## [0.5.3] - 2021-03-20
-### Added
-- Added `collate:` opts support to `:string` column type
-
-
-## [0.5.1] - 2021-03-18
-### Changed
-- Updated exqlite to `0.5.0`
-- Updated documentation
-- Updated git repository url
-
-
-## 0.5.0 - 2021-03-17
-- Initial release.
+## v0.5.0 - 2021-03-17
+- initial release.
 
 
 [keepachangelog]: <https://keepachangelog.com/en/1.0.0/>
 [semver]: <https://semver.org/spec/v2.0.0.html>
-[Unreleased]: https://github.com/elixir-sqlite/ecto_sqlite3/compare/v0.7.7...HEAD
-[0.8.0]: https://github.com/elixir-sqlite/ecto_sqlite3/compare/v0.8.0...v0.7.7
-[0.7.7]: https://github.com/elixir-sqlite/ecto_sqlite3/compare/v0.7.6...v0.7.7
-[0.7.6]: https://github.com/elixir-sqlite/ecto_sqlite3/compare/v0.7.5...v0.7.6
-[0.7.5]: https://github.com/elixir-sqlite/ecto_sqlite3/compare/v0.7.4...v0.7.5
-[0.7.4]: https://github.com/elixir-sqlite/ecto_sqlite3/compare/v0.7.3...v0.7.4
-[0.7.3]: https://github.com/elixir-sqlite/ecto_sqlite3/compare/v0.7.2...v0.7.3
-[0.7.2]: https://github.com/elixir-sqlite/ecto_sqlite3/compare/v0.7.1...v0.7.2
-[0.7.1]: https://github.com/elixir-sqlite/ecto_sqlite3/compare/v0.7.0...v0.7.1
-[0.7.0]: https://github.com/elixir-sqlite/ecto_sqlite3/compare/v0.6.1...v0.7.0
-[0.6.1]: https://github.com/elixir-sqlite/ecto_sqlite3/compare/v0.6.0...v0.6.1
-[0.6.0]: https://github.com/elixir-sqlite/ecto_sqlite3/compare/v0.5.7...v0.6.0
-[0.5.7]: https://github.com/elixir-sqlite/ecto_sqlite3/compare/v0.5.6...v0.5.7
-[0.5.6]: https://github.com/elixir-sqlite/ecto_sqlite3/compare/v0.5.5...v0.5.6
-[0.5.5]: https://github.com/elixir-sqlite/ecto_sqlite3/compare/v0.5.4...v0.5.5
-[0.5.4]: https://github.com/elixir-sqlite/ecto_sqlite3/compare/v0.5.3...v0.5.4
-[0.5.3]: https://github.com/elixir-sqlite/ecto_sqlite3/compare/v0.5.1...v0.5.3
-[0.5.1]: https://github.com/elixir-sqlite/ecto_sqlite3/compare/v0.5.0...v0.5.1
