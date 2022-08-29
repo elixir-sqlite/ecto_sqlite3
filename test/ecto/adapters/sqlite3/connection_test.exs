@@ -115,14 +115,15 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
     assert all(query) == ~s{SELECT s0."x" FROM "schema" AS s0}
   end
 
-  test "ignores from with hints" do
+  test "from with hints" do
     query =
       Schema
-      |> from(hints: ["USE INDEX FOO", "USE INDEX BAR"])
+      |> from(hints: ["INDEXED BY FOO", "INDEXED BY BAR"])
       |> select([r], r.x)
       |> plan()
 
-    assert all(query) == ~s{SELECT s0."x" FROM "schema" AS s0}
+    assert all(query) ==
+             ~s{SELECT s0."x" FROM "schema" AS s0 INDEXED BY FOO INDEXED BY BAR}
   end
 
   test "from without schema" do
