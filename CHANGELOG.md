@@ -5,6 +5,9 @@ All notable changes will be documented in this file.
 The format is loosely based on [Keep a Changelog][keepachangelog], and this
 project adheres to [Semantic Versioning][semver].
 
+## v0.8.1 - 2022-08-30
+- changed: Allow `FROM` hints to be used. [#88](https://github.com/elixir-sqlite/ecto_sqlite3/pull/88)
+
 ## v0.8.0 - 2022-08-04
 - changed: Set minimum elixir version to `~> 1.11`
 - added: Allow index hints on joins. [#83](https://github.com/elixir-sqlite/ecto_sqlite3/pull/83)
