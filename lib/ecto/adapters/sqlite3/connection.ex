@@ -857,7 +857,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     end)
   end
 
-  def from(%{from: %{source: source}} = query, sources) do
+  def from(%{from: %{source: source, hints: hints}} = query, sources) do
     {from, name} = get_source(query, sources, 0, source)
 
     [
@@ -865,6 +865,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
       from,
       " AS ",
       name
+      | Enum.map(hints, &[?\s | &1])
     ]
   end
 
