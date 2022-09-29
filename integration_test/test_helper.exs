@@ -114,6 +114,12 @@ ExUnit.start(
     # SQLite3 does not support placeholders
     :placeholders,
     # SQLite3 stores booleans as integers, causing Ecto's json_extract_path tests to fail
-    :json_extract_path
+    :json_extract_path,
+
+    # We don't support selected_as
+    :selected_as_with_group_by,
+    :selected_as_with_order_by,
+    :selected_as_with_order_by_expression,
+    :selected_as_with_having,
   ]
 )
