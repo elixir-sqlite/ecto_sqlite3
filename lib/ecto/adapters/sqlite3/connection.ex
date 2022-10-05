@@ -1340,7 +1340,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     ["json_extract(", expr(expr, sources, query), ", '$", path, "')"]
   end
 
-  def expr({:exists, _, [subquery]} = ex, sources, query) do
+  def expr({:exists, _, [subquery]}, sources, query) do
     ["exists", expr(subquery, sources, query)]
   end
 
