@@ -233,5 +233,16 @@ defmodule Ecto.Integration.CrudTest do
       assert [_] = TestRepo.all(from(a in Account, where: a.email == "hi@hi.com"))
       assert [_] = TestRepo.all(from(a in Account, where: a.email == "HI@HI.COM"))
     end
+
+    test "handles exists subquery" do
+      account1 = TestRepo.insert!(%Account{name: "Main"})
+      user1 = TestRepo.insert!(%User{name: "John"}, [])
+      TestRepo.insert!(%AccountUser{user_id: user1.id, account_id: account1.id})
+
+      subquery =
+        from(au in AccountUser, where: au.user_id == parent_as(:user).id, select: 1)
+
+      assert [_] = TestRepo.all(from(a in Account, as: :user, where: exists(subquery)))
+    end
   end
 end

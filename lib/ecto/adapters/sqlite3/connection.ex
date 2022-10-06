@@ -1340,6 +1340,10 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     ["json_extract(", expr(expr, sources, query), ", '$", path, "')"]
   end
 
+  def expr({:exists, _, [subquery]}, sources, query) do
+    ["exists", expr(subquery, sources, query)]
+  end
+
   def expr({fun, _, args}, sources, query) when is_atom(fun) and is_list(args) do
     {modifier, args} =
       case args do
