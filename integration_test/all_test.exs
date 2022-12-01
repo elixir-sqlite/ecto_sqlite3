@@ -11,7 +11,7 @@ Code.require_file "#{ecto}/integration_test/cases/repo.exs", __DIR__
 
 ecto_sql = Mix.Project.deps_paths()[:ecto_sql]
 # Code.require_file "#{ecto_sql}/integration_test/sql/lock.exs", __DIR__
-Code.require_file "#{ecto_sql}/integration_test/sql/logging.exs", __DIR__
+# Code.require_file "#{ecto_sql}/integration_test/sql/logging.exs", __DIR__
 Code.require_file "#{ecto_sql}/integration_test/sql/sandbox.exs", __DIR__
 Code.require_file "#{ecto_sql}/integration_test/sql/sql.exs", __DIR__
 Code.require_file "#{ecto_sql}/integration_test/sql/stream.exs", __DIR__
