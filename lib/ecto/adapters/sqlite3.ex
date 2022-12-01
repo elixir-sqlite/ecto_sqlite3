@@ -247,6 +247,11 @@ defmodule Ecto.Adapters.SQLite3 do
     end
   end
 
+  @impl Ecto.Adapter.Structure
+  def dump_cmd(args, opts \\ [], config) when is_list(config) and is_list(args) do
+    run_with_cmd("sqlite3", [config[:database] | args], opts)
+  end
+
   @impl Ecto.Adapter.Schema
   def autogenerate(:id), do: nil
   def autogenerate(:embed_id), do: Ecto.UUID.generate()
@@ -487,12 +492,14 @@ defmodule Ecto.Adapters.SQLite3 do
     end
   end
 
-  defp run_with_cmd(cmd, args) do
+  defp run_with_cmd(cmd, args, cmd_opts \\ []) do
     unless System.find_executable(cmd) do
       raise "could not find executable `#{cmd}` in path, " <>
               "please guarantee it is available before running ecto commands"
     end
 
-    System.cmd(cmd, args, stderr_to_stdout: true)
+    cmd_opts = Keyword.put_new(cmd_opts, :stderr_to_stdout, true)
+
+    System.cmd(cmd, args, cmd_opts)
   end
 end

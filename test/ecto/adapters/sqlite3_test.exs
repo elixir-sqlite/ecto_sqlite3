@@ -82,6 +82,24 @@ defmodule Ecto.Adapters.SQLite3Test do
     end
   end
 
+  describe "dump_cmd/3" do
+    test "runs command" do
+      opts = [database: Temp.path!()]
+
+      assert SQLite3.storage_up(opts) == :ok
+
+      assert {_out, 0} =
+               SQLite3.dump_cmd(
+                 ["CREATE TABLE test (id INTEGER PRIMARY KEY)"],
+                 [],
+                 opts
+               )
+
+      assert {"CREATE TABLE test (id INTEGER PRIMARY KEY);\n", 0} =
+               SQLite3.dump_cmd([".schema"], [], opts)
+    end
+  end
+
   defp string_uuid?(uuid), do: Regex.match?(@uuid_regex, uuid)
   defp binary_uuid?(uuid), do: bit_size(uuid) == 128
 end

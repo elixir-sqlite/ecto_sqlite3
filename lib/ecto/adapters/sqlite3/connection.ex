@@ -96,6 +96,11 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   end
 
   @impl true
+  def query_many(_conn, _sql, _params, _opts) do
+    raise RuntimeError, "query_many is not supported in the SQLite3 adapter"
+  end
+
+  @impl true
   def stream(conn, sql, params, options) do
     query = Exqlite.Query.build(statement: sql)
     DBConnection.stream(conn, query, params, options)
