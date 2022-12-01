@@ -70,7 +70,9 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
   end
 
   defp plan(query, operation \\ :all) do
-    {query, _params} = Ecto.Adapter.Queryable.plan_query(operation, SQLite3, query)
+    {query, _cast_params, _dump_params} =
+      Ecto.Adapter.Queryable.plan_query(operation, SQLite3, query)
+
     query
   end
 
