@@ -34,8 +34,8 @@ defmodule EctoSQLite3.MixProject do
   defp deps do
     [
       {:decimal, "~> 1.6 or ~> 2.0"},
-      {:ecto_sql, "~> 3.7"},
-      {:ecto, "~> 3.7"},
+      {:ecto_sql, "~> 3.9"},
+      {:ecto, "~> 3.9"},
       {:exqlite, "~> 0.9"},
       {:ex_doc, "~> 0.27", only: [:dev], runtime: false},
       {:jason, ">= 0.0.0", only: [:dev, :test, :docs]},
@@ -45,8 +45,8 @@ defmodule EctoSQLite3.MixProject do
       # Benchmarks
       {:benchee, "~> 1.0", only: :dev},
       {:benchee_markdown, "~> 0.2", only: :dev},
-      {:postgrex, "~> 0.15.0", only: :dev},
-      {:myxql, "~> 0.5.0", only: :dev}
+      {:postgrex, "~> 0.15", only: :dev},
+      {:myxql, "~> 0.6", only: :dev}
     ]
   end
 
