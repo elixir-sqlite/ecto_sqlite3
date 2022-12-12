@@ -143,7 +143,7 @@ defmodule Ecto.Adapters.SQLite3 do
 
   Thus, adding a check constraint for a new column is as simple as:
 
-      add :email, :string, check: %{name: "test_constraint", expr: "email != 'test@example.com')"}
+      add :email, :string, check: %{name: "test_constraint", expr: "email != 'test@example.com'"}
 
   ### Handling foreign key constraints in changesets
 
