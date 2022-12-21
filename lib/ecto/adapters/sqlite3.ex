@@ -209,10 +209,27 @@ defmodule Ecto.Adapters.SQLite3 do
 
   @impl Ecto.Adapter.Storage
   def storage_up(options) do
-    storage_up_with_path(
-      Keyword.get(options, :database),
-      Keyword.get(options, :journal_mode, :wal)
-    )
+    database = Keyword.get(options, :database)
+
+    cond do
+      is_nil(database) ->
+        raise ArgumentError,
+              """
+              No SQLite database path specified. Please check the configuration for your Repo.
+              Your config/*.exs file should have something like this in it:
+
+                config :my_app, MyApp.Repo,
+                  adapter: Ecto.Adapters.SQLite3,
+                  database: "/path/to/sqlite/database"
+              """
+
+      File.exists?(database) ->
+        {:error, :already_up}
+
+      true ->
+        {:ok, state} = Exqlite.Connection.connect(options)
+        :ok = Exqlite.Connection.disconnect(:normal, state)
+    end
   end
 
   @impl Ecto.Adapter.Migration
@@ -445,29 +462,6 @@ defmodule Ecto.Adapters.SQLite3 do
   ##
   ## HELPERS
   ##
-
-  defp storage_up_with_path(nil, _) do
-    raise ArgumentError,
-          """
-          No SQLite database path specified. Please check the configuration for your Repo.
-          Your config/*.exs file should have something like this in it:
-
-            config :my_app, MyApp.Repo,
-              adapter: Ecto.Adapters.SQLite3,
-              database: "/path/to/sqlite/database"
-          """
-  end
-
-  defp storage_up_with_path(db_path, journal_mode) do
-    if File.exists?(db_path) do
-      {:error, :already_up}
-    else
-      db_path |> Path.dirname() |> File.mkdir_p!()
-      {:ok, db} = Exqlite.Sqlite3.open(db_path)
-      :ok = Exqlite.Sqlite3.execute(db, "PRAGMA JOURNAL_MODE = #{journal_mode}")
-      :ok = Exqlite.Sqlite3.close(db)
-    end
-  end
 
   defp dump_versions(config) do
     table = config[:migration_source] || "schema_migrations"
