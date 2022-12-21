@@ -5,6 +5,9 @@ All notable changes will be documented in this file.
 The format is loosely based on [Keep a Changelog][keepachangelog], and this
 project adheres to [Semantic Versioning][semver].
 
+## v0.9.1 - 2022-12-21
+- changed: Use `Connection.connect` instead of `Sqlite3.open`. [#96](https://github.com/elixir-sqlite/ecto_sqlite3/pull/96)
+
 ## v0.9.0 - 2022-11-30
 - fixed: Added `dump_cmd/3`
 - fixed: Added `query_many/4`
