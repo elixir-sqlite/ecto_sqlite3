@@ -2,6 +2,8 @@ defmodule Ecto.Integration.TimestampsTest do
   use Ecto.Integration.Case
 
   alias Ecto.Integration.TestRepo
+  alias EctoSQLite3.Integration.Account
+  alias EctoSQLite3.Integration.Product
 
   import Ecto.Query
 
@@ -119,5 +121,48 @@ defmodule Ecto.Integration.TimestampsTest do
       |> TestRepo.one()
 
     assert user
+  end
+
+  test "datetime comparisons" do
+    account =
+      %Account{}
+      |> Account.changeset(%{name: "Test"})
+      |> TestRepo.insert!()
+
+    %Product{}
+    |> Product.changeset(%{
+      account_id: account.id,
+      name: "Foo",
+      approved_at: ~U[2023-01-01T01:00:00Z]
+    })
+    |> TestRepo.insert!()
+
+    %Product{}
+    |> Product.changeset(%{
+      account_id: account.id,
+      name: "Bar",
+      approved_at: ~U[2023-01-01T02:00:00Z]
+    })
+    |> TestRepo.insert!()
+
+    %Product{}
+    |> Product.changeset(%{
+      account_id: account.id,
+      name: "Qux",
+      approved_at: ~U[2023-01-01T03:00:00Z]
+    })
+    |> TestRepo.insert!()
+
+    since = ~U[2023-01-01T01:59:00Z]
+
+    assert [
+             %{name: "Qux"},
+             %{name: "Bar"}
+           ] =
+             Product
+             |> select([p], p)
+             |> where([p], p.approved_at >= ^since)
+             |> order_by([p], desc: p.approved_at)
+             |> TestRepo.all()
   end
 end

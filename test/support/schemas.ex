@@ -97,7 +97,7 @@ defmodule EctoSQLite3.Integration.Product do
 
   def changeset(struct, attrs) do
     struct
-    |> cast(attrs, [:name, :description, :tags])
+    |> cast(attrs, [:name, :description, :tags, :account_id, :approved_at])
     |> validate_required([:name])
     |> maybe_generate_external_id()
   end
