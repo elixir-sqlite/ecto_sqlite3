@@ -1581,20 +1581,12 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     collate = Keyword.get(opts, :collate)
     check = Keyword.get(opts, :check)
 
-    column_options(default, type, null, pk, collate, check)
-  end
-
-  defp column_options(_default, :serial, _, true, _, _) do
-    " PRIMARY KEY AUTOINCREMENT"
-  end
-
-  defp column_options(default, type, null, pk, collate, check) do
     [
       default_expr(default, type),
       null_expr(null),
       collate_expr(collate),
       check_expr(check),
-      pk_expr(pk)
+      pk_expr(pk, type)
     ]
   end
 
@@ -1660,8 +1652,11 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   defp index_expr(literal) when is_binary(literal), do: literal
   defp index_expr(literal), do: quote_name(literal)
 
-  defp pk_expr(true), do: " PRIMARY KEY"
-  defp pk_expr(_), do: []
+  defp pk_expr(true, type) when type in [:serial, :bigserial],
+    do: " PRIMARY KEY AUTOINCREMENT"
+
+  defp pk_expr(true, _), do: " PRIMARY KEY"
+  defp pk_expr(_, _), do: []
 
   defp options_expr(nil), do: []
 
