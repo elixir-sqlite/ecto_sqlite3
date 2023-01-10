@@ -83,8 +83,8 @@ defmodule Ecto.Adapters.SQLite3 do
 
   The `:binary_id_type` configuration option allows configuring how `:binary_id` fields are stored in the database as
   well as the type of the column in which these IDs will be stored. The possible values are:
-  * `:string` (default): IDs are stored as strings, and the type of the column is `TEXT_UUID`.
-  * `:binary`: IDs are stored in their raw binary form, and the type of the column is `UUID`.
+  * `:string` (default): IDs are stored as strings, and the type of the column is `TEXT`.
+  * `:binary`: IDs are stored in their raw binary form, and the type of the column is `BLOB`.
 
   The main differences between the two formats are as follows:
   * When stored as binary, UUIDs require much less space in the database. IDs stored as strings require 36 bytes each,

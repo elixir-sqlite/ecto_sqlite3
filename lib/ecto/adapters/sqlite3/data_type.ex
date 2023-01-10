@@ -11,6 +11,7 @@ defmodule Ecto.Adapters.SQLite3.DataType do
   def column_type(:id, _opts), do: "INTEGER"
   def column_type(:serial, _opts), do: "INTEGER"
   def column_type(:bigserial, _opts), do: "INTEGER"
+  def column_type(:boolean, _opts), do: "INTEGER"
   def column_type(:bigint, _opts), do: "INTEGER"
   def column_type(:string, _opts), do: "TEXT"
   def column_type(:float, _opts), do: "NUMERIC"
@@ -19,10 +20,10 @@ defmodule Ecto.Adapters.SQLite3.DataType do
   def column_type(:array, _opts), do: "JSON"
   def column_type({:map, _}, _opts), do: "JSON"
   def column_type({:array, _}, _opts), do: "JSON"
-  def column_type(:utc_datetime, _opts), do: "TEXT_DATETIME"
-  def column_type(:utc_datetime_usec, _opts), do: "TEXT_DATETIME"
-  def column_type(:naive_datetime, _opts), do: "TEXT_DATETIME"
-  def column_type(:naive_datetime_usec, _opts), do: "TEXT_DATETIME"
+  def column_type(:utc_datetime, _opts), do: "TEXT"
+  def column_type(:utc_datetime_usec, _opts), do: "TEXT"
+  def column_type(:naive_datetime, _opts), do: "TEXT"
+  def column_type(:naive_datetime_usec, _opts), do: "TEXT"
   def column_type(:decimal, nil), do: "DECIMAL"
 
   def column_type(:decimal, opts) do
@@ -39,15 +40,15 @@ defmodule Ecto.Adapters.SQLite3.DataType do
 
   def column_type(:binary_id, _opts) do
     case Application.get_env(:ecto_sqlite3, :binary_id_type, :string) do
-      :string -> "TEXT_UUID"
-      :binary -> "UUID"
+      :string -> "TEXT"
+      :binary -> "BLOB"
     end
   end
 
   def column_type(:uuid, _opts) do
     case Application.get_env(:ecto_sqlite3, :uuid_type, :string) do
-      :string -> "TEXT_UUID"
-      :binary -> "UUID"
+      :string -> "TEXT"
+      :binary -> "BLOB"
     end
   end
 

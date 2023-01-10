@@ -1296,7 +1296,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
       expr(datetime, sources, query),
       ",",
       interval(count, interval, sources),
-      ") AS TEXT_DATETIME)"
+      ") AS TEXT)"
     ]
   end
 
@@ -1308,7 +1308,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
       expr(date, sources, query),
       ",",
       interval(count, interval, sources),
-      ") AS TEXT_DATE)"
+      ") AS TEXT)"
     ]
   end
 
