@@ -955,7 +955,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> select([], type(^"601d74e4-a8d3-4b6e-8365-eddb4c893327", Ecto.UUID))
       |> plan()
 
-    assert all(query) == ~s{SELECT CAST(? AS TEXT_UUID) FROM "schema" AS s0}
+    assert all(query) == ~s{SELECT CAST(? AS TEXT) FROM "schema" AS s0}
   end
 
   test "string type" do
@@ -2152,7 +2152,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
           [precision: 8, scale: 2, default: {:fragment, "expr"}]},
          {:add, :on_hand, :integer, [default: 0, null: true]},
          {:add, :likes, :integer, [default: 0, null: false]},
-         {:add, :published_at, :datetime, [null: true]},
+         {:add, :published_at, :utc_datetime, [null: true]},
          {:add, :is_active, :boolean, [default: true]},
          {:add, :notes, :text, [collate: :nocase]},
          {:add, :meta, :text, [check: %{name: "meta_constraint", expr: "meta != 'a'"}]}
@@ -2166,8 +2166,8 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
              "price" NUMERIC DEFAULT expr, \
              "on_hand" INTEGER DEFAULT 0 NULL, \
              "likes" INTEGER DEFAULT 0 NOT NULL, \
-             "published_at" DATETIME NULL, \
-             "is_active" BOOLEAN DEFAULT true, \
+             "published_at" TEXT NULL, \
+             "is_active" INTEGER DEFAULT true, \
              "notes" TEXT COLLATE NOCASE, \
              "meta" TEXT CONSTRAINT meta_constraint CHECK (meta != 'a')\
              )\
@@ -2337,8 +2337,8 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
     assert execute_ddl(create) == [
              """
              CREATE TABLE "posts" (\
-             "published_at" TEXT_DATETIME, \
-             "submitted_at" TEXT_DATETIME\
+             "published_at" TEXT, \
+             "submitted_at" TEXT\
              )\
              """
            ]
@@ -2353,7 +2353,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
        ]}
 
     assert execute_ddl(create) == [
-             ~s{CREATE TABLE "posts" ("published_at" TEXT_DATETIME, "submitted_at" TEXT_DATETIME)}
+             ~s{CREATE TABLE "posts" ("published_at" TEXT, "submitted_at" TEXT)}
            ]
   end
 
@@ -2443,7 +2443,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
              """,
              """
              ALTER TABLE "posts" \
-             ADD COLUMN "when" TEXT_DATETIME\
+             ADD COLUMN "when" TEXT\
              """
            ]
   end

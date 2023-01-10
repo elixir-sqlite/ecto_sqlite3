@@ -26,24 +26,24 @@ defmodule Ecto.Adapters.SQLite3.DataTypeTest do
       assert DataType.column_type(:bigserial, nil) == "INTEGER"
     end
 
-    test ":binary_id is TEXT_UUID OR UUID" do
-      assert DataType.column_type(:binary_id, nil) == "TEXT_UUID"
+    test ":binary_id is TEXT OR UUID" do
+      assert DataType.column_type(:binary_id, nil) == "TEXT"
 
       Application.put_env(:ecto_sqlite3, :binary_id_type, :binary)
 
-      assert DataType.column_type(:binary_id, nil) == "UUID"
+      assert DataType.column_type(:binary_id, nil) == "BLOB"
     end
 
     test ":string is TEXT" do
       assert DataType.column_type(:string, nil) == "TEXT"
     end
 
-    test ":uuid is TEXT_UUID or UUID" do
-      assert DataType.column_type(:uuid, nil) == "TEXT_UUID"
+    test ":uuid is TEXT or UUID" do
+      assert DataType.column_type(:uuid, nil) == "TEXT"
 
       Application.put_env(:ecto_sqlite3, :uuid_type, :binary)
 
-      assert DataType.column_type(:uuid, nil) == "UUID"
+      assert DataType.column_type(:uuid, nil) == "BLOB"
     end
 
     test ":map is JSON" do
@@ -82,20 +82,20 @@ defmodule Ecto.Adapters.SQLite3.DataTypeTest do
       assert DataType.column_type(:binary, nil) == "BLOB"
     end
 
-    test ":utc_datetime is DATETIME" do
-      assert DataType.column_type(:utc_datetime, nil) == "TEXT_DATETIME"
+    test ":utc_datetime is TEXT" do
+      assert DataType.column_type(:utc_datetime, nil) == "TEXT"
     end
 
-    test ":utc_datetime_usec is DATETIME" do
-      assert DataType.column_type(:utc_datetime_usec, nil) == "TEXT_DATETIME"
+    test ":utc_datetime_usec is TEXT" do
+      assert DataType.column_type(:utc_datetime_usec, nil) == "TEXT"
     end
 
-    test ":naive_datetime is DATETIME" do
-      assert DataType.column_type(:naive_datetime, nil) == "TEXT_DATETIME"
+    test ":naive_datetime is TEXT" do
+      assert DataType.column_type(:naive_datetime, nil) == "TEXT"
     end
 
-    test ":naive_datetime_usec is DATETIME" do
-      assert DataType.column_type(:naive_datetime_usec, nil) == "TEXT_DATETIME"
+    test ":naive_datetime_usec is TEXT" do
+      assert DataType.column_type(:naive_datetime_usec, nil) == "TEXT"
     end
   end
 end
