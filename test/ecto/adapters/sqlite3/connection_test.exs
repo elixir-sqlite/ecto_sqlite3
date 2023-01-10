@@ -2787,4 +2787,22 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     assert query == ~s{SELECT p0."id", p0."title", p0."content" FROM "posts" AS p0}
   end
+
+  test "autoincrement support" do
+    serial = {:create, table(:posts), [{:add, :id, :serial, [primary_key: true]}]}
+    bigserial = {:create, table(:posts), [{:add, :id, :bigserial, [primary_key: true]}]}
+    id = {:create, table(:posts), [{:add, :id, :id, [primary_key: true]}]}
+    integer = {:create, table(:posts), [{:add, :id, :integer, [primary_key: true]}]}
+
+    assert execute_ddl(serial) == [
+             ~s/CREATE TABLE "posts" ("id" INTEGER PRIMARY KEY AUTOINCREMENT)/
+           ]
+
+    assert execute_ddl(bigserial) == [
+             ~s/CREATE TABLE "posts" ("id" INTEGER PRIMARY KEY AUTOINCREMENT)/
+           ]
+
+    assert execute_ddl(id) == [~s/CREATE TABLE "posts" ("id" INTEGER PRIMARY KEY)/]
+    assert execute_ddl(integer) == [~s/CREATE TABLE "posts" ("id" INTEGER PRIMARY KEY)/]
+  end
 end
