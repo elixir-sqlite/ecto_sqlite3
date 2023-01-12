@@ -5,6 +5,21 @@ All notable changes will be documented in this file.
 The format is loosely based on [Keep a Changelog][keepachangelog], and this
 project adheres to [Semantic Versioning][semver].
 
+## Unreleased
+- changed: Enable `AUTOINCREMENT` for `serial` and `bigserial`. [#98](https://github.com/elixir-sqlite/ecto_qlite3/pull/98)
+- **breaking**: Add support for sqlite strict mode. [#97](https://github.com/elixir-sqlite/ecto_sqlite3/pull/97)
+
+With sqlite strict mode support being added, the following field "types" were altered.
+
+* `TEXT_DATETIME` => `TEXT`
+* `TEXT_UUID` => `TEXT`: This is when `:binary_id_type` is `:string`
+* `UUID` => `BLOB`: This is when `:binary_id_type` is `:binary`
+
+This is a breaking change in the sense that rebuilding the schema from scratch will cause those columns to show up differently. Under the hood sqlite does not actually care.
+
+We kept `TEXT_DATETIME` to satisfy the old Ecto2 implementation to keep backwards compatibility.
+
+
 ## v0.9.1 - 2022-12-21
 - changed: Use `Connection.connect` instead of `Sqlite3.open`. [#96](https://github.com/elixir-sqlite/ecto_sqlite3/pull/96)
 
