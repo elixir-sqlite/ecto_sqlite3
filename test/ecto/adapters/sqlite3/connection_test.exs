@@ -946,9 +946,11 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> select([], true)
       |> plan()
 
-    assert all(query) == ~s{SELECT 1 FROM "schema" AS s0 WHERE (s0."foo" = CAST(123.0 AS REAL))}
+    assert all(query) ==
+             ~s{SELECT 1 FROM "schema" AS s0 WHERE (s0."foo" = CAST(123.0 AS REAL))}
 
     name = "y"
+
     query =
       "schema"
       |> where(fragment("? = ?", literal(^name), "Main"))
@@ -959,13 +961,13 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
   end
 
   test "selected_as" do
-    query = 
-        from(s in "schema", 
-          select: %{
-            y: selected_as(s.y, :y2),
-          }
-        )
-        |> plan()
+    query =
+      from(s in "schema",
+        select: %{
+          y: selected_as(s.y, :y2)
+        }
+      )
+      |> plan()
 
     assert all(query) == ~s|SELECT s0."y" AS "y2" FROM "schema" AS s0|
   end

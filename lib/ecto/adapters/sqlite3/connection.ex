@@ -1373,7 +1373,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     end
   end
 
-  #TODO It technically is, its just a json array, so we *could* support it
+  # TODO It technically is, its just a json array, so we *could* support it
   def expr(list, _sources, query) when is_list(list) do
     raise Ecto.QueryError,
       query: query,
