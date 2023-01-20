@@ -1203,7 +1203,6 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     quote_name(field)
   end
 
-  # def expr({{:., _, [{:parent_as, _, [{:&, _, [idx]}]}, field]}, _, []}, _sources, query)
   def expr({{:., _, [{:parent_as, _, [as]}, field]}, _, []}, _sources, query)
       when is_atom(field) do
     {ix, sources} = get_parent_sources_ix(query, as)
@@ -1288,6 +1287,14 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     |> parens_for_select
   end
 
+  def expr({:literal, _, [literal]}, _sources, _query) do
+    quote_name(literal)
+  end
+
+  def expr({:selected_as, _, [name]}, _sources, _query) do
+    [quote_name(name)]
+  end
+
   def expr({:datetime_add, _, [datetime, count, interval]}, sources, query) do
     [
       "CAST (",
@@ -1366,6 +1373,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     end
   end
 
+  #TODO It technically is, its just a json array, so we *could* support it
   def expr(list, _sources, query) when is_list(list) do
     raise Ecto.QueryError,
       query: query,
@@ -1404,8 +1412,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   end
 
   def expr(literal, _sources, _query) when is_float(literal) do
-    # Unsure if SQLite3 supports float casting
-    ["(0 + ", Float.to_string(literal), ?)]
+    ["CAST(", Float.to_string(literal), " AS REAL)"]
   end
 
   def expr(expr, _sources, query) do

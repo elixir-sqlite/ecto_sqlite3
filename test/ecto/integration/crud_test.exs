@@ -244,5 +244,50 @@ defmodule Ecto.Integration.CrudTest do
 
       assert [_] = TestRepo.all(from(a in Account, as: :user, where: exists(subquery)))
     end
+
+    test "can handle fragment literal" do 
+      account1 = TestRepo.insert!(%Account{name: "Main"})
+
+      name = "name"
+      query =
+        from(a in Account, where: fragment("? = ?", literal(^name), "Main"))
+
+      assert [account] = TestRepo.all(query)
+      assert account.id == account1.id
+    end
+
+    test "can handle selected_as" do
+      TestRepo.insert!(%Account{name: "Main"})
+      TestRepo.insert!(%Account{name: "Main"})
+      TestRepo.insert!(%Account{name: "Main2"})
+      TestRepo.insert!(%Account{name: "Main3"})
+
+      query =
+        from(a in Account, 
+          select: %{
+            name: selected_as(a.name, :name2),
+            count: count()
+          },
+          group_by: selected_as(:name2)
+        )
+
+      assert [%{name: "Main", count: 2}, %{name: "Main2", count: 1}, %{name: "Main3", count: 1}] = TestRepo.all(query)
+    end
+
+    test "can handle floats" do
+      TestRepo.insert!(%Account{name: "Main"})
+
+      one = "1.0"
+      two = 2.0
+
+      query =
+        from(a in Account, 
+          select: %{
+            sum: ^one + ^two
+          }
+        )
+
+      assert [%{sum: 3.0}] = TestRepo.all(query)
+    end
   end
 end
