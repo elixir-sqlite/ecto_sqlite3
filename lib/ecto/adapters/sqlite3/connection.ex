@@ -338,11 +338,11 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     end
   end
 
-  defp build_explain_query(query, :query_plan) do
+  def build_explain_query(query, :query_plan) do
     IO.iodata_to_binary(["EXPLAIN QUERY PLAN ", query])
   end
 
-  defp build_explain_query(query, :instructions) do
+  def build_explain_query(query, :instructions) do
     IO.iodata_to_binary(["EXPLAIN ", query])
   end
 
@@ -426,7 +426,13 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   end
 
   @impl true
-  def execute_ddl({:drop, %Table{} = table, _mode}) do
+  def execute_ddl({:drop, %Table{} = table, mode}) do
+    if mode != [] do
+      IO.warn """
+      `#{inspect(mode)}` is not supported for DROP TABLE with SQLite3 \
+      DROP TABLE #{table.name} cannot have options set.
+      """, []
+    end
     execute_ddl({:drop, table})
   end
 
@@ -508,7 +514,14 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   end
 
   @impl true
-  def execute_ddl({:drop, %Index{} = index, _mode}) do
+  def execute_ddl({:drop, %Index{} = index, mode}) do
+
+    if mode != [] do
+      IO.warn """
+      `#{inspect(mode)}` is not supported for DROP INDEX with SQLite3 \
+      DROP INDEX #{index.name} cannot have options set.
+      """, []
+    end
     execute_ddl({:drop, index})
   end
 
@@ -818,15 +831,8 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   def handle_call(fun, _arity), do: {:fun, Atom.to_string(fun)}
 
   def distinct(nil, _sources, _query), do: []
-  def distinct(%QueryExpr{expr: true}, _sources, _query), do: "DISTINCT "
   def distinct(%QueryExpr{expr: false}, _sources, _query), do: []
-
-  def distinct(%QueryExpr{expr: expression}, _sources, query)
-      when is_list(expression) do
-    raise Ecto.QueryError,
-      query: query,
-      message: "DISTINCT with multiple columns is not supported by SQLite3"
-  end
+  def distinct(%QueryExpr{expr: _}, _sources, _query), do: "DISTINCT "
 
   def select(%{select: %{fields: fields}, distinct: distinct} = query, sources) do
     [
@@ -1064,13 +1070,24 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   def order_by(%{order_bys: []}, _sources), do: []
 
   def order_by(%{order_bys: order_bys} = query, sources) do
+    order_bys = Enum.flat_map(order_bys, & &1.expr)
+
+    distinct = Map.get(query, :distinct, nil)
+    
+    order_bys = if distinct do
+        order_by_concat(List.wrap(distinct.expr), order_bys)
+      else
+        order_bys
+    end
+
     [
       " ORDER BY "
-      | intersperse_map(order_bys, ", ", fn %QueryExpr{expr: expression} ->
-          intersperse_map(expression, ", ", &order_by_expr(&1, sources, query))
-        end)
+      | intersperse_map(order_bys, ", ", &order_by_expr(&1, sources, query))
     ]
   end
+
+  defp order_by_concat([head | left], [head | right]), do: [head | order_by_concat(left, right)]
+  defp order_by_concat(left, right), do: left ++ right
 
   defp order_by_expr({dir, expression}, sources, query) do
     str = expr(expression, sources, query)
@@ -1117,10 +1134,10 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     Enum.map(combinations, &combination/1)
   end
 
-  defp combination({:union, query}), do: [" UNION ", all(query)]
-  defp combination({:union_all, query}), do: [" UNION ALL ", all(query)]
-  defp combination({:except, query}), do: [" EXCEPT ", all(query)]
-  defp combination({:intersect, query}), do: [" INTERSECT ", all(query)]
+  defp combination({:union, query}), do: [" UNION (", all(query), ?)]
+  defp combination({:union_all, query}), do: [" UNION ALL (", all(query), ?)]
+  defp combination({:except, query}), do: [" EXCEPT (", all(query), ?)]
+  defp combination({:intersect, query}), do: [" INTERSECT (", all(query), ?)]
 
   defp combination({:except_all, query}) do
     raise Ecto.QueryError,
@@ -1297,25 +1314,21 @@ defmodule Ecto.Adapters.SQLite3.Connection do
 
   def expr({:datetime_add, _, [datetime, count, interval]}, sources, query) do
     [
-      "CAST (",
-      "strftime('%Y-%m-%d %H:%M:%f000Z'",
-      ",",
+      "datetime(",
       expr(datetime, sources, query),
       ",",
       interval(count, interval, sources),
-      ") AS TEXT)"
+      ")"
     ]
   end
 
   def expr({:date_add, _, [date, count, interval]}, sources, query) do
     [
-      "CAST (",
-      "strftime('%Y-%m-%d'",
-      ",",
+      "date(",
       expr(date, sources, query),
       ",",
       interval(count, interval, sources),
-      ") AS TEXT)"
+      ")"
     ]
   end
 
@@ -1392,7 +1405,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
 
   def expr(%Ecto.Query.Tagged{value: other, type: type}, sources, query)
       when type in [:decimal, :float] do
-    ["(", expr(other, sources, query), " + 0)"]
+    ["CAST(", expr(other, sources, query), " AS REAL)"]
   end
 
   def expr(%Ecto.Query.Tagged{value: other, type: type}, sources, query) do
@@ -1427,15 +1440,15 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   end
 
   def interval(count, "millisecond", sources) do
-    "(#{expr(count, sources, nil)} / 1000.0) || ' seconds'"
+    "('#{expr(count, sources, nil)} / 1000.0) seconds'"
   end
 
   def interval(count, "week", sources) do
-    "(#{expr(count, sources, nil)} * 7) || ' days'"
+    "('#{expr(count, sources, nil)} * 7) days'"
   end
 
   def interval(count, interval, sources) do
-    "#{expr(count, sources, nil)} || ' #{interval}'"
+    "'#{expr(count, sources, nil)} #{interval}'"
   end
 
   defp op_to_binary({op, _, [_, _]} = expression, sources, query)
@@ -1740,7 +1753,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
       end)
 
     if length(pks) > 1 do
-      composite_pk_expr = pks |> Enum.reverse() |> Enum.map_join(", ", &quote_name/1)
+      composite_pk_expr = pks |> Enum.reverse() |> Enum.map_join(",", &quote_name/1)
 
       {
         %{table | primary_key: :composite},
