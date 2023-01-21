@@ -428,10 +428,10 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   @impl true
   def execute_ddl({:drop, %Table{} = table, mode}) do
     if mode != [] do
-      IO.warn """
-      `#{inspect(mode)}` is not supported for DROP TABLE with SQLite3 \
-      DROP TABLE #{table.name} cannot have options set.
-      """, []
+      raise ArgumentError, """
+        `#{inspect(mode)}` is not supported for DROP TABLE with SQLite3 \
+        DROP TABLE #{table.name} cannot have options set.
+        """
     end
     execute_ddl({:drop, table})
   end
@@ -517,10 +517,10 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   def execute_ddl({:drop, %Index{} = index, mode}) do
 
     if mode != [] do
-      IO.warn """
-      `#{inspect(mode)}` is not supported for DROP INDEX with SQLite3 \
-      DROP INDEX #{index.name} cannot have options set.
-      """, []
+      raise ArgumentError, """
+        `#{inspect(mode)}` is not supported for DROP INDEX with SQLite3 \
+        DROP INDEX #{index.name} cannot have options set.
+        """
     end
     execute_ddl({:drop, index})
   end

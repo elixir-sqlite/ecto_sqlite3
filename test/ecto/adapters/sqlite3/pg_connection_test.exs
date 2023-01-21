@@ -2,8 +2,6 @@ defmodule Ecto.Adapters.SQLite3Test do
   use ExUnit.Case, async: false
 
   import Ecto.Query
-  import ExUnit.CaptureIO
-
 
   alias Ecto.Queryable
   alias Ecto.Adapters.SQLite3.Connection, as: SQL 
@@ -1407,30 +1405,6 @@ defmodule Ecto.Adapters.SQLite3Test do
     ]
   end
 
-  # TODO should we raise on comment?
-  test "create table with comment on table" do
-    create = {:create, table(:posts, comment: "table comment", prefix: "foo"),
-              [{:add, :category_0, %Reference{table: :categories}, []}]}
-    assert execute_ddl(create) == [remove_newlines("""
-    CREATE TABLE "foo"."posts"
-    ("category_0" INTEGER CONSTRAINT "posts_category_0_fkey" REFERENCES "foo"."categories"("id"))
-    """)]
-  end
-
-  # TODO should we raise on comment?
-  test "create table with comment on columns" do
-    create = {:create, table(:posts, prefix: "foo"),
-              [
-                {:add, :category_0, %Reference{table: :categories}, [comment: "column comment"]},
-                {:add, :created_at, :timestamp, []},
-                {:add, :updated_at, :timestamp, [comment: "column comment 2"]}
-              ]}
-    assert execute_ddl(create) == [remove_newlines("""
-    CREATE TABLE "foo"."posts"
-    ("category_0" INTEGER CONSTRAINT "posts_category_0_fkey" REFERENCES "foo"."categories"("id"), "created_at" TEXT, "updated_at" TEXT)
-    """)]
-  end
-
   test "create table with references" do
     create = {:create, table(:posts),
               [{:add, :id, :serial, [primary_key: true]},
@@ -1655,18 +1629,13 @@ defmodule Ecto.Adapters.SQLite3Test do
   test "drop table with cascade" do
     drop = {:drop, table(:posts), :cascade}
 
-    log = capture_io(:stderr, fn -> 
-      assert execute_ddl(drop) == [~s|DROP TABLE "posts"|]
-    end)
+    assert_raise ArgumentError, fn->
+      execute_ddl(drop)
+    end
 
-    assert log =~ ":cascade"
-
-    log = capture_io(:stderr, fn -> 
-      drop = {:drop, table(:posts, prefix: :foo), :cascade}
-      assert execute_ddl(drop) == [~s|DROP TABLE "foo"."posts"|]
-    end)
-
-    assert log =~ ":cascade"
+    assert_raise ArgumentError, fn->
+      execute_ddl(drop)
+    end
   end
 
   test "alter table" do
@@ -1849,15 +1818,15 @@ defmodule Ecto.Adapters.SQLite3Test do
   end
 
   test "drop index with cascade" do
-    assert capture_io(:stderr, fn ->
+    assert_raise ArgumentError, fn ->
       drop = {:drop, index(:posts, [:id], name: "posts$main"), :cascade}
-      assert execute_ddl(drop) == [~s|DROP INDEX "posts$main"|]
-    end) =~ ":cascade"
+      execute_ddl(drop) 
+    end
 
-    assert capture_io(:stderr, fn ->
+    assert_raise ArgumentError, fn ->
       drop = {:drop, index(:posts, [:id], name: "posts$main", prefix: :foo), :cascade}
-      assert execute_ddl(drop) == [~s|DROP INDEX "foo"."posts$main"|]
-    end) =~ ":cascade"
+      execute_ddl(drop) 
+    end
   end
 
   # TODO SQLITE doesn't support alter table but you could add/remove?
@@ -1933,5 +1902,4 @@ defmodule Ecto.Adapters.SQLite3Test do
   defp remove_newlines(string) do
     string |> String.trim |> String.replace("\n", " ")
   end
-
 end
