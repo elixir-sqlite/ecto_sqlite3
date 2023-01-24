@@ -305,8 +305,10 @@ defmodule Ecto.Adapters.SQLite3Test do
     query = Schema |> select([r], count(r.x)) |> plan()
     assert all(query) == ~s{SELECT count(s0."x") FROM "schema" AS s0}
 
-    query = Schema |> select([r], count(r.x, :distinct)) |> plan()
-    assert all(query) == ~s{SELECT count(DISTINCT s0."x") FROM "schema" AS s0}
+    assert_raise Ecto.QueryError, fn ->
+      query = Schema |> select([r], count(r.x, :distinct)) |> plan()
+      all(query)
+    end
 
     query = Schema |> select([r], count()) |> plan()
     assert all(query) == ~s{SELECT count(*) FROM "schema" AS s0}
@@ -324,24 +326,6 @@ defmodule Ecto.Adapters.SQLite3Test do
   end
 
   test "distinct" do
-    query = Schema |> distinct([r], r.x) |> select([r], {r.x, r.y}) |> plan()
-    assert all(query) == ~s{SELECT DISTINCT s0."x", s0."y" FROM "schema" AS s0}
-
-    query = Schema |> distinct([r], desc: r.x) |> select([r], {r.x, r.y}) |> plan()
-    assert all(query) == ~s{SELECT DISTINCT s0."x", s0."y" FROM "schema" AS s0}
-
-    query = Schema |> distinct([r], 2) |> select([r], r.x) |> plan()
-    assert all(query) == ~s{SELECT DISTINCT s0."x" FROM "schema" AS s0}
-
-    query = Schema |> distinct([r], [r.x, r.y]) |> select([r], {r.x, r.y}) |> plan()
-    assert all(query) == ~s{SELECT DISTINCT s0."x", s0."y" FROM "schema" AS s0}
-
-    query = Schema |> distinct([r], [asc: r.x, desc: r.y]) |> select([r], {r.x, r.y}) |> plan()
-    assert all(query) == ~s{SELECT DISTINCT s0."x", s0."y" FROM "schema" AS s0}
-
-    query = Schema |> distinct([r], [asc_nulls_first: r.x, desc_nulls_last: r.y]) |> select([r], {r.x, r.y}) |> plan()
-    assert all(query) == ~s{SELECT DISTINCT s0."x", s0."y" FROM "schema" AS s0}
-
     query = Schema |> distinct([r], true) |> select([r], {r.x, r.y}) |> plan()
     assert all(query) == ~s{SELECT DISTINCT s0."x", s0."y" FROM "schema" AS s0}
 
@@ -353,26 +337,11 @@ defmodule Ecto.Adapters.SQLite3Test do
 
     query = Schema |> distinct(false) |> select([r], {r.x, r.y}) |> plan()
     assert all(query) == ~s{SELECT s0."x", s0."y" FROM "schema" AS s0}
-  end
 
-  test "distinct with order by" do
-    query = Schema |> order_by([r], [r.y]) |> distinct([r], desc: r.x) |> select([r], r.x) |> plan()
-    assert all(query) == ~s{SELECT DISTINCT s0."x" FROM "schema" AS s0 ORDER BY s0."x" DESC, s0."y"}
-
-    query = Schema |> order_by([r], [r.y]) |> distinct([r], desc_nulls_last: r.x) |> select([r], r.x) |> plan()
-    assert all(query) == ~s{SELECT DISTINCT s0."x" FROM "schema" AS s0 ORDER BY s0."x" DESC NULLS LAST, s0."y"}
-
-    # Duplicates
-    query = Schema |> order_by([r], desc: r.x) |> distinct([r], desc: r.x) |> select([r], r.x) |> plan()
-    assert all(query) == ~s{SELECT DISTINCT s0."x" FROM "schema" AS s0 ORDER BY s0."x" DESC}
-
-    assert Schema
-           |> order_by([r], desc: r.x)
-           |> distinct([r], desc: r.x)
-           |> select([r], r.x)
-           |> plan()
-           |> all() ==
-             ~s{SELECT DISTINCT s0."x" FROM "schema" AS s0 ORDER BY s0."x" DESC}
+    assert_raise Ecto.QueryError, ~r"DISTINCT with multiple columns is not supported by SQLite3", fn ->
+      query = Schema |> distinct([r], [r.x, r.y]) |> select([r], {r.x, r.y}) |> plan()
+      all(query)
+    end
   end
 
   test "coalesce" do
@@ -895,7 +864,7 @@ defmodule Ecto.Adapters.SQLite3Test do
            ~s{UPDATE "schema" AS s0 SET "x" = ? WHERE (s0."x" = ?) RETURNING "x" = ?}
   end
 
-  # TODO We don;t have actual arrays so probably no?
+  # TODO With JSON array stuff
   test "update all array ops" do
     query = from(m in Schema, update: [push: [w: 0]]) |> plan(:update_all)
     assert_raise Ecto.QueryError, fn ->

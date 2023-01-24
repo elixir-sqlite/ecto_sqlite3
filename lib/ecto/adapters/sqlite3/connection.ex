@@ -866,9 +866,12 @@ defmodule Ecto.Adapters.SQLite3.Connection do
 
   def handle_call(fun, _arity), do: {:fun, Atom.to_string(fun)}
 
-  def distinct(nil, _sources, _query), do: []
-  def distinct(%QueryExpr{expr: false}, _sources, _query), do: []
-  def distinct(%QueryExpr{expr: _}, _sources, _query), do: "DISTINCT "
+  defp distinct(nil, _sources, _query), do: []
+  defp distinct(%QueryExpr{expr: true}, _sources, _query),  do: "DISTINCT "
+  defp distinct(%QueryExpr{expr: false}, _sources, _query), do: []
+  defp distinct(%QueryExpr{expr: exprs}, _sources, query) when is_list(exprs) do
+    raise Ecto.QueryError, query: query, message: "DISTINCT with multiple columns is not supported by SQLite3"
+  end
 
   def select(%{select: %{fields: fields}, distinct: distinct} = query, sources) do
     [
@@ -1114,22 +1117,11 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   def order_by(%{order_bys: order_bys} = query, sources) do
     order_bys = Enum.flat_map(order_bys, & &1.expr)
 
-    distinct = Map.get(query, :distinct, nil)
-    
-    order_bys = if distinct do
-        order_by_concat(List.wrap(distinct.expr), order_bys)
-      else
-        order_bys
-    end
-
     [
       " ORDER BY "
       | intersperse_map(order_bys, ", ", &order_by_expr(&1, sources, query))
     ]
   end
-
-  defp order_by_concat([head | left], [head | right]), do: [head | order_by_concat(left, right)]
-  defp order_by_concat(left, right), do: left ++ right
 
   defp order_by_expr({dir, expression}, sources, query) do
     str = expr(expression, sources, query)
@@ -1404,7 +1396,11 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   def expr({fun, _, args}, sources, query) when is_atom(fun) and is_list(args) do
     {modifier, args} =
       case args do
-        [rest, :distinct] -> {"DISTINCT ", [rest]}
+        [_rest, :distinct] -> 
+          raise Ecto.QueryError, 
+            query: query,
+            message: "Distinct not supported in expressions"
+            
         _ -> {[], args}
       end
 
@@ -1438,10 +1434,6 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   def expr(%Ecto.Query.Tagged{value: other, type: type}, sources, query)
       when type in [:decimal, :float] do
     ["CAST(", expr(other, sources, query), " AS REAL)"]
-  end
-
-  def expr(%Ecto.Query.Tagged{value: other, type: type}, sources, query) do
-    ["CAST(", expr(other, sources, query), " AS ", column_type(type, query), ?)]
   end
 
   def expr(%Ecto.Query.Tagged{value: other, type: type}, sources, query) do
