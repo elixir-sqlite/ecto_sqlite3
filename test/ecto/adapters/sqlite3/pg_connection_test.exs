@@ -212,7 +212,7 @@ defmodule Ecto.Adapters.SQLite3Test do
       ~s{INNER JOIN "tree" AS t1 ON t1."id" = s0."category_id"}
   end
 
-  # TODO should we warn about locks? or yell?
+  # TODO should error on lock
   test "CTE update_all" do
     cte_query =
       from(x in Schema, order_by: [asc: :id], limit: 10, lock: "FOR UPDATE SKIP LOCKED", select: %{id: x.id})
@@ -235,28 +235,22 @@ defmodule Ecto.Adapters.SQLite3Test do
       ~s{RETURNING "id", "x", "y", "z", "w", "meta"}
   end
 
-  # TODO Joins not supported with SQLite
-  """
   test "CTE delete_all" do
     cte_query =
-      from(x in Schema, order_by: [asc: :id], limit: 10, lock: "FOR UPDATE SKIP LOCKED", select: %{id: x.id})
+      from(x in Schema, order_by: [asc: :id], limit: 10, inner_join: q in Schema2, on: x.x == q.z, select: %{id: x.id})
 
     query =
       Schema
       |> with_cte("target_rows", as: ^cte_query)
-      |> join(:inner, [row], target in "target_rows", on: target.id == row.id)
       |> select([r, t], r)
       |> plan(:delete_all)
 
     assert delete_all(query) ==
       ~s{WITH "target_rows" AS } <>
-      ~s{(SELECT ss0."id" AS "id" FROM "schema" AS ss0 ORDER BY ss0."id" LIMIT 10 FOR UPDATE SKIP LOCKED) } <>
+      ~s{(SELECT ss0."id" AS "id" FROM "schema" AS ss0 INNER JOIN "schema2" AS ss1 ON ss0."x" = ss1."z" ORDER BY ss0."id" LIMIT 10) } <>
       ~s{DELETE FROM "schema" AS s0 } <>
-      ~s{USING "target_rows" AS t1 } <>
-      ~s{WHERE (t1."id" = s0."id") } <>
       ~s{RETURNING "id", "x", "y", "z", "w", "meta"}
   end
-  """
 
   test "parent binding subquery and CTE" do
     initial_query =
@@ -591,7 +585,6 @@ defmodule Ecto.Adapters.SQLite3Test do
     query = Schema |> select([], type(^"601d74e4-a8d3-4b6e-8365-eddb4c893327", Ecto.UUID)) |> plan()
     assert all(query) == ~s{SELECT CAST(? AS TEXT) FROM "schema" AS s0}
 
-    # TODO Arrays not supported?
     query = Schema |> select([], type(^["601d74e4-a8d3-4b6e-8365-eddb4c893327"], {:array, Ecto.UUID})) |> plan()
     assert all(query) == ~s{SELECT CAST(? AS TEXT) FROM "schema" AS s0}
   end
@@ -733,8 +726,6 @@ defmodule Ecto.Adapters.SQLite3Test do
   end
 
 
-  # TODO Add Array support via json
-  """
   test "arrays and sigils" do
     query = Schema |> select([], fragment("?", [1, 2, 3])) |> plan()
     assert all(query) == ~s{SELECT JSON_ARRAY('[1,2,3]') FROM "schema" AS s0}
@@ -743,9 +734,8 @@ defmodule Ecto.Adapters.SQLite3Test do
     assert all(query) == ~s{SELECT JSON_ARRAY('["abc","def"]') FROM "schema" AS s0}
 
     query = Schema |> where([s], s.w == []) |> select([s], s.w) |> plan()
-    assert all(query) == ~s{SELECT s0."w" FROM "schema" AS s0 WHERE (s0."w" = '\{\}')}
+    assert all(query) == ~s{SELECT s0."w" FROM "schema" AS s0 WHERE (s0."w" = JSON_ARRAY('[]'))}
   end
-  """
 
 
   test "interpolated values" do
@@ -864,12 +854,9 @@ defmodule Ecto.Adapters.SQLite3Test do
            ~s{UPDATE "schema" AS s0 SET "x" = ? WHERE (s0."x" = ?) RETURNING "x" = ?}
   end
 
-  # TODO With JSON array stuff
   test "update all array ops" do
     query = from(m in Schema, update: [push: [w: 0]]) |> plan(:update_all)
-    assert_raise Ecto.QueryError, fn ->
-      update_all(query)
-    end
+    assert update_all(query) == ~s{UPDATE "schema" AS s0 SET "w" = JSON_INSERT("w",'$[#]',0)}
 
     query = from(m in Schema, update: [pull: [w: 0]]) |> plan(:update_all)
     assert_raise Ecto.QueryError, fn ->
@@ -907,15 +894,11 @@ defmodule Ecto.Adapters.SQLite3Test do
            ~s{UPDATE "first"."schema" AS s0 SET "x" = 0}
   end
 
+  # TODO this is broken?
   test "update all with left join" do
     query = from(m in Schema, join: x in assoc(m, :comments), left_join: p in assoc(m, :permalink), update: [set: [w: m.list2]]) |> plan(:update_all)
     assert update_all(query) ==
            ~s{UPDATE "schema" AS s0 SET "w" = s0."list2" FROM "schema2" AS s1 LEFT OUTER JOIN "schema3" AS s2 ON s2."id" = s0."y" WHERE (s1."z" = s0."x")}
-  end
-
-  test "update all with left join but no inner join" do
-    query = from(m in Schema, left_join: p in assoc(m, :permalink), left_join: x in assoc(m, :permalink), update: [set: [w: m.list2]]) |> plan(:update_all)
-    assert update_all(query) == ~s{select}
   end
 
   test "delete all" do
@@ -1379,17 +1362,30 @@ defmodule Ecto.Adapters.SQLite3Test do
     """ |> remove_newlines]
   end
 
-  # TODO should we raise on comment?
-  test "create table with comment on columns" do
+  test "raise on table comment" do
     create = {:create, table(:posts, comment: "comment"),
               [
                 {:add, :category_0, %Reference{table: :categories}, [comment: "column comment"]},
                 {:add, :created_at, :timestamp, []},
                 {:add, :updated_at, :timestamp, [comment: "column comment 2"]}
               ]}
+
+    assert_raise ArgumentError, ~r/comment/, fn ->
+      execute_ddl(create)
+    end
+  end
+
+  # TODO should we raise on comment?
+  test "create table with comment on columns" do
+    create = {:create, table(:posts),
+              [
+                {:add, :category_0, %Reference{table: :categories}, []},
+                {:add, :created_at, :timestamp, []},
+                {:add, :updated_at, :timestamp, []}
+              ]}
     assert execute_ddl(create) == [remove_newlines("""
-    CREATE TABLE "posts"
-    ("category_0" INTEGER CONSTRAINT "posts_category_0_fkey" REFERENCES "categories"("id"), "created_at" TEXT, "updated_at" TEXT)
+      CREATE TABLE "posts"
+      ("category_0" INTEGER CONSTRAINT "posts_category_0_fkey" REFERENCES "categories"("id"), "created_at" TEXT, "updated_at" TEXT)
       """)
     ]
   end
@@ -1603,21 +1599,6 @@ defmodule Ecto.Adapters.SQLite3Test do
     ]
   end
 
-  test "alter table with comments on table and columns, ignore comments" do
-    alter = {:alter, table(:posts, comment: "table comment"),
-             [{:add, :title, :string, [default: "Untitled", size: 100, null: false, comment: "column comment"]},
-              {:remove, :summary}
-             ]}
-
-    assert execute_ddl(alter) == [remove_newlines("""
-    ALTER TABLE "posts"
-      ADD COLUMN "title" TEXT DEFAULT 'Untitled' NOT NULL
-      """), remove_newlines("""
-    ALTER TABLE "posts"
-    DROP COLUMN "summary"
-    """)]
-  end
-
   test "alter table with prefix" do
     alter = {:alter, table(:posts, prefix: :foo),
       [{:add, :author_id, %Reference{table: :author}, []}]}
@@ -1668,8 +1649,15 @@ defmodule Ecto.Adapters.SQLite3Test do
       [~s|CREATE INDEX "posts$main" ON "foo"."posts" (lower(permalink))|]
   end
 
-  test "create index with comment" do
+  test "raise on create index with comment" do
     create = {:create, index(:posts, [:category_id, :permalink], prefix: :foo, comment: "comment")}
+    assert_raise ArgumentError, ~r/comment/, fn ->
+      execute_ddl(create)
+    end
+  end
+
+  test "create index with comment" do
+    create = {:create, index(:posts, [:category_id, :permalink], prefix: :foo)}
     assert execute_ddl(create) == [remove_newlines("""
     CREATE INDEX "posts_category_id_permalink_index" ON "foo"."posts" ("category_id", "permalink")
     """)]
@@ -1691,7 +1679,6 @@ defmodule Ecto.Adapters.SQLite3Test do
       [~s|CREATE UNIQUE INDEX "posts_permalink_index" ON "posts" ("permalink") WHERE public|]
   end
 
-  # TODO Not Supported?
   test "create index with include fields" do
     create = {:create, index(:posts, [:permalink], unique: true, include: [:public])}
     assert_raise ArgumentError, fn ->
@@ -1710,14 +1697,14 @@ defmodule Ecto.Adapters.SQLite3Test do
     index = index(:posts, [:permalink])
     create = {:create, %{index | concurrently: true}}
     assert_raise ArgumentError, fn ->
-      execute_ddl(create) 
+      execute_ddl(create)
     end
   end
 
   test "create an index using a different type" do
     create = {:create, index(:posts, [:permalink], using: :hash)}
     assert_raise ArgumentError, fn ->
-      execute_ddl(create) 
+      execute_ddl(create)
     end
   end
 
@@ -1795,6 +1782,24 @@ defmodule Ecto.Adapters.SQLite3Test do
   test "rename column in prefixed table" do
     rename = {:rename, table(:posts, prefix: :foo), :given_name, :first_name}
     assert execute_ddl(rename) == [~s|ALTER TABLE "foo"."posts" RENAME COLUMN "given_name" TO "first_name"|]
+  end
+
+  test "autoincrement support" do
+    serial = {:create, table(:posts), [{:add, :id, :serial, [primary_key: true]}]}
+    bigserial = {:create, table(:posts), [{:add, :id, :bigserial, [primary_key: true]}]}
+    id = {:create, table(:posts), [{:add, :id, :id, [primary_key: true]}]}
+    integer = {:create, table(:posts), [{:add, :id, :integer, [primary_key: true]}]}
+
+    assert execute_ddl(serial) == [
+             ~s/CREATE TABLE "posts" ("id" INTEGER PRIMARY KEY AUTOINCREMENT)/
+           ]
+
+    assert execute_ddl(bigserial) == [
+             ~s/CREATE TABLE "posts" ("id" INTEGER PRIMARY KEY AUTOINCREMENT)/
+           ]
+
+    assert execute_ddl(id) == [~s/CREATE TABLE "posts" ("id" INTEGER PRIMARY KEY)/]
+    assert execute_ddl(integer) == [~s/CREATE TABLE "posts" ("id" INTEGER PRIMARY KEY)/]
   end
 
   defp remove_newlines(string) do

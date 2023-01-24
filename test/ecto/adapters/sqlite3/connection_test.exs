@@ -336,7 +336,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
   end
 
   test "common table expression delete_all" do
-    cte_query = from(x in Schema, order_by: [asc: :id], limit: 10, select: %{id: x.id})
+    cte_query = from(x in Schema, order_by: [asc: :id], inner_join: q in Schema2, on: x.x == q.z, limit: 10, select: %{id: x.id})
 
     query =
       Schema

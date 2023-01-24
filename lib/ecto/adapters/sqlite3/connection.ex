@@ -376,6 +376,11 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   end
 
   @impl true
+  def execute_ddl({_command, %Table{comment: comment}, _}) when not is_nil(comment) do
+    raise ArgumentError, "SQLite3 adapter does not support comments"
+  end
+
+  @impl true
   def execute_ddl({:create, %Table{} = table, columns}) do
     {table, composite_pk_def} = composite_pk_definition(table, columns)
     composite_fk_defs = composite_fk_definitions(table, columns)
@@ -464,9 +469,14 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   end
 
   @impl true
+  def execute_ddl({_, %Index{comment: c}}) when not is_nil(c) do
+    raise ArgumentError, "comment is not supported with SQLite3"
+  end
+
+  @impl true
   def execute_ddl({_, %Index{concurrently: true}}) do
     raise ArgumentError, "`concurrently` is not supported with SQLite3"
-    end
+  end
 
   @impl true
   def execute_ddl({_, %Index{only: true}}) do
@@ -986,6 +996,18 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     ]
   end
 
+  defp update_op(:push, quoted_key, value, sources, query) do
+    [
+      quoted_key, " = JSON_INSERT(", quoted_key, ",'$[#]',", expr(value, sources, query), ?)
+    ]
+  end
+
+  defp update_op(:pull, _quoted_key, _value, _sources, query) do
+    raise Ecto.QueryError,
+      query: query,
+      message: "pull is not supported for SQLite3, if you can figure out a way to do with JSON array's please pull request into ecto_sqlite3."
+  end
+
   defp update_op(command, _quoted_key, _value, _sources, query) do
     raise Ecto.QueryError,
       query: query,
@@ -1000,15 +1022,6 @@ defmodule Ecto.Adapters.SQLite3.Connection do
         %JoinExpr{qual: _qual, ix: ix, source: source} ->
           {join, name} = get_source(query, sources, ix, source)
           [join, " AS " | name]
-
-          # This is hold over from sqlite_ecto2. According to sqlite3
-          # documentation, all of the join types are allowed.
-          #
-          # %JoinExpr{qual: qual} ->
-          #   raise Ecto.QueryError,
-          #     query: query,
-          #     message:
-          #       "SQLite3 adapter supports only inner joins on #{kind}, got: `#{qual}`"
       end)
 
     wheres =
@@ -1415,10 +1428,10 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   end
 
   # TODO It technically is, its just a json array, so we *could* support it
-  def expr(list, _sources, query) when is_list(list) do
-    raise Ecto.QueryError,
-      query: query,
-      message: "Array type is not supported by SQLite3"
+  def expr(list, _sources, _query) when is_list(list) do
+    library = Application.get_env(:ecto_sqlite3, :json_library, Jason)
+    expression = IO.iodata_to_binary(library.encode_to_iodata!(list))
+    ["JSON_ARRAY('", expression, "')"]
   end
 
   def expr(%Decimal{} = decimal, _sources, _query) do
