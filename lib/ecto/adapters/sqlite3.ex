@@ -333,7 +333,7 @@ defmodule Ecto.Adapters.SQLite3 do
 
   @impl Ecto.Adapter
   def loaders(:map, type) do
-    [&Codec.json_decode/1, type] 
+    [&Codec.json_decode/1, type]
   end
 
   @impl Ecto.Adapter
@@ -440,7 +440,7 @@ defmodule Ecto.Adapters.SQLite3 do
   end
 
   @impl Ecto.Adapter
-  def dumpers({:array, _}, type) do 
+  def dumpers({:array, _}, type) do
     [type, &Codec.json_encode/1]
   end
 
@@ -452,7 +452,6 @@ defmodule Ecto.Adapters.SQLite3 do
 
   @impl Ecto.Adapter
   def dumpers(_, type), do: [type]
-
 
   ##
   ## HELPERS

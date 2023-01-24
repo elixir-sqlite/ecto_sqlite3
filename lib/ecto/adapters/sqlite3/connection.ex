@@ -1320,15 +1320,15 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   end
 
   # Super Hack to handle arrays in json
-  def expr({:in, a, [left,"["<> _ = right]}, sources, query) do
+  def expr({:in, a, [left, "[" <> _ = right]}, sources, query) do
     case Codec.json_decode(right) do
       {:ok, arr} ->
         expr({:in, a, [left, arr]}, sources, query)
+
       _ ->
         raise Ecto.QueryError,
-        query: query,
-        message: "Malformed query on right hand side of #{right} in."
-          
+          query: query,
+          message: "Malformed query on right hand side of #{right} in."
     end
   end
 
