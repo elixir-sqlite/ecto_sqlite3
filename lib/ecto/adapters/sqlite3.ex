@@ -439,25 +439,18 @@ defmodule Ecto.Adapters.SQLite3 do
     [type, &Codec.naive_datetime_encode(&1, dt_type)]
   end
 
-  @impl Ecto.Adapter
-  def dumpers({:array, _}, type) do
-    [type, &Codec.json_encode/1]
-  end
 
   @impl Ecto.Adapter
-  def dumpers({:map, _}, type) do
-    [&Ecto.Type.embedded_dump(type, &1, :json), &Codec.json_encode/1]
-  end
+  def dumpers({:map, _}, type),        do: [&Ecto.Type.embedded_dump(type, &1, :json)]
 
   @impl Ecto.Adapter
-  def dumpers(:map, type) do
-    [type, &Codec.json_encode/1]
-  end
+  def dumpers({:array, _}, type),        do: [&Ecto.Type.embedded_dump(type, &1, :json)]
 
   @impl Ecto.Adapter
-  def dumpers(_primitive, type) do
-    [type]
-  end
+  def dumpers({:in, sub}, {:in, sub}), do: [{:array, sub}]
+
+  @impl Ecto.Adapter
+  def dumpers(_, type),                do: [type]
 
   ##
   ## HELPERS

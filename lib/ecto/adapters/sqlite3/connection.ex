@@ -464,6 +464,32 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   end
 
   @impl true
+  def execute_ddl({_, %Index{concurrently: true}}) do
+    raise ArgumentError, "`concurrently` is not supported with SQLite3"
+    end
+
+  @impl true
+  def execute_ddl({_, %Index{only: true}}) do
+    raise ArgumentError, "`only` is not supported with SQLite3"
+  end
+
+  @impl true
+  def execute_ddl({_, %Index{include: x}}) when length(x) != 0 do
+    raise ArgumentError, "`include` is not supported with SQLite3"
+    end
+
+  @impl true
+  def execute_ddl({_, %Index{using: x}}) when not is_nil(x) do
+    raise ArgumentError, "`using` is not supported with SQLite3"
+  end
+
+  @impl true
+  def execute_ddl({_, %Index{nulls_distinct: x}}) when not is_nil(x) do
+    raise ArgumentError, "`nulls_distinct` is not supported with SQLite3"
+  end
+
+
+  @impl true
   def execute_ddl({:create, %Index{} = index}) do
     fields = intersperse_map(index.columns, ", ", &index_expr/1)
 
@@ -515,7 +541,6 @@ defmodule Ecto.Adapters.SQLite3.Connection do
 
   @impl true
   def execute_ddl({:drop, %Index{} = index, mode}) do
-
     if mode != [] do
       raise ArgumentError, """
         `#{inspect(mode)}` is not supported for DROP INDEX with SQLite3 \
@@ -523,6 +548,11 @@ defmodule Ecto.Adapters.SQLite3.Connection do
         """
     end
     execute_ddl({:drop, index})
+  end
+
+  @impl true
+  def execute_ddl({:drop_if_exists, %Index{concurrently: true}}) do
+    raise ArgumentError, "`concurrently` is not supported with SQLite3"
   end
 
   @impl true
@@ -536,7 +566,13 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   end
 
   @impl true
-  def execute_ddl({:drop_if_exists, %Index{} = index, _mode}) do
+  def execute_ddl({:drop_if_exists, %Index{} = index, mode}) do
+    if mode != [] do
+      raise ArgumentError, """
+        `#{inspect(mode)}` is not supported for DROP INDEX with SQLite3 \
+        DROP INDEX #{index.name} cannot have options set.
+        """
+    end
     execute_ddl({:drop_if_exists, index})
   end
 
@@ -991,6 +1027,12 @@ defmodule Ecto.Adapters.SQLite3.Connection do
         source: source,
         hints: hints
       } ->
+        if hints != [] do
+          raise Ecto.QueryError,
+            query: query,
+            message: "join hints are not supported by SQLite3"
+        end
+
         {join, name} = get_source(query, sources, ix, source)
 
         [
@@ -1242,10 +1284,6 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     "0"
   end
 
-  def expr({:in, _, [_left, "[]"]}, _sources, _query) do
-    "0"
-  end
-
   def expr({:in, _, [left, right]}, sources, query) when is_list(right) do
     args = intersperse_map(right, ?,, &expr(&1, sources, query))
     [expr(left, sources, query), " IN (", args, ?)]
@@ -1262,16 +1300,6 @@ defmodule Ecto.Adapters.SQLite3.Connection do
 
   def expr({:in, _, [left, %Ecto.SubQuery{} = subquery]}, sources, query) do
     [expr(left, sources, query), " IN ", expr(subquery, sources, query)]
-  end
-
-  def expr({:in, a, [left, right]} = expr, sources, query) do
-    [
-      expr(left, sources, query),
-      " IN (SELECT value FROM JSON_EACH(",
-      expr(right, sources, query),
-      ?),
-      ?)
-    ]
   end
 
   def expr({:is_nil, _, [arg]}, sources, query) do
@@ -1410,6 +1438,10 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   def expr(%Ecto.Query.Tagged{value: other, type: type}, sources, query)
       when type in [:decimal, :float] do
     ["CAST(", expr(other, sources, query), " AS REAL)"]
+  end
+
+  def expr(%Ecto.Query.Tagged{value: other, type: type}, sources, query) do
+    ["CAST(", expr(other, sources, query), " AS ", column_type(type, query), ?)]
   end
 
   def expr(%Ecto.Query.Tagged{value: other, type: type}, sources, query) do

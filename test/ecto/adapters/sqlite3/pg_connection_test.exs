@@ -705,8 +705,7 @@ defmodule Ecto.Adapters.SQLite3Test do
       |> select([e], e in [1, 2, 3])
       |> plan()
 
-    assert all(query) ==
-             ~s{SELECT s0 IN (SELECT value FROM JSON_EACH('[1,2,3]')) FROM "schema" AS s0}
+    assert all(query) == ~s{SELECT s0 IN (1,2,3) FROM "schema" AS s0}
 
 
     query = Schema |> select([e], 1 in [1,e.x,3]) |> plan()
@@ -939,8 +938,6 @@ defmodule Ecto.Adapters.SQLite3Test do
            ~s{UPDATE "first"."schema" AS s0 SET "x" = 0}
   end
 
-  # TODO should raise?
-  """
   test "update all with left join" do
     query = from(m in Schema, join: x in assoc(m, :comments), left_join: p in assoc(m, :permalink), update: [set: [w: m.list2]]) |> plan(:update_all)
     assert update_all(query) ==
@@ -951,7 +948,6 @@ defmodule Ecto.Adapters.SQLite3Test do
     query = from(m in Schema, left_join: p in assoc(m, :permalink), left_join: x in assoc(m, :permalink), update: [set: [w: m.list2]]) |> plan(:update_all)
     assert update_all(query) == ~s{select}
   end
-  """
 
   test "delete all" do
     query = Schema |> Queryable.to_query |> plan()
@@ -1092,10 +1088,8 @@ defmodule Ecto.Adapters.SQLite3Test do
            ~s{INNER JOIN "schema" AS s2 ON 1}
   end
 
-  #TODO ahh probably should raise
-  """
   test "join with hints" do
-    assert_raise Ecto.QueryError, ~r/table hints are not supported by PostgreSQL/, fn ->
+    assert_raise Ecto.QueryError, ~r/join hints are not supported by SQLite3/, fn ->
       Schema
       |> join(:inner, [p], q in Schema2, hints: ["USE INDEX FOO", "USE INDEX BAR"])
       |> select([], true)
@@ -1103,7 +1097,6 @@ defmodule Ecto.Adapters.SQLite3Test do
       |> all()
     end
   end
-  """
 
   test "join with nothing bound" do
     query = Schema |> join(:inner, [], q in Schema2, on: q.z == q.z) |> select([], true) |> plan()
@@ -1309,17 +1302,24 @@ defmodule Ecto.Adapters.SQLite3Test do
     query = insert(nil, "schema", [:x, :y], [[:x, :y]], {update, [], [:x, :y]}, [:z])
     assert query == ~s{INSERT INTO "schema" AS s0 ("x","y") VALUES (?,?) ON CONFLICT ("x","y") DO UPDATE SET "z" = 'foo' RETURNING "z"}
 
-    # For :replace_all
-    query = insert(nil, "schema", [:x, :y], [[:x, :y]], {[:x, :y], [], [:id]}, [])
-    assert query == ~s{INSERT INTO "schema" ("x","y") VALUES (?,?) ON CONFLICT ("id") DO UPDATE SET "x" = EXCLUDED."x","y" = EXCLUDED."y"}
+    assert_raise ArgumentError, "Upsert in SQLite3 requires :conflict_target", fn ->
+      conflict_target = []
+      insert(nil, "schema", [:x, :y], [[:x, :y]], {:replace_all, [], conflict_target}, [])
+    end
 
-    # TODO
-    # query = insert(nil, "schema", [:x, :y], [[:x, :y]], {[:x, :y], [], {:unsafe_fragment, "(\"id\")"}}, [])
-    #assert query == ~s{INSERT INTO "schema" ("x","y") VALUES (?,?) ON CONFLICT (\"id\") DO UPDATE SET "x" = EXCLUDED."x","y" = EXCLUDED."y"}
+    assert_raise ArgumentError, "Upsert in SQLite3 does not support ON CONSTRAINT", fn ->
+        insert(nil, "schema", [:x, :y], [[:x, :y]], {:replace_all, [], {:constraint, :foo}}, [])
+    end
 
-    #assert_raise ArgumentError, "the :conflict_target option is required on upserts by PostgreSQL", fn ->
-    #  insert(nil, "schema", [:x, :y], [[:x, :y]], {[:x, :y], [], []}, [])
-    #end
+    query = insert(nil, "schema", [:x, :y], [[:x, :y]], {:replace_all, [], [:id]}, [])
+
+    assert query ==
+             """
+             INSERT INTO "schema" ("x","y") \
+             VALUES (?,?) \
+             ON CONFLICT ("id") \
+             DO UPDATE SET "x" = EXCLUDED."x","y" = EXCLUDED."y"\
+             """
   end
 
   test "insert with query" do
@@ -1373,8 +1373,7 @@ defmodule Ecto.Adapters.SQLite3Test do
   # DDL
 
   alias Ecto.Migration.Reference
-  import Ecto.Migration, only: [table: 1, table: 2, index: 2, index: 3,
-                                constraint: 2, constraint: 3]
+  import Ecto.Migration, only: [table: 1, table: 2, index: 2, index: 3, constraint: 3]
 
   test "executing a string during migration" do
     assert execute_ddl("example") == ["example"]
@@ -1478,49 +1477,6 @@ defmodule Ecto.Adapters.SQLite3Test do
     CREATE TABLE "posts" ("a" INTEGER, "b" INTEGER, "name" TEXT, PRIMARY KEY ("a","b"))
     """ |> remove_newlines]
   end
-
-  # TODO not relevant to SQLite?
-  """
-  test "create table with identity key and references" do
-    create = {:create, table(:posts),
-              [{:add, :id, :integer, [primary_key: true]},
-               {:add, :category_0, %Reference{table: :categories, type: :identity}, []},
-               {:add, :name, :string, []}]}
-
-    assert execute_ddl(create) == ["""
-    CREATE TABLE "posts" ("id" INTEGER PRIMARY KEY AUTOINCREMENT BY DEFAULT AS IDENTITY,
-    "category_0" INTEGER, CONSTRAINT "posts_category_0_fkey" REFERENCES "categories"("id"),
-    "name" TEXT,
-    PRIMARY KEY ("id")) """ |> remove_newlines]
-  end
-
-  test "create table with identity key options" do
-    create = {:create, table(:posts),
-              [{:add, :id, :identity, [primary_key: true, start_value: 1_000, increment: 10]},
-               {:add, :name, :string, []}]}
-
-    assert execute_ddl(create) == ["""
-    CREATE TABLE "posts" ("id" INTEGER GENERATED BY DEFAULT AS IDENTITY(START WITH 1000 INCREMENT BY 10) , "name" TEXT, PRIMARY KEY ("id")) """ |> remove_newlines]
-  end
-
-  test "create table with binary column and null-byte default" do
-    create = {:create, table(:blobs),
-              [{:add, :blob, :binary, [default: <<0>>]}]}
-
-    assert_raise ArgumentError, ~r/"\\x00"/, fn ->
-      execute_ddl(create)
-    end
-  end
-
-  test "create table with binary column and null-byte-containing default" do
-    create = {:create, table(:blobs),
-              [{:add, :blob, :binary, [default: "foo" <> <<0>>]}]}
-
-    assert_raise ArgumentError, ~r/"\\x666f6f00"/, fn ->
-      execute_ddl(create)
-    end
-  end
-  """
 
   test "create table with binary column and UTF-8 default" do
     create = {:create, table(:blobs),
@@ -1638,12 +1594,12 @@ defmodule Ecto.Adapters.SQLite3Test do
   end
 
   test "drop table" do
-    drop = {:drop, table(:posts), :restrict}
+    drop = {:drop, table(:posts)}
     assert execute_ddl(drop) == [~s|DROP TABLE "posts"|]
   end
 
   test "drop table with prefix" do
-    drop = {:drop, table(:posts, prefix: :foo), :restrict}
+    drop = {:drop, table(:posts, prefix: :foo)}
     assert execute_ddl(drop) == [~s|DROP TABLE "foo"."posts"|]
   end
 
@@ -1767,75 +1723,65 @@ defmodule Ecto.Adapters.SQLite3Test do
   end
 
   # TODO Not Supported?
-  """
   test "create index with include fields" do
     create = {:create, index(:posts, [:permalink], unique: true, include: [:public])}
-    assert execute_ddl(create) ==
-      [~s|CREATE UNIQUE INDEX "posts_permalink_index" ON "posts" ("permalink") INCLUDE ("public")|]
-
-    create = {:create, index(:posts, [:permalink], unique: true, include: [:public], where: "public IS 1")}
-    assert execute_ddl(create) ==
-      [~s|CREATE UNIQUE INDEX "posts_permalink_index" ON "posts" ("permalink") INCLUDE ("public") WHERE public IS 1|]
+    assert_raise ArgumentError, fn ->
+      execute_ddl(create)
+    end
   end
 
   test "create unique index with nulls_distinct option" do
     create = {:create, index(:posts, [:permalink], unique: true, nulls_distinct: true)}
-    assert execute_ddl(create) ==
-      [~s|CREATE UNIQUE INDEX "posts_permalink_index" ON "posts" ("permalink") NULLS DISTINCT|]
-
-    create = {:create, index(:posts, [:permalink], unique: true, nulls_distinct: false)}
-    assert execute_ddl(create) ==
-      [~s|CREATE UNIQUE INDEX "posts_permalink_index" ON "posts" ("permalink") NULLS NOT DISTINCT|]
-
-    create = {:create, index(:posts, [:permalink], unique: true, nulls_distinct: false, include: [:public], where: "public IS 1")}
-    assert execute_ddl(create) ==
-      [~s|CREATE UNIQUE INDEX "posts_permalink_index" ON "posts" ("permalink") INCLUDE ("public") NULLS NOT DISTINCT WHERE public IS 1|]
+    assert_raise ArgumentError, fn ->
+      execute_ddl(create)
+    end
   end
 
   test "create index concurrently not supported" do
     index = index(:posts, [:permalink])
     create = {:create, %{index | concurrently: true}}
-    assert execute_ddl(create) ==
-      [~s|CREATE INDEX "posts_permalink_index" ON "posts" ("permalink")|]
+    assert_raise ArgumentError, fn ->
+      execute_ddl(create) 
+    end
   end
-
-  test "create unique index concurrently not supported" do
-    index = index(:posts, [:permalink], unique: true)
-    create = {:create, %{index | concurrently: true}}
-    assert execute_ddl(create) ==
-      [~s|CREATE UNIQUE INDEX "posts_permalink_index" ON "posts" ("permalink")|]
-  end
-  """
 
   test "create an index using a different type" do
     create = {:create, index(:posts, [:permalink], using: :hash)}
-    assert execute_ddl(create) ==
-      [~s|CREATE INDEX "posts_permalink_index" ON "posts" ("permalink")|]
+    assert_raise ArgumentError, fn ->
+      execute_ddl(create) 
+    end
   end
 
-  # TODO doesn't support
-  """
   test "create an index without recursively creating indexes on partitions" do
     create = {:create, index(:posts, [:permalink], only: true)}
-    assert execute_ddl(create) ==
-      [~s|CREATE INDEX "posts_permalink_index" ON ONLY "posts" ("permalink")|]
+    assert_raise ArgumentError, fn ->
+      execute_ddl(create)
+    end
   end
-  """
 
   test "drop index" do
-    drop = {:drop, index(:posts, [:id], name: "posts$main"), :restrict}
+    drop = {:drop, index(:posts, [:id], name: "posts$main")}
     assert execute_ddl(drop) == [~s|DROP INDEX "posts$main"|]
   end
 
   test "drop index with prefix" do
-    drop = {:drop, index(:posts, [:id], name: "posts$main", prefix: :foo), :restrict}
+    drop = {:drop, index(:posts, [:id], name: "posts$main", prefix: :foo)}
     assert execute_ddl(drop) == [~s|DROP INDEX "foo"."posts$main"|]
+  end
+
+  test "drop index mode not supported" do
+    assert_raise ArgumentError, fn ->
+      drop = {:drop, index(:posts, [:id], name: "posts$main"), :restrict}
+      execute_ddl(drop)
+    end
   end
 
   test "drop index concurrently not supported" do
     index = index(:posts, [:id], name: "posts$main")
-    drop = {:drop, %{index | concurrently: true}, :restrict}
-    assert execute_ddl(drop) == [~s|DROP INDEX "posts$main"|]
+    assert_raise ArgumentError, fn ->
+      drop = {:drop, %{index | concurrently: true}}
+      execute_ddl(drop)
+    end
   end
 
   test "drop index with cascade" do
@@ -1850,55 +1796,17 @@ defmodule Ecto.Adapters.SQLite3Test do
     end
   end
 
-  # TODO SQLITE doesn't support alter table but you could add/remove?
-  """
-  test "create check constraint" do
-    create = {:create, constraint(:products, "price_must_be_positive", check: "price > 0")}
-    assert execute_ddl(create) ==
-      [~s|ALTER TABLE "products" ADD CONSTRAINT "price_must_be_positive" CHECK (price > 0)|]
-
-    create = {:create, constraint(:products, "price_must_be_positive", check: "price > 0", prefix: "foo")}
-    assert execute_ddl(create) ==
-      [~s|ALTER TABLE "foo"."products" ADD CONSTRAINT "price_must_be_positive" CHECK (price > 0)|]
-  end
-
-  test "create exclusion constraint" do
-    create = {:create, constraint(:products, "price_must_be_positive", exclude: ~s|gist (int4range("from", "to", '[]') WITH &&)|)}
-    assert execute_ddl(create) ==
-      [~s|ALTER TABLE "products" ADD CONSTRAINT "price_must_be_positive" EXCLUDE USING gist (int4range("from", "to", '[]') WITH &&)|]
-  end
-
-  test "create constraint with comment" do
-    create = {:create, constraint(:products, "price_must_be_positive", check: "price > 0", prefix: "foo", comment: "comment")}
-    assert execute_ddl(create) == [remove_newlines("ALTER TABLE "foo"."products" ADD CONSTRAINT "price_must_be_positive" CHECK (price > 0)"),
-    ~s|COMMENT ON CONSTRAINT "price_must_be_positive" ON "foo"."products" IS 'comment'|]
-  end
-
-  test "create invalid constraint" do
-    create = {:create, constraint(:products, "price_must_be_positive", check: "price > 0", prefix: "foo", validate: false)}
-    assert execute_ddl(create) == [~s|ALTER TABLE "foo"."products" ADD CONSTRAINT "price_must_be_positive" CHECK (price > 0) NOT VALID|]
-  end
-
   test "drop constraint" do
-    drop = {:drop, constraint(:products, "price_must_be_positive"), :restrict}
-    assert execute_ddl(drop) ==
-      [~s|ALTER TABLE "products" DROP CONSTRAINT "price_must_be_positive"|]
-
-    drop = {:drop, constraint(:products, "price_must_be_positive", prefix: "foo"), :restrict}
-    assert execute_ddl(drop) ==
-      [~s|ALTER TABLE "foo"."products" DROP CONSTRAINT "price_must_be_positive"|]
+    assert_raise ArgumentError, ~r/SQLite3 does not support ALTER TABLE DROP CONSTRAINT./, fn ->
+      execute_ddl({:drop, constraint(:products, "price_must_be_positive", prefix: :foo), :restrict})
+    end
   end
 
   test "drop_if_exists constraint" do
-    drop = {:drop_if_exists, constraint(:products, "price_must_be_positive"), :restrict}
-    assert execute_ddl(drop) ==
-      [~s|ALTER TABLE "products" DROP CONSTRAINT IF EXISTS "price_must_be_positive"|]
-
-    drop = {:drop_if_exists, constraint(:products, "price_must_be_positive", prefix: "foo"), :restrict}
-    assert execute_ddl(drop) ==
-      [~s|ALTER TABLE "foo"."products" DROP CONSTRAINT IF EXISTS "price_must_be_positive"|]
+    assert_raise ArgumentError, ~r/SQLite3 does not support ALTER TABLE DROP CONSTRAINT./, fn ->
+      execute_ddl({:drop_if_exists, constraint(:products, "price_must_be_positive", prefix: :foo), :restrict})
+    end
   end
-  """
 
   test "rename table" do
     rename = {:rename, table(:posts), table(:new_posts)}
