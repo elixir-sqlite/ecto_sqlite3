@@ -46,20 +46,20 @@ defmodule Ecto.Adapters.SQLite3.DataTypeTest do
       assert DataType.column_type(:uuid, nil) == "BLOB"
     end
 
-    test ":map is JSON" do
-      assert DataType.column_type(:map, nil) == "JSON"
+    test ":map is TEXT" do
+      assert DataType.column_type(:map, nil) == "TEXT"
     end
 
-    test "{:map, _} is JSON" do
-      assert DataType.column_type({:map, %{}}, nil) == "JSON"
+    test "{:map, _} is TEXT" do
+      assert DataType.column_type({:map, %{}}, nil) == "TEXT"
     end
 
-    test ":array is JSON" do
-      assert DataType.column_type(:array, nil) == "JSON"
+    test ":array is TEXT" do
+      assert DataType.column_type(:array, nil) == "TEXT"
     end
 
-    test "{:array, _} is JSON" do
-      assert DataType.column_type({:array, []}, nil) == "JSON"
+    test "{:array, _} is TEXT" do
+      assert DataType.column_type({:array, []}, nil) == "TEXT"
     end
 
     test ":float is NUMERIC" do

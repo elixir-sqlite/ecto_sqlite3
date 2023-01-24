@@ -4,7 +4,7 @@ defmodule Ecto.Adapters.SQLite3Test do
   import Ecto.Query
 
   alias Ecto.Queryable
-  alias Ecto.Adapters.SQLite3.Connection, as: SQL 
+  alias Ecto.Adapters.SQLite3.Connection, as: SQL
 
   defmodule Schema do
     use Ecto.Schema
@@ -212,7 +212,7 @@ defmodule Ecto.Adapters.SQLite3Test do
       ~s{INNER JOIN "tree" AS t1 ON t1."id" = s0."category_id"}
   end
 
-  # TODO should we warn about locks? or yell? 
+  # TODO should we warn about locks? or yell?
   test "CTE update_all" do
     cte_query =
       from(x in Schema, order_by: [asc: :id], limit: 10, lock: "FOR UPDATE SKIP LOCKED", select: %{id: x.id})
@@ -669,16 +669,48 @@ defmodule Ecto.Adapters.SQLite3Test do
 
   test "in expression" do
     query = Schema |> select([e], 1 in []) |> plan()
-    assert all(query) == ~s{SELECT false FROM "schema" AS s0}
+    assert all(query) == ~s{SELECT 0 FROM "schema" AS s0}
+
+    query =
+      Schema
+      |> select([e], 1 in ^[])
+      |> plan()
+
+    assert all(query) == ~s{SELECT 0 FROM "schema" AS s0}
+
+    query =
+      Schema
+      |> select([e], 1 in ^[1, 2, 3])
+      |> plan()
+
+    assert all(query) == ~s{SELECT 1 IN (?,?,?) FROM "schema" AS s0}
+
+    query =
+      Schema
+      |> select([e], 1 in [1, ^2, 3])
+      |> plan()
+
+    assert all(query) == ~s{SELECT 1 IN (1,?,3) FROM "schema" AS s0}
+
+    query =
+      Schema
+      |> select([e], e.x == ^0 or e.x in ^[1, 2, 3] or e.x == ^4)
+      |> plan()
+
+    assert all(query) ==
+             ~s{SELECT ((s0."x" = ?) OR s0."x" IN (?,?,?)) OR (s0."x" = ?) FROM "schema" AS s0}
+
+    query =
+      Schema
+      |> select([e], e in [1, 2, 3])
+      |> plan()
+
+    assert all(query) ==
+             ~s{SELECT s0 IN (SELECT value FROM JSON_EACH('[1,2,3]')) FROM "schema" AS s0}
+
 
     query = Schema |> select([e], 1 in [1,e.x,3]) |> plan()
     assert all(query) == ~s{SELECT 1 IN (1,s0."x",3) FROM "schema" AS s0}
-
-    query = Schema |> select([e], 1 in ^[]) |> plan()
-    assert all(query) == ~s{SELECT 1 = ANY(?) FROM "schema" AS s0}
-
-    query = Schema |> select([e], 1 in ^[1, 2, 3]) |> plan()
-    assert all(query) == ~s{SELECT 1 = ANY(?) FROM "schema" AS s0}
 
     query = Schema |> select([e], 1 in [1, ^2, 3]) |> plan()
     assert all(query) == ~s{SELECT 1 IN (1,?,3) FROM "schema" AS s0}
@@ -686,17 +718,6 @@ defmodule Ecto.Adapters.SQLite3Test do
     query = Schema |> select([e], ^1 in [1, ^2, 3]) |> plan()
     assert all(query) == ~s{SELECT ? IN (1,?,3) FROM "schema" AS s0}
 
-    query = Schema |> select([e], ^1 in ^[1, 2, 3]) |> plan()
-    assert all(query) == ~s{SELECT ? = ANY(?) FROM "schema" AS s0}
-
-    query = Schema |> select([e], 1 in e.w) |> plan()
-    assert all(query) == ~s{SELECT 1 = ANY(s0."w") FROM "schema" AS s0}
-
-    query = Schema |> select([e], 1 in fragment("foo")) |> plan()
-    assert all(query) == ~s{SELECT 1 = ANY(foo) FROM "schema" AS s0}
-
-    query = Schema |> select([e], e.x == ^0 or e.x in ^[1, 2, 3] or e.x == ^4) |> plan()
-    assert all(query) == ~s{SELECT ((s0."x" = ?) OR s0."x" = ANY(?)) OR (s0."x" = ?) FROM "schema" AS s0}
   end
 
   test "in subquery" do
@@ -1820,12 +1841,12 @@ defmodule Ecto.Adapters.SQLite3Test do
   test "drop index with cascade" do
     assert_raise ArgumentError, fn ->
       drop = {:drop, index(:posts, [:id], name: "posts$main"), :cascade}
-      execute_ddl(drop) 
+      execute_ddl(drop)
     end
 
     assert_raise ArgumentError, fn ->
       drop = {:drop, index(:posts, [:id], name: "posts$main", prefix: :foo), :cascade}
-      execute_ddl(drop) 
+      execute_ddl(drop)
     end
   end
 

@@ -1242,6 +1242,10 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     "0"
   end
 
+  def expr({:in, _, [_left, "[]"]}, _sources, _query) do
+    "0"
+  end
+
   def expr({:in, _, [left, right]}, sources, query) when is_list(right) do
     args = intersperse_map(right, ?,, &expr(&1, sources, query))
     [expr(left, sources, query), " IN (", args, ?)]
@@ -1260,7 +1264,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     [expr(left, sources, query), " IN ", expr(subquery, sources, query)]
   end
 
-  def expr({:in, _, [left, right]}, sources, query) do
+  def expr({:in, a, [left, right]} = expr, sources, query) do
     [
       expr(left, sources, query),
       " IN (SELECT value FROM JSON_EACH(",
@@ -1415,6 +1419,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   def expr(nil, _sources, _query), do: "NULL"
   def expr(true, _sources, _query), do: "1"
   def expr(false, _sources, _query), do: "0"
+
 
   def expr(literal, _sources, _query) when is_binary(literal) do
     [?', escape_string(literal), ?']
