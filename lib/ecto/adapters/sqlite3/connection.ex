@@ -14,6 +14,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   alias Ecto.Query.WithExpr
 
   import Ecto.Adapters.SQLite3.DataType
+  alias Ecto.Adapters.SQLite3.Codec
 
   @parent_as __MODULE__
 
@@ -434,10 +435,11 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   def execute_ddl({:drop, %Table{} = table, mode}) do
     if mode != [] do
       raise ArgumentError, """
-        `#{inspect(mode)}` is not supported for DROP TABLE with SQLite3 \
-        DROP TABLE #{table.name} cannot have options set.
-        """
+      `#{inspect(mode)}` is not supported for DROP TABLE with SQLite3 \
+      DROP TABLE #{table.name} cannot have options set.
+      """
     end
+
     execute_ddl({:drop, table})
   end
 
@@ -486,7 +488,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   @impl true
   def execute_ddl({_, %Index{include: x}}) when length(x) != 0 do
     raise ArgumentError, "`include` is not supported with SQLite3"
-    end
+  end
 
   @impl true
   def execute_ddl({_, %Index{using: x}}) when not is_nil(x) do
@@ -497,7 +499,6 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   def execute_ddl({_, %Index{nulls_distinct: x}}) when not is_nil(x) do
     raise ArgumentError, "`nulls_distinct` is not supported with SQLite3"
   end
-
 
   @impl true
   def execute_ddl({:create, %Index{} = index}) do
@@ -553,10 +554,11 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   def execute_ddl({:drop, %Index{} = index, mode}) do
     if mode != [] do
       raise ArgumentError, """
-        `#{inspect(mode)}` is not supported for DROP INDEX with SQLite3 \
-        DROP INDEX #{index.name} cannot have options set.
-        """
+      `#{inspect(mode)}` is not supported for DROP INDEX with SQLite3 \
+      DROP INDEX #{index.name} cannot have options set.
+      """
     end
+
     execute_ddl({:drop, index})
   end
 
@@ -579,10 +581,11 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   def execute_ddl({:drop_if_exists, %Index{} = index, mode}) do
     if mode != [] do
       raise ArgumentError, """
-        `#{inspect(mode)}` is not supported for DROP INDEX with SQLite3 \
-        DROP INDEX #{index.name} cannot have options set.
-        """
+      `#{inspect(mode)}` is not supported for DROP INDEX with SQLite3 \
+      DROP INDEX #{index.name} cannot have options set.
+      """
     end
+
     execute_ddl({:drop_if_exists, index})
   end
 
@@ -877,10 +880,13 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   def handle_call(fun, _arity), do: {:fun, Atom.to_string(fun)}
 
   defp distinct(nil, _sources, _query), do: []
-  defp distinct(%QueryExpr{expr: true}, _sources, _query),  do: "DISTINCT "
+  defp distinct(%QueryExpr{expr: true}, _sources, _query), do: "DISTINCT "
   defp distinct(%QueryExpr{expr: false}, _sources, _query), do: []
+
   defp distinct(%QueryExpr{expr: exprs}, _sources, query) when is_list(exprs) do
-    raise Ecto.QueryError, query: query, message: "DISTINCT with multiple columns is not supported by SQLite3"
+    raise Ecto.QueryError,
+      query: query,
+      message: "DISTINCT with multiple columns is not supported by SQLite3"
   end
 
   def select(%{select: %{fields: fields}, distinct: distinct} = query, sources) do
@@ -998,14 +1004,20 @@ defmodule Ecto.Adapters.SQLite3.Connection do
 
   defp update_op(:push, quoted_key, value, sources, query) do
     [
-      quoted_key, " = JSON_INSERT(", quoted_key, ",'$[#]',", expr(value, sources, query), ?)
+      quoted_key,
+      " = JSON_INSERT(",
+      quoted_key,
+      ",'$[#]',",
+      expr(value, sources, query),
+      ?)
     ]
   end
 
   defp update_op(:pull, _quoted_key, _value, _sources, query) do
     raise Ecto.QueryError,
       query: query,
-      message: "pull is not supported for SQLite3, if you can figure out a way to do with JSON array's please pull request into ecto_sqlite3."
+      message:
+        "pull is not supported for SQLite3, if you can figure out a way to do with JSON array's please pull request into ecto_sqlite3."
   end
 
   defp update_op(command, _quoted_key, _value, _sources, query) do
@@ -1307,6 +1319,19 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     [expr(left, sources, query), " IN ", expr(subquery, sources, query)]
   end
 
+  # Super Hack to handle arrays in json
+  def expr({:in, a, [left,"["<> _ = right]}, sources, query) do
+    case Codec.json_decode(right) do
+      {:ok, arr} ->
+        expr({:in, a, [left, arr]}, sources, query)
+      _ ->
+        raise Ecto.QueryError,
+        query: query,
+        message: "Malformed query on right hand side of #{right} in."
+          
+    end
+  end
+
   def expr({:is_nil, _, [arg]}, sources, query) do
     [expr(arg, sources, query) | " IS NULL"]
   end
@@ -1409,12 +1434,13 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   def expr({fun, _, args}, sources, query) when is_atom(fun) and is_list(args) do
     {modifier, args} =
       case args do
-        [_rest, :distinct] -> 
-          raise Ecto.QueryError, 
+        [_rest, :distinct] ->
+          raise Ecto.QueryError,
             query: query,
             message: "Distinct not supported in expressions"
-            
-        _ -> {[], args}
+
+        _ ->
+          {[], args}
       end
 
     case handle_call(fun, length(args)) do
@@ -1427,7 +1453,11 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     end
   end
 
-  # TODO It technically is, its just a json array, so we *could* support it
+  # Hack cause I can't get arrays to work
+  def expr("[" <> _ = list, _sources, _query) do
+    ["JSON_ARRAY('", list, "')"]
+  end
+
   def expr(list, _sources, _query) when is_list(list) do
     library = Application.get_env(:ecto_sqlite3, :json_library, Jason)
     expression = IO.iodata_to_binary(library.encode_to_iodata!(list))
@@ -1456,7 +1486,6 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   def expr(nil, _sources, _query), do: "NULL"
   def expr(true, _sources, _query), do: "1"
   def expr(false, _sources, _query), do: "0"
-
 
   def expr(literal, _sources, _query) when is_binary(literal) do
     [?', escape_string(literal), ?']

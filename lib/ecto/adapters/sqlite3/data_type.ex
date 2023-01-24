@@ -62,8 +62,8 @@ defmodule Ecto.Adapters.SQLite3.DataType do
   end
 
   def column_type(type, _) do
-      raise ArgumentError,
-            "unsupported type `#{inspect(type)}`. The type can either be an atom, a string " <>
-              "or a tuple of the form `{:map, t}` or `{:array, t}` where `t` itself follows the same conditions."
+    raise ArgumentError,
+          "unsupported type `#{inspect(type)}`. The type can either be an atom, a string " <>
+            "or a tuple of the form `{:map, t}` or `{:array, t}` where `t` itself follows the same conditions."
   end
 end

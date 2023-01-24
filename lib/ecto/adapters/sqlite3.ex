@@ -322,18 +322,18 @@ defmodule Ecto.Adapters.SQLite3 do
   end
 
   @impl Ecto.Adapter
-  def loaders({:map, _}, type) do
-    [&Codec.json_decode/1, &Ecto.Type.embedded_load(type, &1, :json)]
-  end
-
-  @impl Ecto.Adapter
   def loaders({:array, _}, type) do
     [&Codec.json_decode/1, type]
   end
 
   @impl Ecto.Adapter
+  def loaders({:map, _}, type) do
+    [&Codec.json_decode/1, &Ecto.Type.embedded_load(type, &1, :json)]
+  end
+
+  @impl Ecto.Adapter
   def loaders(:map, type) do
-    [&Codec.json_decode/1, type]
+    [&Codec.json_decode/1, type] 
   end
 
   @impl Ecto.Adapter
@@ -439,18 +439,20 @@ defmodule Ecto.Adapters.SQLite3 do
     [type, &Codec.naive_datetime_encode(&1, dt_type)]
   end
 
+  @impl Ecto.Adapter
+  def dumpers({:array, _}, type) do 
+    [type, &Codec.json_encode/1]
+  end
 
   @impl Ecto.Adapter
-  def dumpers({:map, _}, type),        do: [&Ecto.Type.embedded_dump(type, &1, :json)]
+  def dumpers({:in, sub}, {:in, sub}), do: [{:array, sub}, &Codec.json_encode/1]
 
   @impl Ecto.Adapter
-  def dumpers({:array, _}, type),        do: [&Ecto.Type.embedded_dump(type, &1, :json)]
+  def dumpers({:map, _}, type), do: [type, &Ecto.Type.embedded_dump(type, &1, :json)]
 
   @impl Ecto.Adapter
-  def dumpers({:in, sub}, {:in, sub}), do: [{:array, sub}]
+  def dumpers(_, type), do: [type]
 
-  @impl Ecto.Adapter
-  def dumpers(_, type),                do: [type]
 
   ##
   ## HELPERS
