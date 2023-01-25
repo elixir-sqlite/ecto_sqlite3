@@ -3,8 +3,8 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
   import Ecto.Query
 
-  alias Ecto.Queryable
   alias Ecto.Adapters.SQLite3.Connection, as: SQL
+  alias Ecto.Queryable
 
   defmodule Schema do
     use Ecto.Schema
@@ -993,15 +993,16 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> offset([], ^9)
       |> plan()
 
-    result =
-      "WITH \"cte1\" AS (SELECT ss0.\"id\" AS \"id\", ? AS \"smth\" FROM \"schema1\" AS ss0 WHERE (?)), " <>
-        "\"cte2\" AS (SELECT * FROM schema WHERE ?) " <>
-        "SELECT s0.\"id\", ? FROM \"schema\" AS s0 INNER JOIN \"schema2\" AS s1 ON ? " <>
-        "INNER JOIN \"schema2\" AS s2 ON ? WHERE (?) AND (?) " <>
-        "GROUP BY ?, ? HAVING (?) AND (?) " <>
-        "UNION SELECT s0.\"id\", ? FROM \"schema1\" AS s0 WHERE (?) " <>
-        "UNION ALL SELECT s0.\"id\", ? FROM \"schema2\" AS s0 WHERE (?) " <>
-        "ORDER BY ? LIMIT ? OFFSET ?"
+    result = """
+    WITH "cte1" AS (SELECT ss0."id" AS "id", ? AS "smth" FROM "schema1" AS ss0 WHERE (?)), \
+    "cte2" AS (SELECT * FROM schema WHERE ?) \
+    SELECT s0."id", ? FROM "schema" AS s0 INNER JOIN "schema2" AS s1 ON ? \
+    INNER JOIN "schema2" AS s2 ON ? WHERE (?) AND (?) \
+    GROUP BY ?, ? HAVING (?) AND (?) \
+    UNION SELECT s0."id", ? FROM "schema1" AS s0 WHERE (?) \
+    UNION ALL SELECT s0."id", ? FROM "schema2" AS s0 WHERE (?) \
+    ORDER BY ? LIMIT ? OFFSET ?\
+    """
 
     assert all(query) == String.trim(result)
   end
