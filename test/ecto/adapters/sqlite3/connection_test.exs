@@ -1191,7 +1191,6 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
              ~s{UPDATE "first"."schema" AS s0 SET "x" = 0}
   end
 
-  # TODO this is broken?
   test "update all with left join" do
     query =
       from(m in Schema,
@@ -1201,8 +1200,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       )
       |> plan(:update_all)
 
-    assert update_all(query) ==
-             ~s{UPDATE "schema" AS s0 SET "w" = s0."list2" FROM "schema2" AS s1 LEFT OUTER JOIN "schema3" AS s2 ON s2."id" = s0."y" WHERE (s1."z" = s0."x")}
+    assert update_all(query) == "UPDATE \"schema\" AS s0 SET \"w\" = s0.\"list2\" FROM \"schema2\" AS s1, \"schema3\" AS s2 WHERE (s1.\"z\" = s0.\"x\") AND (s2.\"id\" = s0.\"y\")"
   end
 
   test "delete all" do
