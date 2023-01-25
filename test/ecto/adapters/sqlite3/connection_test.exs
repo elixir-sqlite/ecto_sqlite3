@@ -719,7 +719,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> plan()
 
     assert all(query) ==
-      ~s{SELECT 1 FROM "schema" AS s0 WHERE (CAST (strftime('%Y-%m-%d %H:%M:%f000Z',s0.\"foo\",1 || ' month') AS TEXT) > s0."bar")}
+             ~s{SELECT 1 FROM "schema" AS s0 WHERE (CAST (strftime('%Y-%m-%d %H:%M:%f000Z',s0.\"foo\",1 || ' month') AS TEXT) > s0."bar")}
 
     query =
       "schema"
@@ -728,7 +728,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> plan()
 
     assert all(query) ==
-            ~s{SELECT 1 FROM "schema" AS s0 WHERE (CAST (strftime('%Y-%m-%d %H:%M:%f000Z',CAST(s0.\"foo\" AS TEXT),1 || ' month') AS TEXT) > s0."bar")}
+             ~s{SELECT 1 FROM "schema" AS s0 WHERE (CAST (strftime('%Y-%m-%d %H:%M:%f000Z',CAST(s0.\"foo\" AS TEXT),1 || ' month') AS TEXT) > s0."bar")}
   end
 
   test "tagged type" do
@@ -860,7 +860,8 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> select([e], e in [1, 2, 3])
       |> plan()
 
-    assert all(query) == ~s{SELECT s0 IN (SELECT value FROM JSON_EACH('[1,2,3]')) FROM "schema" AS s0}
+    assert all(query) ==
+             ~s{SELECT s0 IN (SELECT value FROM JSON_EACH('[1,2,3]')) FROM "schema" AS s0}
 
     query = Schema |> select([e], 1 in [1, e.x, 3]) |> plan()
     assert all(query) == ~s{SELECT 1 IN (1,s0."x",3) FROM "schema" AS s0}

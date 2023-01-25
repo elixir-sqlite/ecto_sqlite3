@@ -14,7 +14,6 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   alias Ecto.Query.WithExpr
 
   import Ecto.Adapters.SQLite3.DataType
-  alias Ecto.Adapters.SQLite3.Codec
 
   @parent_as __MODULE__
 
