@@ -169,8 +169,8 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
              ~s{WITH RECURSIVE "tree" AS } <>
                ~s{(SELECT sc0."id" AS "id", 1 AS "depth" FROM "categories" AS sc0 WHERE (sc0."parent_id" IS NULL) } <>
                ~s{UNION ALL } <>
-               ~s{(SELECT c0."id", t1."depth" + 1 FROM "categories" AS c0 } <>
-               ~s{INNER JOIN "tree" AS t1 ON t1."id" = c0."parent_id")) } <>
+               ~s{SELECT c0."id", t1."depth" + 1 FROM "categories" AS c0 } <>
+               ~s{INNER JOIN "tree" AS t1 ON t1."id" = c0."parent_id") } <>
                ~s{SELECT s0."x", t1."id", CAST(t1."depth" AS INTEGER) } <>
                ~s{FROM "schema" AS s0 } <>
                ~s{INNER JOIN "tree" AS t1 ON t1."id" = s0."category_id"}
@@ -212,9 +212,9 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
                ~s{FROM "posts" AS p0 } <>
                ~s{INNER JOIN "comments_scope" AS c1 ON c1."entity_id" = p0."guid" } <>
                ~s{UNION ALL } <>
-               ~s{(SELECT v0."title", c1."text" } <>
+               ~s{SELECT v0."title", c1."text" } <>
                ~s{FROM "videos" AS v0 } <>
-               ~s{INNER JOIN "comments_scope" AS c1 ON c1."entity_id" = v0."guid")}
+               ~s{INNER JOIN "comments_scope" AS c1 ON c1."entity_id" = v0."guid"}
   end
 
   test "fragment CTE" do
@@ -478,16 +478,16 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     assert all(query) ==
              ~s{SELECT s0."x" FROM "schema" AS s0 } <>
-               ~s{UNION (SELECT s0."y" FROM "schema" AS s0 ORDER BY s0."y" LIMIT 40 OFFSET 20) } <>
-               ~s{UNION (SELECT s0."z" FROM "schema" AS s0 ORDER BY s0."z" LIMIT 60 OFFSET 30) } <>
+               ~s{UNION SELECT s0."y" FROM "schema" AS s0 ORDER BY s0."y" LIMIT 40 OFFSET 20 } <>
+               ~s{UNION SELECT s0."z" FROM "schema" AS s0 ORDER BY s0."z" LIMIT 60 OFFSET 30 } <>
                ~s{ORDER BY rand LIMIT 5 OFFSET 10}
 
     query = base_query |> union_all(^union_query1) |> union_all(^union_query2) |> plan()
 
     assert all(query) ==
              ~s{SELECT s0."x" FROM "schema" AS s0 } <>
-               ~s{UNION ALL (SELECT s0."y" FROM "schema" AS s0 ORDER BY s0."y" LIMIT 40 OFFSET 20) } <>
-               ~s{UNION ALL (SELECT s0."z" FROM "schema" AS s0 ORDER BY s0."z" LIMIT 60 OFFSET 30) } <>
+               ~s{UNION ALL SELECT s0."y" FROM "schema" AS s0 ORDER BY s0."y" LIMIT 40 OFFSET 20 } <>
+               ~s{UNION ALL SELECT s0."z" FROM "schema" AS s0 ORDER BY s0."z" LIMIT 60 OFFSET 30 } <>
                ~s{ORDER BY rand LIMIT 5 OFFSET 10}
   end
 
@@ -505,8 +505,8 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     assert all(query) ==
              ~s{SELECT s0."x" FROM "schema" AS s0 } <>
-               ~s{EXCEPT (SELECT s0."y" FROM "schema" AS s0 ORDER BY s0."y" LIMIT 40 OFFSET 20) } <>
-               ~s{EXCEPT (SELECT s0."z" FROM "schema" AS s0 ORDER BY s0."z" LIMIT 60 OFFSET 30) } <>
+               ~s{EXCEPT SELECT s0."y" FROM "schema" AS s0 ORDER BY s0."y" LIMIT 40 OFFSET 20 } <>
+               ~s{EXCEPT SELECT s0."z" FROM "schema" AS s0 ORDER BY s0."z" LIMIT 60 OFFSET 30 } <>
                ~s{ORDER BY rand LIMIT 5 OFFSET 10}
 
     query =
@@ -535,8 +535,8 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     assert all(query) ==
              ~s{SELECT s0."x" FROM "schema" AS s0 } <>
-               ~s{INTERSECT (SELECT s0."y" FROM "schema" AS s0 ORDER BY s0."y" LIMIT 40 OFFSET 20) } <>
-               ~s{INTERSECT (SELECT s0."z" FROM "schema" AS s0 ORDER BY s0."z" LIMIT 60 OFFSET 30) } <>
+               ~s{INTERSECT SELECT s0."y" FROM "schema" AS s0 ORDER BY s0."y" LIMIT 40 OFFSET 20 } <>
+               ~s{INTERSECT SELECT s0."z" FROM "schema" AS s0 ORDER BY s0."z" LIMIT 60 OFFSET 30 } <>
                ~s{ORDER BY rand LIMIT 5 OFFSET 10}
 
     query =
@@ -719,7 +719,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> plan()
 
     assert all(query) ==
-             ~s{SELECT 1 FROM "schema" AS s0 WHERE (datetime(s0."foo",'1 month') > s0."bar")}
+      ~s{SELECT 1 FROM "schema" AS s0 WHERE (CAST (strftime('%Y-%m-%d %H:%M:%f000Z',s0.\"foo\",1 || ' month') AS TEXT) > s0."bar")}
 
     query =
       "schema"
@@ -728,7 +728,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> plan()
 
     assert all(query) ==
-             ~s{SELECT 1 FROM "schema" AS s0 WHERE (datetime(CAST(s0."foo" AS TEXT),'1 month') > s0."bar")}
+            ~s{SELECT 1 FROM "schema" AS s0 WHERE (CAST (strftime('%Y-%m-%d %H:%M:%f000Z',CAST(s0.\"foo\" AS TEXT),1 || ' month') AS TEXT) > s0."bar")}
   end
 
   test "tagged type" do
@@ -860,11 +860,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> select([e], e in [1, 2, 3])
       |> plan()
 
-    assert_raise Ecto.QueryError, fn ->
-      all(query)
-    end
-
-    # assert all(query) == ~s{SELECT s0 IN (SELECT value FROM JSON_EACH('[1,2,3]')) FROM "schema" AS s0}
+    assert all(query) == ~s{SELECT s0 IN (SELECT value FROM JSON_EACH('[1,2,3]')) FROM "schema" AS s0}
 
     query = Schema |> select([e], 1 in [1, e.x, 3]) |> plan()
     assert all(query) == ~s{SELECT 1 IN (1,s0."x",3) FROM "schema" AS s0}
@@ -966,10 +962,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
     end
 
     query = Schema |> where([s], s.w == []) |> select([s], s.w) |> plan()
-
-    assert_raise Ecto.QueryError, fn ->
-      all(query)
-    end
+    assert all(query) == ~s{SELECT s0."w" FROM "schema" AS s0 WHERE (s0."w" = '[]')}
   end
 
   test "interpolated values" do
@@ -1005,8 +998,8 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
         "SELECT s0.\"id\", ? FROM \"schema\" AS s0 INNER JOIN \"schema2\" AS s1 ON ? " <>
         "INNER JOIN \"schema2\" AS s2 ON ? WHERE (?) AND (?) " <>
         "GROUP BY ?, ? HAVING (?) AND (?) " <>
-        "UNION (SELECT s0.\"id\", ? FROM \"schema1\" AS s0 WHERE (?)) " <>
-        "UNION ALL (SELECT s0.\"id\", ? FROM \"schema2\" AS s0 WHERE (?)) " <>
+        "UNION SELECT s0.\"id\", ? FROM \"schema1\" AS s0 WHERE (?) " <>
+        "UNION ALL SELECT s0.\"id\", ? FROM \"schema2\" AS s0 WHERE (?) " <>
         "ORDER BY ? LIMIT ? OFFSET ?"
 
     assert all(query) == String.trim(result)
@@ -1882,22 +1875,6 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
            ]
   end
 
-  test "raise on table comment" do
-    create =
-      {:create, table(:posts, comment: "comment"),
-       [
-         {:add, :category_0, %Reference{table: :categories},
-          [comment: "column comment"]},
-         {:add, :created_at, :timestamp, []},
-         {:add, :updated_at, :timestamp, [comment: "column comment 2"]}
-       ]}
-
-    assert_raise ArgumentError, ~r/comment/, fn ->
-      execute_ddl(create)
-    end
-  end
-
-  # TODO should we raise on comment?
   test "create table with comment on columns" do
     create =
       {:create, table(:posts),
@@ -2260,26 +2237,6 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     assert execute_ddl(create) ==
              [~s|CREATE INDEX "posts$main" ON "foo"."posts" (lower(permalink))|]
-  end
-
-  test "raise on create index with comment" do
-    create =
-      {:create,
-       index(:posts, [:category_id, :permalink], prefix: :foo, comment: "comment")}
-
-    assert_raise ArgumentError, ~r/comment/, fn ->
-      execute_ddl(create)
-    end
-  end
-
-  test "create index with comment" do
-    create = {:create, index(:posts, [:category_id, :permalink], prefix: :foo)}
-
-    assert execute_ddl(create) == [
-             remove_newlines("""
-             CREATE INDEX "posts_category_id_permalink_index" ON "foo"."posts" ("category_id", "permalink")
-             """)
-           ]
   end
 
   test "create unique index" do

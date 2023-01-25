@@ -377,11 +377,6 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   end
 
   @impl true
-  def execute_ddl({_command, %Table{comment: comment}, _}) when not is_nil(comment) do
-    raise ArgumentError, "SQLite3 adapter does not support comments"
-  end
-
-  @impl true
   def execute_ddl({:create, %Table{} = table, columns}) do
     {table, composite_pk_def} = composite_pk_definition(table, columns)
     composite_fk_defs = composite_fk_definitions(table, columns)
@@ -468,11 +463,6 @@ defmodule Ecto.Adapters.SQLite3.Connection do
         column_change(table, change)
       ]
     end)
-  end
-
-  @impl true
-  def execute_ddl({_, %Index{comment: c}}) when not is_nil(c) do
-    raise ArgumentError, "comment is not supported with SQLite3"
   end
 
   @impl true
@@ -1187,10 +1177,10 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     Enum.map(combinations, &combination/1)
   end
 
-  defp combination({:union, query}), do: [" UNION (", all(query), ?)]
-  defp combination({:union_all, query}), do: [" UNION ALL (", all(query), ?)]
-  defp combination({:except, query}), do: [" EXCEPT (", all(query), ?)]
-  defp combination({:intersect, query}), do: [" INTERSECT (", all(query), ?)]
+  defp combination({:union, query}), do: [" UNION ", all(query)]
+  defp combination({:union_all, query}), do: [" UNION ALL ", all(query)]
+  defp combination({:except, query}), do: [" EXCEPT ", all(query)]
+  defp combination({:intersect, query}), do: [" INTERSECT ", all(query)]
 
   defp combination({:except_all, query}) do
     raise Ecto.QueryError,
@@ -1372,21 +1362,25 @@ defmodule Ecto.Adapters.SQLite3.Connection do
 
   def expr({:datetime_add, _, [datetime, count, interval]}, sources, query) do
     [
-      "datetime(",
+      "CAST (",
+      "strftime('%Y-%m-%d %H:%M:%f000Z'",
+      ",",
       expr(datetime, sources, query),
       ",",
       interval(count, interval, sources),
-      ")"
+      ") AS TEXT)"
     ]
   end
 
   def expr({:date_add, _, [date, count, interval]}, sources, query) do
     [
-      "date(",
+      "CAST (",
+      "strftime('%Y-%m-%d'",
+      ",",
       expr(date, sources, query),
       ",",
       interval(count, interval, sources),
-      ")"
+      ") AS TEXT)"
     ]
   end
 
@@ -1450,12 +1444,6 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   end
 
   # TODO It technically is, its just a json array, so we *could* support it
-  def expr("[" <> _list, _sources, query) do
-    raise Ecto.QueryError,
-      query: query,
-      message: "Array literals are not supported by SQLite3"
-  end
-
   def expr(list, _sources, query) when is_list(list) do
     raise Ecto.QueryError,
       query: query,
@@ -1509,15 +1497,15 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   end
 
   def interval(count, "millisecond", sources) do
-    "('#{expr(count, sources, nil)} / 1000.0) seconds'"
+    "(#{expr(count, sources, nil)} / 1000.0) || ' seconds'"
   end
 
   def interval(count, "week", sources) do
-    "('#{expr(count, sources, nil)} * 7) days'"
+    "(#{expr(count, sources, nil)} * 7) || ' days'"
   end
 
   def interval(count, interval, sources) do
-    "'#{expr(count, sources, nil)} #{interval}'"
+    "#{expr(count, sources, nil)} || ' #{interval}'"
   end
 
   defp op_to_binary({op, _, [_, _]} = expression, sources, query)
