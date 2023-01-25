@@ -860,7 +860,11 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> select([e], e in [1, 2, 3])
       |> plan()
 
-    assert all(query) == ~s{SELECT s0 IN (1,2,3) FROM "schema" AS s0}
+    assert_raise Ecto.QueryError, fn ->
+      all(query)
+    end
+
+    #assert all(query) == ~s{SELECT s0 IN (SELECT value FROM JSON_EACH('[1,2,3]')) FROM "schema" AS s0}
 
     query = Schema |> select([e], 1 in [1, e.x, 3]) |> plan()
     assert all(query) == ~s{SELECT 1 IN (1,s0."x",3) FROM "schema" AS s0}
@@ -950,15 +954,20 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
   test "arrays and sigils" do
     query = Schema |> select([], fragment("?", [1, 2, 3])) |> plan()
-    assert all(query) == ~s{SELECT JSON_ARRAY('[1,2,3]') FROM "schema" AS s0}
+    assert_raise Ecto.QueryError, fn ->
+      all(query)
+    end
 
     query = Schema |> select([], fragment("?", ~w(abc def))) |> plan()
-    assert all(query) == ~s{SELECT JSON_ARRAY('["abc","def"]') FROM "schema" AS s0}
+    assert_raise Ecto.QueryError, fn ->
+      all(query)
+    end
 
     query = Schema |> where([s], s.w == []) |> select([s], s.w) |> plan()
 
-    assert all(query) ==
-             ~s{SELECT s0."w" FROM "schema" AS s0 WHERE (s0."w" = JSON_ARRAY('[]'))}
+    assert_raise Ecto.QueryError, fn ->
+      all(query)
+    end
   end
 
   test "interpolated values" do
@@ -1133,14 +1142,15 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
   test "update all array ops" do
     query = from(m in Schema, update: [push: [w: 0]]) |> plan(:update_all)
 
-    assert update_all(query) ==
-             ~s{UPDATE "schema" AS s0 SET "w" = JSON_INSERT("w",'$[#]',0)}
-
-    query = from(m in Schema, update: [pull: [w: 0]]) |> plan(:update_all)
-
     assert_raise Ecto.QueryError, fn ->
       update_all(query)
     end
+
+    query = from(m in Schema, update: [pull: [w: 0]]) |> plan(:update_all)
+    assert_raise Ecto.QueryError, fn ->
+      update_all(query)
+    end
+
   end
 
   test "update all with subquery" do

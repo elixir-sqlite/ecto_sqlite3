@@ -1002,22 +1002,18 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     ]
   end
 
-  defp update_op(:push, quoted_key, value, sources, query) do
-    [
-      quoted_key,
-      " = JSON_INSERT(",
-      quoted_key,
-      ",'$[#]',",
-      expr(value, sources, query),
-      ?)
-    ]
+  defp update_op(:push, _quoted_key, _value, _sources, query) do
+    raise Ecto.QueryError,
+      query: query,
+      message:
+        "Arrays are not supported for SQLite3"
   end
 
   defp update_op(:pull, _quoted_key, _value, _sources, query) do
     raise Ecto.QueryError,
       query: query,
       message:
-        "pull is not supported for SQLite3, if you can figure out a way to do with JSON array's please pull request into ecto_sqlite3."
+        "Arrays are not supported for SQLite3"
   end
 
   defp update_op(command, _quoted_key, _value, _sources, query) do
@@ -1297,6 +1293,10 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     source
   end
 
+  def expr({:in, _, [_left, "[]"]}, _sources, _query) do
+    "0"
+  end
+
   def expr({:in, _, [_left, []]}, _sources, _query) do
     "0"
   end
@@ -1320,16 +1320,14 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   end
 
   # Super Hack to handle arrays in json
-  def expr({:in, a, [left, "[" <> _ = right]}, sources, query) do
-    case Codec.json_decode(right) do
-      {:ok, arr} ->
-        expr({:in, a, [left, arr]}, sources, query)
-
-      _ ->
-        raise Ecto.QueryError,
-          query: query,
-          message: "Malformed query on right hand side of #{right} in."
-    end
+  def expr({:in, _, [left, right]}, sources, query) do
+    [
+      expr(left, sources, query),
+      " IN (SELECT value FROM JSON_EACH(",
+      expr(right, sources, query),
+      ?),
+      ?)
+    ]
   end
 
   def expr({:is_nil, _, [arg]}, sources, query) do
@@ -1453,15 +1451,17 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     end
   end
 
-  # Hack cause I can't get arrays to work
-  def expr("[" <> _ = list, _sources, _query) do
-    ["JSON_ARRAY('", list, "')"]
+  # TODO It technically is, its just a json array, so we *could* support it
+  def expr("[" <> _list, _sources, query) do
+    raise Ecto.QueryError,
+      query: query,
+      message: "Array literals are not supported by SQLite3"
   end
 
-  def expr(list, _sources, _query) when is_list(list) do
-    library = Application.get_env(:ecto_sqlite3, :json_library, Jason)
-    expression = IO.iodata_to_binary(library.encode_to_iodata!(list))
-    ["JSON_ARRAY('", expression, "')"]
+  def expr(list, _sources, query) when is_list(list) do
+    raise Ecto.QueryError,
+      query: query,
+      message: "Array literals are not supported by SQLite3"
   end
 
   def expr(%Decimal{} = decimal, _sources, _query) do
