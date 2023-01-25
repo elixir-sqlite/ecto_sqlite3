@@ -1005,15 +1005,13 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   defp update_op(:push, _quoted_key, _value, _sources, query) do
     raise Ecto.QueryError,
       query: query,
-      message:
-        "Arrays are not supported for SQLite3"
+      message: "Arrays are not supported for SQLite3"
   end
 
   defp update_op(:pull, _quoted_key, _value, _sources, query) do
     raise Ecto.QueryError,
       query: query,
-      message:
-        "Arrays are not supported for SQLite3"
+      message: "Arrays are not supported for SQLite3"
   end
 
   defp update_op(command, _quoted_key, _value, _sources, query) do
