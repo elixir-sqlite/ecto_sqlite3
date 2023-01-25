@@ -371,11 +371,6 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   ##
 
   @impl true
-  def execute_ddl({_command, %Table{options: options}, _}) when is_list(options) do
-    raise ArgumentError, "SQLite3 adapter does not support keyword lists in :options"
-  end
-
-  @impl true
   def execute_ddl({:create, %Table{} = table, columns}) do
     {table, composite_pk_def} = composite_pk_definition(table, columns)
     composite_fk_defs = composite_fk_definitions(table, columns)
@@ -426,14 +421,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   end
 
   @impl true
-  def execute_ddl({:drop, %Table{} = table, mode}) do
-    if mode != [] do
-      raise ArgumentError, """
-      `#{inspect(mode)}` is not supported for DROP TABLE with SQLite3 \
-      DROP TABLE #{table.name} cannot have options set.
-      """
-    end
-
+  def execute_ddl({:drop, %Table{} = table, _mode}) do
     execute_ddl({:drop, table})
   end
 
@@ -540,14 +528,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   end
 
   @impl true
-  def execute_ddl({:drop, %Index{} = index, mode}) do
-    if mode != [] do
-      raise ArgumentError, """
-      `#{inspect(mode)}` is not supported for DROP INDEX with SQLite3 \
-      DROP INDEX #{index.name} cannot have options set.
-      """
-    end
-
+  def execute_ddl({:drop, %Index{} = index, _mode}) do
     execute_ddl({:drop, index})
   end
 
@@ -567,14 +548,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   end
 
   @impl true
-  def execute_ddl({:drop_if_exists, %Index{} = index, mode}) do
-    if mode != [] do
-      raise ArgumentError, """
-      `#{inspect(mode)}` is not supported for DROP INDEX with SQLite3 \
-      DROP INDEX #{index.name} cannot have options set.
-      """
-    end
-
+  def execute_ddl({:drop_if_exists, %Index{} = index, _mode}) do
     execute_ddl({:drop_if_exists, index})
   end
 

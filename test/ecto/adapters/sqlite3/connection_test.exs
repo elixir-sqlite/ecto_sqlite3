@@ -2139,18 +2139,6 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
     assert execute_ddl(drop) == [~s|DROP TABLE "foo"."posts"|]
   end
 
-  test "drop table with cascade" do
-    drop = {:drop, table(:posts), :cascade}
-
-    assert_raise ArgumentError, fn ->
-      execute_ddl(drop)
-    end
-
-    assert_raise ArgumentError, fn ->
-      execute_ddl(drop)
-    end
-  end
-
   test "alter table" do
     alter =
       {:alter, table(:posts),
@@ -2314,30 +2302,11 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
     assert execute_ddl(drop) == [~s|DROP INDEX "foo"."posts$main"|]
   end
 
-  test "drop index mode not supported" do
-    assert_raise ArgumentError, fn ->
-      drop = {:drop, index(:posts, [:id], name: "posts$main"), :restrict}
-      execute_ddl(drop)
-    end
-  end
-
   test "drop index concurrently not supported" do
     index = index(:posts, [:id], name: "posts$main")
 
     assert_raise ArgumentError, fn ->
       drop = {:drop, %{index | concurrently: true}}
-      execute_ddl(drop)
-    end
-  end
-
-  test "drop index with cascade" do
-    assert_raise ArgumentError, fn ->
-      drop = {:drop, index(:posts, [:id], name: "posts$main"), :cascade}
-      execute_ddl(drop)
-    end
-
-    assert_raise ArgumentError, fn ->
-      drop = {:drop, index(:posts, [:id], name: "posts$main", prefix: :foo), :cascade}
       execute_ddl(drop)
     end
   end
