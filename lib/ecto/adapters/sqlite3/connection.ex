@@ -456,8 +456,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
         quote_name(index.name),
         " ON ",
         quote_table(index.prefix, index.table),
-        ?\s,
-        ?(,
+        " (",
         fields,
         ?),
         if_do(index.where, [" WHERE ", to_string(index.where)])
@@ -477,8 +476,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
         quote_name(index.name),
         " ON ",
         quote_table(index.prefix, index.table),
-        ?\s,
-        ?(,
+        " (",
         fields,
         ?),
         if_do(index.where, [" WHERE ", to_string(index.where)])

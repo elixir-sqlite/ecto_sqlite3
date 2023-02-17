@@ -2575,13 +2575,14 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
   end
 
   test "create index with comment" do
-    create =
-      {:create,
-       index(:posts, [:category_id, :permalink], prefix: :foo, comment: "comment")}
+    create = {:create, index(:posts, [:category_id, :permalink], comment: "comment")}
 
-    assert_raise ArgumentError, "SQLite3 does not support table prefixes", fn ->
-      execute_ddl(create)
-    end
+    assert execute_ddl(create) == [
+             """
+             CREATE INDEX "posts_category_id_permalink_index" \
+             ON "posts" ("category_id", "permalink")\
+             """
+           ]
 
     # NOTE: Comments are not supported by SQLite. DDL query generator will ignore them.
   end
