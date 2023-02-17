@@ -488,10 +488,6 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     raise ArgumentError, "SQLite3 does not support ALTER TABLE ADD CONSTRAINT."
   end
 
-  def execute_ddl({:create_if_not_exists, %Constraint{}}) do
-    raise ArgumentError, "SQLite3 does not support ALTER TABLE ADD CONSTRAINT."
-  end
-
   def execute_ddl({:drop, %Index{} = index}) do
     [
       [
