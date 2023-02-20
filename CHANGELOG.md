@@ -19,6 +19,7 @@ This is a breaking change in the sense that rebuilding the schema from scratch w
 
 We kept `TEXT_DATETIME` to satisfy the old Ecto2 implementation to keep backwards compatibility.
 
+- **breaking**: raise when table prefixes are used. [#103](https://github.com/elixir-sqlite/ecto_sqlite3/pull/103)
 
 ## v0.9.1 - 2022-12-21
 - changed: Use `Connection.connect` instead of `Sqlite3.open`. [#96](https://github.com/elixir-sqlite/ecto_sqlite3/pull/96)

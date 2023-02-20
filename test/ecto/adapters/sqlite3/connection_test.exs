@@ -1365,7 +1365,9 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> Map.put(:prefix, "prefix")
       |> plan(:update_all)
 
-    assert update_all(query) == ~s{UPDATE "prefix"."schema" AS s0 SET "x" = 0}
+    assert_raise ArgumentError, "SQLite3 does not support table prefixes", fn ->
+      update_all(query)
+    end
 
     query =
       (m in Schema)
@@ -1373,7 +1375,9 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> Map.put(:prefix, "prefix")
       |> plan(:update_all)
 
-    assert update_all(query) == ~s{UPDATE "first"."schema" AS s0 SET "x" = 0}
+    assert_raise ArgumentError, "SQLite3 does not support table prefixes", fn ->
+      update_all(query)
+    end
   end
 
   test "update all with returning" do
@@ -1448,7 +1452,9 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> Map.put(:prefix, "prefix")
       |> plan()
 
-    assert delete_all(query) == ~s{DELETE FROM "prefix"."schema" AS s0}
+    assert_raise ArgumentError, "SQLite3 does not support table prefixes", fn ->
+      delete_all(query)
+    end
 
     query =
       Schema
@@ -1456,7 +1462,9 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> Map.put(:prefix, "prefix")
       |> plan()
 
-    assert delete_all(query) == ~s{DELETE FROM "first"."schema" AS s0}
+    assert_raise ArgumentError, "SQLite3 does not support table prefixes", fn ->
+      delete_all(query)
+    end
   end
 
   ##
@@ -1769,12 +1777,9 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> Map.put(:prefix, "prefix")
       |> plan()
 
-    assert all(query) ==
-             """
-             SELECT 1 \
-             FROM "prefix"."schema" AS s0 \
-             INNER JOIN "prefix"."schema2" AS s1 ON s0."x" = s1."z"\
-             """
+    assert_raise ArgumentError, "SQLite3 does not support table prefixes", fn ->
+      all(query)
+    end
 
     query =
       Schema
@@ -1784,12 +1789,9 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       |> Map.put(:prefix, "prefix")
       |> plan()
 
-    assert all(query) ==
-             """
-             SELECT 1 \
-             FROM "first"."schema" AS s0 \
-             INNER JOIN "second"."schema2" AS s1 ON s0."x" = s1."z"\
-             """
+    assert_raise ArgumentError, "SQLite3 does not support table prefixes", fn ->
+      all(query)
+    end
   end
 
   test "join with fragment" do
@@ -2015,8 +2017,9 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
     query = insert(nil, "schema", [], [[]], {:raise, [], []}, [])
     assert query == ~s{INSERT INTO "schema" DEFAULT VALUES}
 
-    query = insert("prefix", "schema", [], [[]], {:raise, [], []}, [])
-    assert query == ~s{INSERT INTO "prefix"."schema" DEFAULT VALUES}
+    assert_raise ArgumentError, "SQLite3 does not support table prefixes", fn ->
+      insert("prefix", "schema", [], [[]], {:raise, [], []}, [])
+    end
 
     query = insert(nil, "schema", [:x, :y], [[:x, :y]], {:raise, [], []}, [:id])
     assert query == ~s{INSERT INTO "schema" ("x","y") VALUES (?,?) RETURNING "id"}
@@ -2150,8 +2153,9 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
     query = delete(nil, "schema", [x: 1, y: 2], [])
     assert query == ~s{DELETE FROM "schema" WHERE "x" = ? AND "y" = ?}
 
-    query = delete("prefix", "schema", [x: 1, y: 2], [])
-    assert query == ~s{DELETE FROM "prefix"."schema" WHERE "x" = ? AND "y" = ?}
+    assert_raise ArgumentError, "SQLite3 does not support table prefixes", fn ->
+      delete("prefix", "schema", [x: 1, y: 2], [])
+    end
 
     query = delete(nil, "schema", [x: nil, y: 1], [])
     assert query == ~s{DELETE FROM "schema" WHERE "x" IS NULL AND "y" = ?}
@@ -2209,13 +2213,9 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       {:create, table(:posts, prefix: :foo),
        [{:add, :category_0, %Reference{table: :categories}, []}]}
 
-    assert execute_ddl(create) == [
-             """
-             CREATE TABLE "foo"."posts" (\
-             "category_0" INTEGER CONSTRAINT "posts_category_0_fkey" REFERENCES "foo"."categories"("id")\
-             )\
-             """
-           ]
+    assert_raise ArgumentError, "SQLite3 does not support table prefixes", fn ->
+      execute_ddl(create)
+    end
   end
 
   test "create table with references" do
@@ -2230,8 +2230,9 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
           [null: false]},
          {:add, :category_4, %Reference{table: :categories, on_delete: :nilify_all},
           []},
-         {:add, :category_5,
-          %Reference{table: :categories, prefix: :foo, on_delete: :nilify_all}, []},
+         # SQLite3 does not support table prefixes
+         #  {:add, :category_5,
+         #   %Reference{table: :categories, prefix: :foo, on_delete: :nilify_all}, []},
          {:add, :category_6,
           %Reference{table: :categories, with: [here: :there], on_delete: :nilify_all},
           []},
@@ -2248,7 +2249,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
              "category_2" INTEGER CONSTRAINT "posts_category_2_fkey" REFERENCES "categories"("id"), \
              "category_3" INTEGER NOT NULL CONSTRAINT "posts_category_3_fkey" REFERENCES "categories"("id") ON DELETE CASCADE, \
              "category_4" INTEGER CONSTRAINT "posts_category_4_fkey" REFERENCES "categories"("id") ON DELETE SET NULL, \
-             "category_5" INTEGER CONSTRAINT "posts_category_5_fkey" REFERENCES "foo"."categories"("id") ON DELETE SET NULL, \
+             \
              "category_6" INTEGER, \
              "category_7" INTEGER, \
              FOREIGN KEY ("category_6","here") REFERENCES "categories"("id","there") ON DELETE SET NULL, \
@@ -2402,7 +2403,9 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
   test "drop table with prefixes" do
     drop = {:drop, table(:posts, prefix: :foo), :restrict}
 
-    assert execute_ddl(drop) == [~s|DROP TABLE "foo"."posts"|]
+    assert_raise ArgumentError, "SQLite3 does not support table prefixes", fn ->
+      execute_ddl(drop)
+    end
   end
 
   test "drop constraint" do
@@ -2479,17 +2482,9 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
          {:add, :author_id, %Reference{table: :author}, []}
        ]}
 
-    assert execute_ddl(alter) == [
-             """
-             ALTER TABLE "foo"."posts" \
-             ADD COLUMN "title" TEXT DEFAULT 'Untitled' NOT NULL\
-             """,
-             """
-             ALTER TABLE "foo"."posts" \
-             ADD COLUMN "author_id" INTEGER \
-             CONSTRAINT "posts_author_id_fkey" REFERENCES "foo"."author"("id")\
-             """
-           ]
+    assert_raise ArgumentError, "SQLite3 does not support table prefixes", fn ->
+      execute_ddl(alter)
+    end
   end
 
   test "alter column errors for :modify column" do
@@ -2567,32 +2562,25 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
   test "create index with prefix" do
     create = {:create, index(:posts, [:category_id, :permalink], prefix: :foo)}
 
-    assert execute_ddl(create) == [
-             """
-             CREATE INDEX "posts_category_id_permalink_index" \
-             ON "foo"."posts" ("category_id", "permalink")\
-             """
-           ]
+    assert_raise ArgumentError, "SQLite3 does not support table prefixes", fn ->
+      execute_ddl(create)
+    end
 
     create =
       {:create, index(:posts, ["lower(permalink)"], name: "posts$main", prefix: :foo)}
 
-    assert execute_ddl(create) == [
-             """
-             CREATE INDEX "posts$main" ON "foo"."posts" (lower(permalink))\
-             """
-           ]
+    assert_raise ArgumentError, "SQLite3 does not support table prefixes", fn ->
+      execute_ddl(create)
+    end
   end
 
   test "create index with comment" do
-    create =
-      {:create,
-       index(:posts, [:category_id, :permalink], prefix: :foo, comment: "comment")}
+    create = {:create, index(:posts, [:category_id, :permalink], comment: "comment")}
 
     assert execute_ddl(create) == [
              """
              CREATE INDEX "posts_category_id_permalink_index" \
-             ON "foo"."posts" ("category_id", "permalink")\
+             ON "posts" ("category_id", "permalink")\
              """
            ]
 
@@ -2676,7 +2664,10 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
   test "drop index with prefix" do
     drop = {:drop, index(:posts, [:id], name: "posts$main", prefix: :foo), :restrict}
-    assert execute_ddl(drop) == [~s|DROP INDEX "foo"."posts$main"|]
+
+    assert_raise ArgumentError, "SQLite3 does not support table prefixes", fn ->
+      execute_ddl(drop)
+    end
   end
 
   test "drop index if exists" do
@@ -2757,9 +2748,9 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
   test "rename table with prefix" do
     rename = {:rename, table(:posts, prefix: :foo), table(:new_posts, prefix: :foo)}
 
-    assert execute_ddl(rename) == [
-             ~s|ALTER TABLE "foo"."posts" RENAME TO "new_posts"|
-           ]
+    assert_raise ArgumentError, "SQLite3 does not support table prefixes", fn ->
+      execute_ddl(rename)
+    end
   end
 
   test "rename column" do
@@ -2773,9 +2764,9 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
   test "rename column in prefixed table" do
     rename = {:rename, table(:posts, prefix: :foo), :given_name, :first_name}
 
-    assert execute_ddl(rename) == [
-             ~s|ALTER TABLE "foo"."posts" RENAME COLUMN "given_name" TO "first_name"|
-           ]
+    assert_raise ArgumentError, "SQLite3 does not support table prefixes", fn ->
+      execute_ddl(rename)
+    end
   end
 
   test "drop column" do
