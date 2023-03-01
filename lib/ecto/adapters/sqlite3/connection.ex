@@ -54,7 +54,6 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     DBConnection.execute(conn, cached, params, options)
   end
 
-  @impl true
   def execute(
         conn,
         %Exqlite.Query{statement: statement, ref: nil},
@@ -64,7 +63,6 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     execute(conn, statement, params, options)
   end
 
-  @impl true
   def execute(conn, sql, params, options) when is_binary(sql) or is_list(sql) do
     query = Exqlite.Query.build(name: "", statement: IO.iodata_to_binary(sql))
 
@@ -75,7 +73,6 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     end
   end
 
-  @impl true
   def execute(conn, query, params, options) do
     case DBConnection.execute(conn, query, params, options) do
       {:ok, _} = ok -> ok
@@ -163,7 +160,6 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     raise ArgumentError, "locks are not supported by SQLite3"
   end
 
-  @impl true
   def all(query, as_prefix \\ []) do
     sources = create_names(query, as_prefix)
 
@@ -233,7 +229,6 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     raise ArgumentError, "JOINS are not supported on DELETE statements by SQLite"
   end
 
-  @impl true
   def delete_all(query) do
     sources = create_names(query, [])
     cte = cte(query, sources)
@@ -261,7 +256,6 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     ]
   end
 
-  @impl true
   def insert(prefix, table, header, rows, on_conflict, returning, _placeholders) do
     fields = quote_names(header)
 
@@ -371,6 +365,10 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   ##
 
   @impl true
+  def execute_ddl({_command, %Table{options: options}, _}) when is_list(options) do
+    raise ArgumentError, "SQLite3 adapter does not support keyword lists in :options"
+  end
+
   def execute_ddl({:create, %Table{} = table, columns}) do
     {table, composite_pk_def} = composite_pk_definition(table, columns)
     composite_fk_defs = composite_fk_definitions(table, columns)
@@ -390,7 +388,6 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     ]
   end
 
-  @impl true
   def execute_ddl({:create_if_not_exists, %Table{} = table, columns}) do
     {table, composite_pk_def} = composite_pk_definition(table, columns)
     composite_fk_defs = composite_fk_definitions(table, columns)
@@ -410,7 +407,6 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     ]
   end
 
-  @impl true
   def execute_ddl({:drop, %Table{} = table}) do
     [
       [
@@ -420,12 +416,10 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     ]
   end
 
-  @impl true
   def execute_ddl({:drop, %Table{} = table, _mode}) do
     execute_ddl({:drop, table})
   end
 
-  @impl true
   def execute_ddl({:drop_if_exists, %Table{} = table}) do
     [
       [
@@ -435,12 +429,10 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     ]
   end
 
-  @impl true
   def execute_ddl({:drop_if_exists, %Table{} = table, _mode}) do
     execute_ddl({:drop_if_exists, table})
   end
 
-  @impl true
   def execute_ddl({:alter, %Table{} = table, changes}) do
     Enum.map(changes, fn change ->
       [
@@ -599,8 +591,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
         quote_name(index.name),
         " ON ",
         quote_table(index.prefix, index.table),
-        ?\s,
-        ?(,
+        " (",
         fields,
         ?),
         if_do(index.where, [" WHERE ", to_string(index.where)])
@@ -608,7 +599,6 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     ]
   end
 
-  @impl true
   def execute_ddl({:create_if_not_exists, %Index{} = index}) do
     fields = intersperse_map(index.columns, ", ", &index_expr/1)
 
@@ -621,8 +611,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
         quote_name(index.name),
         " ON ",
         quote_table(index.prefix, index.table),
-        ?\s,
-        ?(,
+        " (",
         fields,
         ?),
         if_do(index.where, [" WHERE ", to_string(index.where)])
@@ -630,12 +619,10 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     ]
   end
 
-  @impl true
   def execute_ddl({:create, %Constraint{}}) do
     raise ArgumentError, "SQLite3 does not support ALTER TABLE ADD CONSTRAINT."
   end
 
-  @impl true
   def execute_ddl({:drop, %Index{} = index}) do
     [
       [
@@ -645,12 +632,10 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     ]
   end
 
-  @impl true
   def execute_ddl({:drop, %Index{} = index, _mode}) do
     execute_ddl({:drop, index})
   end
 
-  @impl true
   def execute_ddl({:drop_if_exists, %Index{} = index}) do
     [
       [
@@ -660,22 +645,18 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     ]
   end
 
-  @impl true
   def execute_ddl({:drop_if_exists, %Index{} = index, _mode}) do
     execute_ddl({:drop_if_exists, index})
   end
 
-  @impl true
   def execute_ddl({:drop, %Constraint{}, _mode}) do
     raise ArgumentError, "SQLite3 does not support ALTER TABLE DROP CONSTRAINT."
   end
 
-  @impl true
   def execute_ddl({:drop_if_exists, %Constraint{}, _mode}) do
     raise ArgumentError, "SQLite3 does not support ALTER TABLE DROP CONSTRAINT."
   end
 
-  @impl true
   def execute_ddl({:rename, %Table{} = current_table, %Table{} = new_table}) do
     [
       [
@@ -687,7 +668,6 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     ]
   end
 
-  @impl true
   def execute_ddl({:rename, %Table{} = table, current_column, new_column}) do
     [
       [
@@ -701,10 +681,8 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     ]
   end
 
-  @impl true
   def execute_ddl(string) when is_binary(string), do: [string]
 
-  @impl true
   def execute_ddl(keyword) when is_list(keyword) do
     raise ArgumentError, "SQLite3 adapter does not support keyword lists in execute"
   end
@@ -1842,7 +1820,10 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   def quote_table(table), do: quote_entity(table)
 
   defp quote_table(nil, name), do: quote_entity(name)
-  defp quote_table(prefix, name), do: [quote_entity(prefix), ?., quote_entity(name)]
+
+  defp quote_table(_prefix, _name) do
+    raise ArgumentError, "SQLite3 does not support table prefixes"
+  end
 
   defp quote_entity(val) when is_atom(val) do
     quote_entity(Atom.to_string(val))
