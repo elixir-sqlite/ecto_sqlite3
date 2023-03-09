@@ -42,7 +42,7 @@ config :my_app,
   ecto_repos: [MyApp.Repo]
 
 config :my_app, MyApp.Repo,
-  database: "path/to/my/database.db",
+  database: "path/to/my/database.db"
 ```
 
 ## Database Encryption
