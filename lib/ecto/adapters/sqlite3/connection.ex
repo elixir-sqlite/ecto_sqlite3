@@ -681,6 +681,13 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     ]
   end
 
+  def execute_ddl({:rename, %Index{} = index, new_index}) do
+    [
+      execute_ddl({:drop, index}),
+      execute_ddl({:create, %Index{index | name: new_index}})
+    ]
+  end
+
   def execute_ddl(string) when is_binary(string), do: [string]
 
   def execute_ddl(keyword) when is_list(keyword) do
@@ -893,6 +900,10 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   end
 
   def cte(%{with_ctes: _}, _), do: []
+
+  defp cte_expr({name, _opts, cte}, sources, query) do
+    cte_expr({name, cte}, sources, query)
+  end
 
   defp cte_expr({name, cte}, sources, query) do
     [
@@ -1113,7 +1124,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
 
   def limit(%{limit: nil}, _sources), do: []
 
-  def limit(%{limit: %QueryExpr{expr: expression}} = query, sources) do
+  def limit(%{limit: %{expr: expression}} = query, sources) do
     [" LIMIT " | expr(expression, sources, query)]
   end
 
