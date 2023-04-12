@@ -1148,11 +1148,11 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
     assert_raise Ecto.QueryError, fn ->
       update_all(query)
     end
-
   end
 
   test "update all with subquery" do
     sub = from(p in Schema, where: p.x > ^10)
+
     query =
       Schema
       |> join(:inner, [p], p2 in subquery(sub), on: p.id == p2.id)
@@ -1162,9 +1162,9 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       Ecto.Adapter.Queryable.plan_query(:update_all, Ecto.Adapters.SQLite3, query)
 
     assert update_all(planned_query) ==
-         ~s{UPDATE "schema" AS s0 SET "x" = ? FROM } <>
-           ~s{(SELECT ss0."id" AS "id", ss0."x" AS "x", ss0."y" AS "y", ss0."z" AS "z", ss0."w" AS "w", ss0."meta" AS "meta" FROM "schema" AS ss0 WHERE (ss0."x" > ?)) } <>
-           ~s{AS s1 WHERE (s0."id" = s1."id")}
+             ~s{UPDATE "schema" AS s0 SET "x" = ? FROM } <>
+               ~s{(SELECT ss0."id" AS "id", ss0."x" AS "x", ss0."y" AS "y", ss0."z" AS "z", ss0."w" AS "w", ss0."meta" AS "meta" FROM "schema" AS ss0 WHERE (ss0."x" > ?)) } <>
+               ~s{AS s1 WHERE (s0."id" = s1."id")}
 
     assert cast_params == [100, 10]
     assert dump_params == [100, 10]
@@ -1823,7 +1823,6 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     assert query ==
              ~s{UPDATE "schema" SET "x" = ?, "y" = ? WHERE "id" = ? RETURNING "z"}
-
   end
 
   test "delete" do
@@ -1902,7 +1901,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
             on_update: :update_all
           }, [null: false]},
          {:add, :category_9, %Reference{table: :categories, on_delete: :restrict}, []},
-         {:add, :category_10, %Reference{table: :categories, on_update: :restrict}, []},
+         {:add, :category_10, %Reference{table: :categories, on_update: :restrict}, []}
        ]}
 
     assert execute_ddl(create) == [
@@ -2106,12 +2105,11 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
        ]}
 
     assert_raise ArgumentError,
-             "unsupported type `{:a, :b, :c}`. " <>
-               "The type can either be an atom, a string or a tuple of the form " <>
-               "`{:map, t}` or `{:array, t}` where `t` itself follows the same conditions.",
-    fn -> execute_ddl(create) end
+                 "unsupported type `{:a, :b, :c}`. " <>
+                   "The type can either be an atom, a string or a tuple of the form " <>
+                   "`{:map, t}` or `{:array, t}` where `t` itself follows the same conditions.",
+                 fn -> execute_ddl(create) end
   end
-
 
   test "drop table" do
     drop = {:drop, table(:posts)}
@@ -2120,6 +2118,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
   test "drop table with prefix" do
     drop = {:drop, table(:posts, prefix: :foo)}
+
     assert_raise ArgumentError, "SQLite3 does not support table prefixes", fn ->
       execute_ddl(drop)
     end
@@ -2151,6 +2150,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
     alter =
       {:alter, table(:posts, prefix: :foo),
        [{:add, :author_id, %Reference{table: :author}, []}]}
+
     assert_raise ArgumentError, "SQLite3 does not support table prefixes", fn ->
       execute_ddl(alter)
     end
@@ -2339,6 +2339,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
   test "rename table with prefix" do
     rename = {:rename, table(:posts, prefix: :foo), table(:new_posts, prefix: :foo)}
+
     assert_raise ArgumentError, "SQLite3 does not support table prefixes", fn ->
       execute_ddl(rename)
     end
