@@ -1,4 +1,4 @@
-defmodule Ecto.Adapters.SQLite3Test do
+defmodule Ecto.Adapters.SQLite3ConnTest do
   use ExUnit.Case
 
   alias Ecto.Adapters.SQLite3

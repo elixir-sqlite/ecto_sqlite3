@@ -16,14 +16,17 @@ defmodule Ecto.Adapters.SQLite3.DataType do
   def column_type(:string, _opts), do: "TEXT"
   def column_type(:float, _opts), do: "NUMERIC"
   def column_type(:binary, _opts), do: "BLOB"
-  def column_type(:map, _opts), do: "JSON"
-  def column_type(:array, _opts), do: "JSON"
-  def column_type({:map, _}, _opts), do: "JSON"
-  def column_type({:array, _}, _opts), do: "JSON"
+  def column_type(:map, _opts), do: "TEXT"
+  def column_type(:array, _opts), do: "TEXT"
+  def column_type({:map, _}, _opts), do: "TEXT"
+  def column_type({:array, _}, _opts), do: "TEXT"
   def column_type(:utc_datetime, _opts), do: "TEXT"
   def column_type(:utc_datetime_usec, _opts), do: "TEXT"
   def column_type(:naive_datetime, _opts), do: "TEXT"
   def column_type(:naive_datetime_usec, _opts), do: "TEXT"
+  def column_type(:time, _opts), do: "TEXT"
+  def column_type(:time_usec, _opts), do: "TEXT"
+  def column_type(:timestamp, _opts), do: "TEXT"
   def column_type(:decimal, nil), do: "DECIMAL"
 
   def column_type(:decimal, opts) do
@@ -52,9 +55,15 @@ defmodule Ecto.Adapters.SQLite3.DataType do
     end
   end
 
-  def column_type(type, _) do
+  def column_type(type, _) when is_atom(type) do
     type
     |> Atom.to_string()
     |> String.upcase()
+  end
+
+  def column_type(type, _) do
+    raise ArgumentError,
+          "unsupported type `#{inspect(type)}`. The type can either be an atom, a string " <>
+            "or a tuple of the form `{:map, t}` or `{:array, t}` where `t` itself follows the same conditions."
   end
 end

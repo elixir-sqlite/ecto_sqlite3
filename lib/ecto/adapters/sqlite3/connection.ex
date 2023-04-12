@@ -332,11 +332,11 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     end
   end
 
-  defp build_explain_query(query, :query_plan) do
+  def build_explain_query(query, :query_plan) do
     IO.iodata_to_binary(["EXPLAIN QUERY PLAN ", query])
   end
 
-  defp build_explain_query(query, :instructions) do
+  def build_explain_query(query, :instructions) do
     IO.iodata_to_binary(["EXPLAIN ", query])
   end
 
@@ -444,6 +444,141 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     end)
   end
 
+  @impl true
+  def execute_ddl({_, %Index{concurrently: true}}) do
+    raise ArgumentError, "`concurrently` is not supported with SQLite3"
+  end
+
+  @impl true
+  def execute_ddl({_, %Index{only: true}}) do
+    raise ArgumentError, "`only` is not supported with SQLite3"
+  end
+
+  @impl true
+  def execute_ddl({_, %Index{include: x}}) when length(x) != 0 do
+    raise ArgumentError, "`include` is not supported with SQLite3"
+  end
+
+  @impl true
+  def execute_ddl({_, %Index{using: x}}) when not is_nil(x) do
+    raise ArgumentError, "`using` is not supported with SQLite3"
+  end
+
+  @impl true
+  def execute_ddl({_, %Index{nulls_distinct: x}}) when not is_nil(x) do
+    raise ArgumentError, "`nulls_distinct` is not supported with SQLite3"
+  end
+
+  @impl true
+  def execute_ddl({:create, %Index{} = index}) do
+    fields = intersperse_map(index.columns, ", ", &index_expr/1)
+
+    [
+      [
+        "CREATE ",
+        if_do(index.unique, "UNIQUE "),
+        "INDEX ",
+        quote_name(index.name),
+        " ON ",
+        quote_table(index.prefix, index.table),
+        " (",
+        fields,
+        ?),
+        if_do(index.where, [" WHERE ", to_string(index.where)])
+      ]
+    ]
+  end
+
+  @impl true
+  def execute_ddl({:create_if_not_exists, %Index{} = index}) do
+    fields = intersperse_map(index.columns, ", ", &index_expr/1)
+
+    [
+      [
+        "CREATE ",
+        if_do(index.unique, "UNIQUE "),
+        "INDEX IF NOT EXISTS ",
+        quote_name(index.name),
+        " ON ",
+        quote_table(index.prefix, index.table),
+        " (",
+        fields,
+        ?),
+        if_do(index.where, [" WHERE ", to_string(index.where)])
+      ]
+    ]
+  end
+
+  @impl true
+  def execute_ddl({:drop, %Index{} = index}) do
+    [
+      [
+        "DROP INDEX ",
+        quote_table(index.prefix, index.name)
+      ]
+    ]
+  end
+
+  @impl true
+  def execute_ddl({:drop, %Index{} = index, _mode}) do
+    execute_ddl({:drop, index})
+  end
+
+  @impl true
+  def execute_ddl({:drop_if_exists, %Index{concurrently: true}}) do
+    raise ArgumentError, "`concurrently` is not supported with SQLite3"
+  end
+
+  @impl true
+  def execute_ddl({:drop_if_exists, %Index{} = index}) do
+    [
+      [
+        "DROP INDEX IF EXISTS ",
+        quote_table(index.prefix, index.name)
+      ]
+    ]
+  end
+
+  @impl true
+  def execute_ddl({:drop_if_exists, %Index{} = index, _mode}) do
+    execute_ddl({:drop_if_exists, index})
+  end
+
+  @impl true
+  def execute_ddl({:rename, %Table{} = current_table, %Table{} = new_table}) do
+    [
+      [
+        "ALTER TABLE ",
+        quote_table(current_table.prefix, current_table.name),
+        " RENAME TO ",
+        quote_table(nil, new_table.name)
+      ]
+    ]
+  end
+
+  @impl true
+  def execute_ddl({:rename, %Table{} = current_table, old_col, new_col}) do
+    [
+      [
+        "ALTER TABLE ",
+        quote_table(current_table.prefix, current_table.name),
+        " RENAME COLUMN ",
+        quote_name(old_col),
+        " TO ",
+        quote_name(new_col)
+      ]
+    ]
+  end
+
+  @impl true
+  def execute_ddl(string) when is_binary(string), do: [string]
+
+  @impl true
+  def execute_ddl(keyword) when is_list(keyword) do
+    raise ArgumentError, "SQLite3 adapter does not support keyword lists in execute"
+  end
+
+  @impl true
   def execute_ddl({:create, %Index{} = index}) do
     fields = intersperse_map(index.columns, ", ", &index_expr/1)
 
@@ -685,12 +820,11 @@ defmodule Ecto.Adapters.SQLite3.Connection do
 
   def handle_call(fun, _arity), do: {:fun, Atom.to_string(fun)}
 
-  def distinct(nil, _sources, _query), do: []
-  def distinct(%QueryExpr{expr: true}, _sources, _query), do: "DISTINCT "
-  def distinct(%QueryExpr{expr: false}, _sources, _query), do: []
+  defp distinct(nil, _sources, _query), do: []
+  defp distinct(%QueryExpr{expr: true}, _sources, _query), do: "DISTINCT "
+  defp distinct(%QueryExpr{expr: false}, _sources, _query), do: []
 
-  def distinct(%QueryExpr{expr: expression}, _sources, query)
-      when is_list(expression) do
+  defp distinct(%QueryExpr{expr: exprs}, _sources, query) when is_list(exprs) do
     raise Ecto.QueryError,
       query: query,
       message: "DISTINCT with multiple columns is not supported by SQLite3"
@@ -809,6 +943,18 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     ]
   end
 
+  defp update_op(:push, _quoted_key, _value, _sources, query) do
+    raise Ecto.QueryError,
+      query: query,
+      message: "Arrays are not supported for SQLite3"
+  end
+
+  defp update_op(:pull, _quoted_key, _value, _sources, query) do
+    raise Ecto.QueryError,
+      query: query,
+      message: "Arrays are not supported for SQLite3"
+  end
+
   defp update_op(command, _quoted_key, _value, _sources, query) do
     raise Ecto.QueryError,
       query: query,
@@ -823,15 +969,6 @@ defmodule Ecto.Adapters.SQLite3.Connection do
         %JoinExpr{qual: _qual, ix: ix, source: source} ->
           {join, name} = get_source(query, sources, ix, source)
           [join, " AS " | name]
-
-          # This is hold over from sqlite_ecto2. According to sqlite3
-          # documentation, all of the join types are allowed.
-          #
-          # %JoinExpr{qual: qual} ->
-          #   raise Ecto.QueryError,
-          #     query: query,
-          #     message:
-          #       "SQLite3 adapter supports only inner joins on #{kind}, got: `#{qual}`"
       end)
 
     wheres =
@@ -853,6 +990,12 @@ defmodule Ecto.Adapters.SQLite3.Connection do
         source: source,
         hints: hints
       } ->
+        if hints != [] do
+          raise Ecto.QueryError,
+            query: query,
+            message: "join hints are not supported by SQLite3"
+        end
+
         {join, name} = get_source(query, sources, ix, source)
 
         [
@@ -860,7 +1003,6 @@ defmodule Ecto.Adapters.SQLite3.Connection do
           join,
           " AS ",
           name,
-          Enum.map(hints, &[?\s | &1]),
           join_on(qual, expression, sources, query)
         ]
     end)
@@ -932,11 +1074,11 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   def order_by(%{order_bys: []}, _sources), do: []
 
   def order_by(%{order_bys: order_bys} = query, sources) do
+    order_bys = Enum.flat_map(order_bys, & &1.expr)
+
     [
       " ORDER BY "
-      | intersperse_map(order_bys, ", ", fn %QueryExpr{expr: expression} ->
-          intersperse_map(expression, ", ", &order_by_expr(&1, sources, query))
-        end)
+      | intersperse_map(order_bys, ", ", &order_by_expr(&1, sources, query))
     ]
   end
 
@@ -1089,6 +1231,10 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     source
   end
 
+  def expr({:in, _, [_left, "[]"]}, _sources, _query) do
+    "0"
+  end
+
   def expr({:in, _, [_left, []]}, _sources, _query) do
     "0"
   end
@@ -1111,6 +1257,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     [expr(left, sources, query), " IN ", expr(subquery, sources, query)]
   end
 
+  # Super Hack to handle arrays in json
   def expr({:in, _, [left, right]}, sources, query) do
     [
       expr(left, sources, query),
@@ -1227,8 +1374,13 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   def expr({fun, _, args}, sources, query) when is_atom(fun) and is_list(args) do
     {modifier, args} =
       case args do
-        [rest, :distinct] -> {"DISTINCT ", [rest]}
-        _ -> {[], args}
+        [_rest, :distinct] ->
+          raise Ecto.QueryError,
+            query: query,
+            message: "Distinct not supported in expressions"
+
+        _ ->
+          {[], args}
       end
 
     case handle_call(fun, length(args)) do
@@ -1245,7 +1397,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   def expr(list, _sources, query) when is_list(list) do
     raise Ecto.QueryError,
       query: query,
-      message: "Array type is not supported by SQLite3"
+      message: "Array literals are not supported by SQLite3"
   end
 
   def expr(%Decimal{} = decimal, _sources, _query) do
@@ -1260,7 +1412,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
 
   def expr(%Ecto.Query.Tagged{value: other, type: type}, sources, query)
       when type in [:decimal, :float] do
-    ["(", expr(other, sources, query), " + 0)"]
+    ["CAST(", expr(other, sources, query), " AS REAL)"]
   end
 
   def expr(%Ecto.Query.Tagged{value: other, type: type}, sources, query) do
@@ -1608,7 +1760,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
       end)
 
     if length(pks) > 1 do
-      composite_pk_expr = pks |> Enum.reverse() |> Enum.map_join(", ", &quote_name/1)
+      composite_pk_expr = pks |> Enum.reverse() |> Enum.map_join(",", &quote_name/1)
 
       {
         %{table | primary_key: :composite},

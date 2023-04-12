@@ -108,6 +108,7 @@ ExUnit.start(
     :alter_foreign_key,
     :assigns_id_type,
     :modify_column,
+    :restrict,
 
     # SQLite3 does not support the concat function
     :concat,
@@ -121,5 +122,8 @@ ExUnit.start(
     :selected_as_with_order_by,
     :selected_as_with_order_by_expression,
     :selected_as_with_having,
+
+    # Distinct with options not supported
+    :distinct_count
   ]
 )
