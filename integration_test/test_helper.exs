@@ -116,6 +116,8 @@ ExUnit.start(
     :placeholders,
     # SQLite3 stores booleans as integers, causing Ecto's json_extract_path tests to fail
     :json_extract_path,
+    # SQLite3 doesn't support specifying columns for ON DELETE SET NULL
+    :on_delete_nilify_column_list,
 
     # We don't support selected_as
     :selected_as_with_group_by,
