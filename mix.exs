@@ -41,6 +41,7 @@ defmodule EctoSQLite3.MixProject do
       {:jason, ">= 0.0.0", only: [:dev, :test, :docs]},
       {:temp, "~> 0.4", only: [:test]},
       {:credo, "~> 1.6", only: [:dev, :test, :docs]},
+      {:mix_test_watch, "~> 1.1", only: :dev, runtime: false},
 
       # Benchmarks
       {:benchee, "~> 1.0", only: :dev},
