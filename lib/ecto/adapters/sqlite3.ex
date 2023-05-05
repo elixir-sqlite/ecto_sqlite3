@@ -266,7 +266,7 @@ defmodule Ecto.Adapters.SQLite3 do
 
   @impl Ecto.Adapter.Structure
   def dump_cmd(args, opts \\ [], config) when is_list(config) and is_list(args) do
-    run_with_cmd("sqlite3", [config[:database] | args], opts)
+    run_with_cmd("sqlite3", ["-init", "/dev/null", config[:database] | args], opts)
   end
 
   @impl Ecto.Adapter.Schema
