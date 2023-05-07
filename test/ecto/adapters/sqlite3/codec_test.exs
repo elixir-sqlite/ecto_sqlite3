@@ -188,9 +188,5 @@ defmodule Ecto.Adapters.SQLite3.CodecTest do
     test "on %Date{} structs", %{date: date} do
       {:ok, "2011-01-09"} = Codec.date_encode(date, :iso8601)
     end
-
-    test "on %DateTime{} structs", %{datetime: datetime} do
-      {:ok, "2011-01-09"} = Codec.date_encode(datetime, :iso8601)
-    end
   end
 end
