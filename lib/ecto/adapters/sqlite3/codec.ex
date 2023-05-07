@@ -68,6 +68,15 @@ defmodule Ecto.Adapters.SQLite3.Codec do
     end
   end
 
+  def date_encode(val), do: date_encode(val, :iso8601)
+
+  def date_encode(%Date{} = val, :iso8601) do
+    case Date.to_iso8601(val) do
+      date when is_bitstring(date) -> {:ok, date}
+      _ -> :error
+    end
+  end
+
   def time_decode(nil), do: {:ok, nil}
 
   def time_decode(value) do

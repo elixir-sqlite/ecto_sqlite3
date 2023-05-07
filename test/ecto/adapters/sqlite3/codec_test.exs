@@ -176,4 +176,17 @@ defmodule Ecto.Adapters.SQLite3.CodecTest do
       end
     end
   end
+
+  describe ".date_encode/2" do
+    setup do
+      [
+        date: ~D[2011-01-09],
+        datetime: ~U[2011-01-09 08:46:08.00Z]
+      ]
+    end
+
+    test "on %Date{} structs", %{date: date} do
+      {:ok, "2011-01-09"} = Codec.date_encode(date, :iso8601)
+    end
+  end
 end
