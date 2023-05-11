@@ -307,6 +307,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       from(c in "categories",
         as: :parent_category,
         left_lateral_join: b in subquery(breadcrumbs_query),
+        on: true,
         select: %{id: c.id, breadcrumbs: b.breadcrumbs}
       )
       |> plan()
@@ -1409,7 +1410,10 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
   test "join with hints" do
     assert_raise Ecto.QueryError, ~r/join hints are not supported by SQLite3/, fn ->
       Schema
-      |> join(:inner, [p], q in Schema2, hints: ["USE INDEX FOO", "USE INDEX BAR"])
+      |> join(:inner, [p], q in Schema2,
+        hints: ["USE INDEX FOO", "USE INDEX BAR"],
+        on: true
+      )
       |> select([], true)
       |> plan()
       |> all()
@@ -1475,7 +1479,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
     query =
       "comments"
       |> from(as: :comment)
-      |> join(:inner, [c], p in subquery(posts))
+      |> join(:inner, [c], p in subquery(posts), on: true)
       |> select([_, p], p)
       |> plan()
 
@@ -1519,7 +1523,8 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
           "SELECT * FROM schema2 AS s2 WHERE s2.id = ? AND s2.field = ?",
           p.x,
           ^10
-        )
+        ),
+        on: true
       )
       |> select([p], {p.id, ^0})
       |> where([p], p.id > 0 and p.id < ^100)
@@ -1545,7 +1550,10 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
   test "join with query interpolation" do
     inner = Ecto.Queryable.to_query(Schema2)
-    query = from(p in Schema, left_join: c in ^inner, select: {p.id, c.id}) |> plan()
+
+    query =
+      from(p in Schema, left_join: c in ^inner, on: true, select: {p.id, c.id})
+      |> plan()
 
     assert all(query) ==
              "SELECT s0.\"id\", s1.\"id\" FROM \"schema\" AS s0 LEFT OUTER JOIN \"schema2\" AS s1 ON 1"
@@ -1561,7 +1569,8 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
           "SELECT * FROM schema2 AS s2 WHERE s2.id = ? AND s2.field = ?",
           p.x,
           ^10
-        )
+        ),
+        on: true
       )
       |> select([p, q], {p.id, q.z})
       |> where([p], p.id > 0 and p.id < ^100)
