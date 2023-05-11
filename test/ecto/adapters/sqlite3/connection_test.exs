@@ -1,5 +1,5 @@
 defmodule Ecto.Adapters.SQLite3.ConnectionTest do
-  use ExUnit.Case, async: false
+  use ExUnit.Case, async: true
 
   import Ecto.Query
 
@@ -621,22 +621,41 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
   end
 
   test "fragments" do
-    query = Schema |> select([r], fragment("now")) |> plan()
+    query =
+      Schema
+      |> select([r], fragment("now"))
+      |> plan()
+
     assert all(query) == ~s{SELECT now FROM "schema" AS s0}
 
-    query = Schema |> select([r], fragment("fun(?)", r)) |> plan()
+    query =
+      Schema
+      |> select([r], fragment("fun(?)", r))
+      |> plan()
+
     assert all(query) == ~s{SELECT fun(s0) FROM "schema" AS s0}
 
-    query = Schema |> select([r], fragment("downcase(?)", r.x)) |> plan()
+    query =
+      Schema
+      |> select([r], fragment("downcase(?)", r.x))
+      |> plan()
+
     assert all(query) == ~s{SELECT downcase(s0."x") FROM "schema" AS s0}
 
     query =
-      Schema |> select([r], fragment("? COLLATE ?", r.x, literal(^"es_ES"))) |> plan()
+      Schema
+      |> select([r], fragment("? COLLATE ?", r.x, literal(^"es_ES")))
+      |> plan()
 
     assert all(query) == ~s{SELECT s0."x" COLLATE "es_ES" FROM "schema" AS s0}
 
     value = 13
-    query = Schema |> select([r], fragment("downcase(?, ?)", r.x, ^value)) |> plan()
+
+    query =
+      Schema
+      |> select([r], fragment("downcase(?, ?)", r.x, ^value))
+      |> plan()
+
     assert all(query) == ~s{SELECT downcase(s0."x", ?) FROM "schema" AS s0}
 
     query = Schema |> select([], fragment(title: 2)) |> plan()
@@ -1094,8 +1113,7 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
 
     query = from(m in Schema, update: [set: [x: ^0]]) |> plan(:update_all)
 
-    assert update_all(query) ==
-             ~s{UPDATE "schema" AS s0 SET "x" = ?}
+    assert update_all(query) == ~s{UPDATE "schema" AS s0 SET "x" = ?}
 
     query =
       Schema
@@ -1552,11 +1570,13 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
     inner = Ecto.Queryable.to_query(Schema2)
 
     query =
-      from(p in Schema, left_join: c in ^inner, on: true, select: {p.id, c.id})
+      from(p in Schema)
+      |> join(:left, [p], c in ^inner, on: true)
+      |> select([p, c], {p.id, c.id})
       |> plan()
 
     assert all(query) ==
-             "SELECT s0.\"id\", s1.\"id\" FROM \"schema\" AS s0 LEFT OUTER JOIN \"schema2\" AS s1 ON 1"
+             ~s{SELECT s0."id", s1."id" FROM "schema" AS s0 LEFT OUTER JOIN "schema2" AS s1 ON 1}
   end
 
   test "lateral join with fragment" do
@@ -1603,15 +1623,21 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
   end
 
   test "cross join" do
-    query = from(p in Schema, cross_join: c in Schema2, select: {p.id, c.id}) |> plan()
+    query =
+      from(p in Schema)
+      |> join(:cross, [p], c in Schema2)
+      |> select([p, c], {p.id, c.id})
+      |> plan()
 
     assert all(query) ==
-             "SELECT s0.\"id\", s1.\"id\" FROM \"schema\" AS s0 CROSS JOIN \"schema2\" AS s1"
+             ~s{SELECT s0."id", s1."id" FROM "schema" AS s0 CROSS JOIN "schema2" AS s1}
   end
 
   test "cross join with fragment" do
     query =
-      from(p in Schema, cross_join: fragment("json_each(?)", p.j), select: {p.id})
+      from(p in Schema)
+      |> join(:cross, [p], fragment("json_each(?)", p.j))
+      |> select([p], {p.id})
       |> plan()
 
     assert all(query) ==
