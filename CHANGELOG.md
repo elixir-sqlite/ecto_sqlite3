@@ -7,6 +7,10 @@ project adheres to [Semantic Versioning][semver].
 
 ## Unreleased
 
+## v0.10.2
+
+- added: Missing support for `Date` type.
+
 ## v0.10.1
 
 - fixed: Ignore bad `init` file when using `dump_cmd/3`
