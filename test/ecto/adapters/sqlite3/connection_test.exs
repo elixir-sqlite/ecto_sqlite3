@@ -2422,6 +2422,11 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
       assert Connection.to_constraints(error, []) == [unique: "one_two_three_index"]
     end
 
+    test "multi-column unique index" do
+      error = %Exqlite.Error{message: "UNIQUE constraint failed: one.two, one.three"}
+      assert Connection.to_constraints(error, []) == [unique: "one_two_three_index"]
+    end
+
     test "complex unique index" do
       error = %Exqlite.Error{message: "UNIQUE constraint failed: index 'one_two_three_index'"}
       assert Connection.to_constraints(error, []) == [unique: "one_two_three_index"]
