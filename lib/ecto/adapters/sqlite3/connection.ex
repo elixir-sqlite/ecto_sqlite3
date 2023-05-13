@@ -131,6 +131,13 @@ defmodule Ecto.Adapters.SQLite3.Connection do
 
   @impl true
   def to_constraints(
+        %Exqlite.Error{message: "UNIQUE constraint failed: index " <> constraint},
+        _opts
+      ) do
+    [unique: String.trim(constraint, ~s('))]
+  end
+
+  def to_constraints(
         %Exqlite.Error{message: "UNIQUE constraint failed: " <> constraint},
         _opts
       ) do
