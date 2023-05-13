@@ -2414,6 +2414,20 @@ defmodule Ecto.Adapters.SQLite3.ConnectionTest do
     assert execute_ddl(integer) == [~s/CREATE TABLE "posts" ("id" INTEGER PRIMARY KEY)/]
   end
 
+  describe "to_constraints/2" do
+    alias Ecto.Adapters.SQLite3.Connection
+
+    test "simple unique index" do
+      error = %Exqlite.Error{message: "UNIQUE constraint failed: one.two.three"}
+      assert Connection.to_constraints(error, []) == [unique: "one_two_three_index"]
+    end
+
+    test "complex unique index" do
+      error = %Exqlite.Error{message: "UNIQUE constraint failed: index 'one_two_three_index'"}
+      assert Connection.to_constraints(error, []) == [unique: "one_two_three_index"]
+    end
+  end
+
   defp remove_newlines(string) do
     string |> String.trim() |> String.replace("\n", " ")
   end
