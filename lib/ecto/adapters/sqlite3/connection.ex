@@ -113,11 +113,14 @@ defmodule Ecto.Adapters.SQLite3.Connection do
       constraint
       |> String.split(", ")
       |> Enum.with_index()
-      |> Enum.map(fn {table_col, idx} ->
-        case idx do
-          0 -> table_col |> String.replace(".", "_")
-          _ -> table_col |> String.split(".") |> List.last()
-        end
+      |> Enum.map(fn
+        {table_col, 0} ->
+          String.replace(table_col, ".", "_")
+
+        {table_col, _} ->
+          table_col
+          |> String.split(".")
+          |> List.last()
       end)
       |> Enum.concat(["index"])
       |> Enum.join("_")
