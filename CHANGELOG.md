@@ -7,6 +7,11 @@ project adheres to [Semantic Versioning][semver].
 
 ## Unreleased
 
+## v0.10.3
+
+- fixed: Handle unique cosntraint error formats.
+- changed: Updated depenendencies.
+
 ## v0.10.2
 
 - added: Missing support for `Date` type.
