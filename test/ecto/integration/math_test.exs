@@ -2,11 +2,13 @@ defmodule Ecto.Integration.MathTest do
   use Ecto.Integration.Case
 
   alias Ecto.Integration.TestRepo
-  alias EctoSQLite3.Integration.Account
-  alias EctoSQLite3.Integration.Product
-  alias EctoSQLite3.Integration.Vec3f
+  alias EctoSQLite3.Schemas.Account
+  alias EctoSQLite3.Schemas.Product
+  alias EctoSQLite3.Schemas.Vec3f
 
   import Ecto.Query
+
+  @moduletag :integration
 
   defp random_string(len) do
     :crypto.strong_rand_bytes(len)

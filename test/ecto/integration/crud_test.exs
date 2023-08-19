@@ -2,12 +2,14 @@ defmodule Ecto.Integration.CrudTest do
   use Ecto.Integration.Case
 
   alias Ecto.Integration.TestRepo
-  alias EctoSQLite3.Integration.Account
-  alias EctoSQLite3.Integration.AccountUser
-  alias EctoSQLite3.Integration.Product
-  alias EctoSQLite3.Integration.User
+  alias EctoSQLite3.Schemas.Account
+  alias EctoSQLite3.Schemas.AccountUser
+  alias EctoSQLite3.Schemas.Product
+  alias EctoSQLite3.Schemas.User
 
   import Ecto.Query
+
+  @moduletag :integration
 
   describe "insert" do
     test "insert user" do

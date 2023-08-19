@@ -3,7 +3,9 @@ defmodule Ecto.Integration.JsonTest do
 
   alias Ecto.Adapters.SQL
   alias Ecto.Integration.TestRepo
-  alias EctoSQLite3.Integration.Setting
+  alias EctoSQLite3.Schemas.Setting
+
+  @moduletag :integration
 
   test "serializes json correctly" do
     # Insert a record purposefully with atoms as the map key. We are going to

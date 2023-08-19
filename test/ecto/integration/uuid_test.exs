@@ -2,7 +2,7 @@ defmodule Ecto.Integration.UUIDTest do
   use Ecto.Integration.Case, async: false
 
   alias Ecto.Integration.TestRepo
-  alias EctoSQLite3.Integration.Product
+  alias EctoSQLite3.Schemas.Product
 
   setup do
     Application.put_env(:ecto_sqlite3, :uuid_type, :string)

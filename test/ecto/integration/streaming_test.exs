@@ -2,9 +2,11 @@ defmodule Ecto.Integration.StreamingTest do
   use Ecto.Integration.Case
 
   alias Ecto.Integration.TestRepo
-  alias EctoSQLite3.Integration.User
+  alias EctoSQLite3.Schemas.User
 
   import Ecto.Query
+
+  @moduletag :integration
 
   test "handles streams properly" do
     # TODO: We really need to get proper sandboxing in place
