@@ -16,6 +16,7 @@ defmodule EctoSQLite3.MixProject do
       description: description(),
       test_paths: test_paths(System.get_env("EXQLITE_INTEGRATION")),
       elixirc_paths: elixirc_paths(Mix.env()),
+      aliases: aliases(),
 
       # Docs
       name: "Ecto SQLite3",
@@ -85,4 +86,14 @@ defmodule EctoSQLite3.MixProject do
 
   defp test_paths(nil), do: ["test"]
   defp test_paths(_any), do: ["integration_test"]
+
+  defp aliases do
+    [
+      lint: [
+        "format --check-formatted",
+        "deps.unlock --check-unused",
+        "credo --all --strict"
+      ]
+    ]
+  end
 end
