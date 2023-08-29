@@ -58,8 +58,8 @@ defmodule Ecto.Integration.UUIDTest do
   end
 
   test "handles binary_id casting with binary format" do
-    Application.put_env(:ecto_sqlite3, :uuid_type, :binary)
     Application.put_env(:ecto_sqlite3, :binary_id_type, :binary)
+    Application.put_env(:ecto_sqlite3, :uuid_type, :binary)
 
     bid = Ecto.UUID.generate()
     TestRepo.insert!(%Product{bid: bid, external_id: bid})
