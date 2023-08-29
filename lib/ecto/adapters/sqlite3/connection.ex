@@ -1431,6 +1431,17 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     [?x, ?', hex, ?']
   end
 
+  def expr(%Ecto.Query.Tagged{value: {:^, _, [_]} = expr, type: type}, sources, query)
+      when type in [:binary_id, :uuid] do
+    case Application.get_env(:ecto_sqlite3, :binary_id_type, :string) do
+      :string ->
+        ["CAST(", expr(expr, sources, query), " AS ", column_type(type, query), ?)]
+
+      :binary ->
+        [expr(expr, sources, query)]
+    end
+  end
+
   def expr(%Ecto.Query.Tagged{value: other, type: type}, sources, query)
       when type in [:decimal, :float] do
     ["CAST(", expr(other, sources, query), " AS REAL)"]

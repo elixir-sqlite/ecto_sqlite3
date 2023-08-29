@@ -28,6 +28,7 @@ defmodule EctoSQLite3.Integration.Migration do
       add(:name, :string)
       add(:description, :text)
       add(:external_id, :uuid)
+      add(:bid, :binary_id)
       add(:tags, {:array, :string})
       add(:approved_at, :naive_datetime)
       add(:price, :decimal)

@@ -11,6 +11,7 @@ defmodule EctoSQLite3.Schemas.Product do
     field(:name, :string)
     field(:description, :string)
     field(:external_id, Ecto.UUID)
+    field(:bid, :binary_id)
     field(:tags, {:array, :string}, default: [])
     field(:approved_at, :naive_datetime)
     field(:price, :decimal)
