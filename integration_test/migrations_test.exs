@@ -19,6 +19,18 @@ defmodule Ecto.Integration.MigrationsTest do
     end
   end
 
+  defmodule RollbackMigration do
+    use Ecto.Migration
+
+    def change do
+      create_if_not_exists table(:log_mode_table)
+
+      alter table(:log_mode_table) do
+        remove :not_exists, :text
+      end
+    end
+  end
+
   describe "Migrator" do
     @create_table_sql ~s(CREATE TABLE IF NOT EXISTS "log_mode_table")
     @create_table_log "create table if not exists log_mode_table"
@@ -30,7 +42,7 @@ defmodule Ecto.Integration.MigrationsTest do
     @version_insert ~s(INSERT INTO "schema_migrations")
     @version_delete ~s(DELETE FROM "schema_migrations")
 
-    test "logs locking and transaction commands" do
+    test "logs transaction commands" do
       num = @base_migration + System.unique_integer([:positive])
       up_log =
         capture_log(fn ->
@@ -44,6 +56,9 @@ defmodule Ecto.Integration.MigrationsTest do
       assert up_log =~ @alter_table_log
       assert up_log =~ @version_insert
       assert up_log =~ "commit []"
+
+      # two columns in the table
+      assert %{num_rows: 2} = PoolRepo.query!("PRAGMA table_info(log_mode_table)", [])
 
       down_log =
         capture_log(fn ->
@@ -84,6 +99,28 @@ defmodule Ecto.Integration.MigrationsTest do
       assert down_log =~ @drop_table_log
       refute down_log =~ @version_delete
       refute down_log =~ "commit []"
+    end
+
+    test "rolling back undoes previous migrations" do
+      num = @base_migration + System.unique_integer([:positive])
+      up_log =
+        capture_log(fn ->
+          try do
+            Ecto.Migrator.up(PoolRepo, num, RollbackMigration, log_migrator_sql: :info, log_migrations_sql: :info, log: :info)
+          rescue
+            _ -> :ok
+          end
+        end)
+
+      assert up_log =~ "begin []"
+      assert up_log =~ @create_table_sql
+      assert up_log =~ @create_table_log
+      assert up_log =~ "rollback []"
+      refute up_log =~ @version_insert
+      refute up_log =~ "commit []"
+
+      # table was not created due to rollback
+      assert %{num_rows: 0} = PoolRepo.query!("PRAGMA table_info(log_mode_table)", [])
     end
   end
 end
