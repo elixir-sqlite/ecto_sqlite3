@@ -233,7 +233,7 @@ defmodule Ecto.Adapters.SQLite3 do
   end
 
   @impl Ecto.Adapter.Migration
-  def supports_ddl_transaction?, do: false
+  def supports_ddl_transaction?, do: true
 
   @impl Ecto.Adapter.Migration
   def lock_for_migrations(_meta, _options, fun) do
