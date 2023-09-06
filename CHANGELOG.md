@@ -7,6 +7,10 @@ project adheres to [Semantic Versioning][semver].
 
 ## Unreleased
 
+## v0.11.0
+
+- added: Support for DDL transactions.
+
 ## v0.10.4
 
 - fixed: Handle binary uuid casting when `binary_id` is specified.
