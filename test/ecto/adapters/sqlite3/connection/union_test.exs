@@ -50,4 +50,19 @@ defmodule Ecto.Adapters.SQLite3.Connection.UnionTest do
              ~s{UNION ALL SELECT s0."z" FROM "schema" AS s0 ORDER BY s0."z" LIMIT 60 OFFSET 30 } <>
              ~s{ORDER BY rand LIMIT 5 OFFSET 10} == all(query)
   end
+
+  test "parent binding subquery and combination" do
+    right_query = from(c in "right_categories", where: c.id == parent_as(:c).id, select: c.id)
+    left_query = from(c in "left_categories", where: c.id == parent_as(:c).id, select: c.id)
+    union_query = union(left_query, ^right_query)
+    query = from(c in "categories", as: :c, where: c.id in subquery(union_query), select: c.id) |> plan()
+
+    assert all(query) ==
+      ~s{SELECT c0."id" FROM "categories" AS c0 } <>
+      ~s{WHERE (} <>
+      ~s{c0."id" IN } <>
+      ~s{(SELECT sl0."id" FROM "left_categories" AS sl0 WHERE (sl0."id" = c0."id") } <>
+      ~s{UNION } <>
+      ~s{SELECT sr0."id" FROM "right_categories" AS sr0 WHERE (sr0."id" = c0."id")))}
+  end
 end

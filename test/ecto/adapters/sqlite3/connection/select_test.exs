@@ -185,6 +185,17 @@ defmodule Ecto.Adapters.SQLite3.Connection.SelectTest do
         |> all()
       end
     end
+
+    test "splicing" do
+      query =
+        Schema
+        |> select([r], r.x)
+        |> where([r], fragment("? in (?,?,?)", r.x, ^1, splice(^[2, 3, 4]), ^5))
+        |> plan()
+
+      assert all(query) ==
+               ~s{SELECT s0."x" FROM "schema" AS s0 WHERE (s0."x" in (?,?,?,?,?))}
+    end
   end
 
   describe "literals" do
