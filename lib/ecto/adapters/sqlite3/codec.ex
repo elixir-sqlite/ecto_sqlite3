@@ -94,6 +94,7 @@ defmodule Ecto.Adapters.SQLite3.Codec do
 
   def blob_encode(value), do: {:ok, {:blob, value}}
 
+  def bool_encode(nil), do: {:ok, nil}
   def bool_encode(false), do: {:ok, 0}
   def bool_encode(true), do: {:ok, 1}
 
