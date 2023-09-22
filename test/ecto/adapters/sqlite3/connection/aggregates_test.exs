@@ -15,6 +15,19 @@ defmodule Ecto.Adapters.SQLite3.Connection.AggregatesTest do
     assert ~s{SELECT count(s0."x") FROM "schema" AS s0} == all(query)
   end
 
+  test "raises when counting a source" do
+    query =
+      Schema
+      |> select([r], count(r))
+      |> plan()
+
+    msg = ~r"The argument to `count/1` must be a column in SQLite3"
+
+    assert_raise Ecto.QueryError, msg, fn ->
+      all(query)
+    end
+  end
+
   test "raises when trying to distinct count" do
     assert_raise Ecto.QueryError, fn ->
       Schema
