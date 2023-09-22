@@ -1375,6 +1375,12 @@ defmodule Ecto.Adapters.SQLite3.Connection do
 
   def expr({:count, _, []}, _sources, _query), do: "count(*)"
 
+  def expr({:count, _, [{:&, _, [_]}]}, _sources, query) do
+    raise Ecto.QueryError,
+      query: query,
+      message: "The argument to `count/1` must be a column in SQLite3"
+  end
+
   def expr({:json_extract_path, _, [expr, path]}, sources, query) do
     path =
       Enum.map(path, fn
