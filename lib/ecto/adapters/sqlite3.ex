@@ -210,6 +210,7 @@ defmodule Ecto.Adapters.SQLite3 do
   @impl Ecto.Adapter.Storage
   def storage_up(options) do
     database = Keyword.get(options, :database)
+    pool_size = Keyword.get(options, :pool_size)
 
     cond do
       is_nil(database) ->
@@ -225,6 +226,11 @@ defmodule Ecto.Adapters.SQLite3 do
 
       File.exists?(database) ->
         {:error, :already_up}
+
+      database == ":memory:" && pool_size != 1 ->
+        raise ArgumentError, """
+        In memory databases must have a pool_size of 1
+        """
 
       true ->
         {:ok, state} = Exqlite.Connection.connect(options)

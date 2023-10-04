@@ -47,6 +47,20 @@ defmodule Ecto.Adapters.SQLite3ConnTest do
         fn -> SQLite3.storage_up(mumble: "no database here") == :ok end
       )
     end
+
+    test "can create an in memory database" do
+      assert SQLite3.storage_up(database: ":memory:", pool_size: 1) == :ok
+    end
+
+    test "fails if in memory database does not have a pool size of 1" do
+      assert_raise(
+        ArgumentError,
+        """
+        In memory databases must have a pool_size of 1
+        """,
+        fn -> SQLite3.storage_up(database: ":memory:", pool_size: 2) == :ok end
+      )
+    end
   end
 
   describe ".storage_down/2" do
