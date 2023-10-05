@@ -58,7 +58,7 @@ defmodule Ecto.Adapters.SQLite3ConnTest do
         """
         In memory databases must have a pool_size of 1
         """,
-        fn -> SQLite3.storage_up(database: ":memory:", pool_size: 2) == :ok end
+        fn -> SQLite3.storage_up(database: ":memory:", pool_size: 2) end
       )
     end
   end
