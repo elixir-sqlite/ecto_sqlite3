@@ -7,6 +7,8 @@ project adheres to [Semantic Versioning][semver].
 
 ## Unreleased
 
+- changed: raise if an in memory database is opened with a pool_size != 1
+
 ## v0.11.0
 
 - added: Support for DDL transactions.
