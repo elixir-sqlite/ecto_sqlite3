@@ -803,7 +803,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
         # TODO: Should we have cell wise value support?
         #       Essentially ``?1 ?2 ?3`` instead of ``? ? ?``
         # {['?' | Integer.to_string(counter)], counter + 1}
-        {['?'], counter + 1}
+        {[~c"?"], counter + 1}
     end)
   end
 
@@ -1216,7 +1216,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   ##
 
   def expr({:^, [], [_ix]}, _sources, _query) do
-    '?'
+    ~c"?"
   end
 
   # workaround for the fact that SQLite3 as of 3.35.4 does not support specifying table
