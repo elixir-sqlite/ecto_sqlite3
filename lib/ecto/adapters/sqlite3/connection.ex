@@ -748,6 +748,9 @@ defmodule Ecto.Adapters.SQLite3.Connection do
 
   defp conflict_target([]), do: ""
 
+  defp conflict_target({:unsafe_fragment, fragment}),
+    do: [fragment, ?\s]
+
   defp conflict_target(targets) do
     [?(, intersperse_map(targets, ?,, &quote_name/1), ?), ?\s]
   end
