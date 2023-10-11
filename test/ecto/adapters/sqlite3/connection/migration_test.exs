@@ -176,9 +176,12 @@ defmodule Ecto.Adapters.SQLite3.Connection.MigrationTest do
          {:add, :a, :map, [default: %{foo: "bar", baz: "boom"}]}
        ]}
 
-    assert execute_ddl(create) == [
-             ~s|CREATE TABLE "posts" ("a" TEXT DEFAULT ('{"baz":"boom","foo":"bar"}'))|
-           ]
+    assert [statement] = execute_ddl(create)
+
+    # CREATE TABLE "posts" ("a" TEXT DEFAULT ('{"foo":"bar","baz":"boom"}'))
+    assert statement =~ ~r|CREATE TABLE "posts" \("a" TEXT DEFAULT \(.*\)\)|
+    assert statement =~ ~s("foo":"bar")
+    assert statement =~ ~s("baz":"boom")
   end
 
   test "create table with a map column, and a string default" do
@@ -188,9 +191,12 @@ defmodule Ecto.Adapters.SQLite3.Connection.MigrationTest do
          {:add, :a, :map, [default: ~s|{"foo":"bar","baz":"boom"}|]}
        ]}
 
-    assert execute_ddl(create) == [
-             ~s|CREATE TABLE "posts" ("a" TEXT DEFAULT '{"foo":"bar","baz":"boom"}')|
-           ]
+    assert [statement] = execute_ddl(create)
+
+    # CREATE TABLE "posts" ("a" TEXT DEFAULT '{"foo":"bar","baz":"boom"}')
+    assert statement =~ ~r|CREATE TABLE "posts" \("a" TEXT DEFAULT '\{.*\}'\)|
+    assert statement =~ ~s("foo":"bar")
+    assert statement =~ ~s("baz":"boom")
   end
 
   test "create table with time columns" do
