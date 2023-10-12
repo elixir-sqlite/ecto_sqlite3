@@ -7,7 +7,12 @@ project adheres to [Semantic Versioning][semver].
 
 ## Unreleased
 
+## v0.12.0
+
 - changed: raise if an in memory database is opened with a pool_size != 1
+- added: support `{:unsafe_fragment, ".."}` as a conflict target.
+- changed: Dropped support for Elixir `1.12`.
+- changed: Dropped support for OTP 23.
 
 ## v0.11.0
 
