@@ -99,6 +99,14 @@ defmodule Ecto.Adapters.SQLite3 do
   is encouraged to also view the guidance on [when to use SQLite][4] provided
   by the SQLite documentation, as well.
 
+  ### In memory robustness
+
+  When using the Ecto SQLite3 adapter with the database set to `:memory` it
+  is possible that a crash in a process performing a query in the Repo will
+  cause the database to be destroyed. This makes the `:memory` function
+  unsuitable when it is expected to survive potential process crashes (for
+  example a crash in a Phoenix request)
+
   ### Async Sandbox testing
 
   The Ecto SQLite3 adapter does not support async tests when used with
