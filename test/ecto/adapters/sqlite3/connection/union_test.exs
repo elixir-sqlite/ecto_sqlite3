@@ -61,7 +61,11 @@ defmodule Ecto.Adapters.SQLite3.Connection.UnionTest do
     union_query = union(left_query, ^right_query)
 
     query =
-      from(c in "categories", as: :c, where: c.id in subquery(union_query), select: c.id)
+      from(c in "categories",
+        as: :c,
+        where: c.id in subquery(union_query),
+        select: c.id
+      )
       |> plan()
 
     assert all(query) ==
