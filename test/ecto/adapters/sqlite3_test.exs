@@ -6,7 +6,8 @@ defmodule Ecto.Adapters.SQLite3ConnTest do
   @uuid_regex ~R/^[[:xdigit:]]{8}\b-[[:xdigit:]]{4}\b-[[:xdigit:]]{4}\b-[[:xdigit:]]{4}\b-[[:xdigit:]]{12}$/
 
   setup do
-    original_binary_id_type = Application.get_env(:ecto_sqlite3, :binary_id_type, :string)
+    original_binary_id_type =
+      Application.get_env(:ecto_sqlite3, :binary_id_type, :string)
 
     on_exit(fn ->
       Application.put_env(:ecto_sqlite3, :binary_id_type, original_binary_id_type)
