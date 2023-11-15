@@ -1337,6 +1337,10 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     |> parens_for_select
   end
 
+  def expr({:values, _, _}, _, _query) do
+    raise ArgumentError, "SQLite3 adapter does not support values lists"
+  end
+
   def expr({:literal, _, [literal]}, _sources, _query) do
     quote_name(literal)
   end
