@@ -32,8 +32,8 @@ defmodule Ecto.Adapters.SQLite3.Connection.CteTest do
              ~s{WITH RECURSIVE "tree" AS } <>
                ~s{(SELECT sc0."id" AS "id", 1 AS "depth" FROM "categories" AS sc0 WHERE (sc0."parent_id" IS NULL) } <>
                ~s{UNION ALL } <>
-               ~s{SELECT c0."id", t1."depth" + 1 FROM "categories" AS c0 } <>
-               ~s{INNER JOIN "tree" AS t1 ON t1."id" = c0."parent_id") } <>
+               ~s{SELECT sc0."id", st1."depth" + 1 FROM "categories" AS sc0 } <>
+               ~s{INNER JOIN "tree" AS st1 ON st1."id" = sc0."parent_id") } <>
                ~s{SELECT s0."x", t1."id", CAST(t1."depth" AS INTEGER) } <>
                ~s{FROM "schema" AS s0 } <>
                ~s{INNER JOIN "tree" AS t1 ON t1."id" = s0."category_id"}

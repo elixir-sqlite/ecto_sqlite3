@@ -126,6 +126,9 @@ ExUnit.start(
     :selected_as_with_having,
 
     # Distinct with options not supported
-    :distinct_count
+    :distinct_count,
+
+    # Values list
+    :values_list
   ]
 )

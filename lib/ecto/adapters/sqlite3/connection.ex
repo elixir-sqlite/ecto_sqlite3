@@ -181,7 +181,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     group_by = group_by(query, sources)
     having = having(query, sources)
     window = window(query, sources)
-    combinations = combinations(query)
+    combinations = combinations(query, as_prefix)
     order_by = order_by(query, sources)
     limit = limit(query, sources)
     offset = offset(query, sources)
@@ -1147,22 +1147,27 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     [" OFFSET " | expr(expression, sources, query)]
   end
 
-  defp combinations(%{combinations: combinations}) do
-    Enum.map(combinations, &combination/1)
+  defp combinations(%{combinations: combinations}, as_prefix) do
+    Enum.map(combinations, &combination(&1, as_prefix))
   end
 
-  defp combination({:union, query}), do: [" UNION ", all(query)]
-  defp combination({:union_all, query}), do: [" UNION ALL ", all(query)]
-  defp combination({:except, query}), do: [" EXCEPT ", all(query)]
-  defp combination({:intersect, query}), do: [" INTERSECT ", all(query)]
+  defp combination({:union, query}, as_prefix), do: [" UNION ", all(query, as_prefix)]
 
-  defp combination({:except_all, query}) do
+  defp combination({:union_all, query}, as_prefix),
+    do: [" UNION ALL ", all(query, as_prefix)]
+
+  defp combination({:except, query}, as_prefix), do: [" EXCEPT ", all(query, as_prefix)]
+
+  defp combination({:intersect, query}, as_prefix),
+    do: [" INTERSECT ", all(query, as_prefix)]
+
+  defp combination({:except_all, query}, _) do
     raise Ecto.QueryError,
       query: query,
       message: "SQLite3 does not support EXCEPT ALL"
   end
 
-  defp combination({:intersect_all, query}) do
+  defp combination({:intersect_all, query}, _) do
     raise Ecto.QueryError,
       query: query,
       message: "SQLite3 does not INTERSECT ALL"
@@ -1306,6 +1311,12 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   end
 
   def expr(%Ecto.SubQuery{query: query}, sources, parent_query) do
+    combinations =
+      Enum.map(query.combinations, fn {type, combination_query} ->
+        {type, put_in(combination_query.aliases[@parent_as], {parent_query, sources})}
+      end)
+
+    query = put_in(query.combinations, combinations)
     query = put_in(query.aliases[@parent_as], {parent_query, sources})
     [?(, all(query, subquery_as_prefix(sources)), ?)]
   end
@@ -1326,8 +1337,16 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     |> parens_for_select
   end
 
+  def expr({:values, _, _}, _, _query) do
+    raise ArgumentError, "SQLite3 adapter does not support values lists"
+  end
+
   def expr({:literal, _, [literal]}, _sources, _query) do
     quote_name(literal)
+  end
+
+  def expr({:splice, _, [{:^, _, [_, length]}]}, _sources, _query) do
+    Enum.intersperse(List.duplicate(??, length), ?,)
   end
 
   def expr({:selected_as, _, [name]}, _sources, _query) do
