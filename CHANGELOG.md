@@ -7,6 +7,13 @@ project adheres to [Semantic Versioning][semver].
 
 ## Unreleased
 
+## v0.13.0
+
+- added: Support fragment splicing.
+- added: Support parent_as with combination queries.
+- changed: Don't need to consider `{:maybe, type}`` when loading or dumping.
+- changed: Handle nil values in dumpers and loaders.
+
 ## v0.12.0
 
 - changed: raise if an in memory database is opened with a pool_size != 1
