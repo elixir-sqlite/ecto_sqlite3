@@ -132,6 +132,11 @@ defmodule Ecto.Adapters.SQLite3.CodecTest do
       [dt: ~U[2021-08-25 10:58:59Z]]
     end
 
+    test "nil", %{dt: dt} do
+      assert {:ok, nil} = Codec.utc_datetime_encode(nil, :iso8601)
+      assert {:ok, nil} = Codec.utc_datetime_encode(nil, :text_datetime)
+    end
+
     test "iso8601", %{dt: dt} do
       dt_str = "2021-08-25T10:58:59"
       assert {:ok, ^dt_str} = Codec.utc_datetime_encode(dt, :iso8601)
@@ -155,6 +160,11 @@ defmodule Ecto.Adapters.SQLite3.CodecTest do
   describe ".naive_datetime_encode/2" do
     setup do
       [dt: ~U[2021-08-25 10:58:59Z], dt_str: "2021-08-25T10:58:59"]
+    end
+
+    test "nil", %{dt: dt} do
+      assert {:ok, nil} = Codec.naive_datetime_encode(nil, :iso8601)
+      assert {:ok, nil} = Codec.naive_datetime_encode(nil, :text_datetime)
     end
 
     test "iso8601", %{dt: dt} do
