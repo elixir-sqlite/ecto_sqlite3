@@ -52,15 +52,20 @@ defmodule Ecto.Integration.CrudTest do
     end
 
     test "insert_all" do
+      TestRepo.insert!(%User{name: "John"}, [])
       timestamp = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+      # doing this a weird way to test multiple query parameters
+      name_query =
+        from(u in User, where: u.name == ^"John" and ^true, select: u.name)
 
       account = %{
-        name: "John",
+        name: name_query,
         inserted_at: timestamp,
         updated_at: timestamp
       }
 
       {1, nil} = TestRepo.insert_all(Account, [account], [])
+      %{name: "John"} = TestRepo.one(Account)
     end
   end
 
