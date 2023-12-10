@@ -799,6 +799,9 @@ defmodule Ecto.Adapters.SQLite3.Connection do
         raise ArgumentError,
               "Cell-wise default values are not supported on INSERT statements by SQLite3"
 
+      {%Ecto.Query{} = query, params_counter}, counter ->
+        {[?(, all(query), ?)], counter + params_counter}
+
       _, counter ->
         # TODO: Should we have cell wise value support?
         #       Essentially ``?1 ?2 ?3`` instead of ``? ? ?``
