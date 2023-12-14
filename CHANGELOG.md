@@ -7,7 +7,10 @@ project adheres to [Semantic Versioning][semver].
 
 ## Unreleased
 
+## v0.14.0
+
 - added: Support for encoding nil values in `:utc_datetime`, `:utc_datetime_usec`, `:naive_datetime`, and `:naive_datetime_usec` column dates.
+- added: Allow subquery values in `insert_all`.
 
 ## v0.13.0
 
