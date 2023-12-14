@@ -110,6 +110,9 @@ defmodule Ecto.Adapters.SQLite3.Codec do
 
   @text_datetime_format "%Y-%m-%d %H:%M:%S"
 
+  def utc_datetime_encode(nil, :iso8601), do: {:ok, nil}
+  def utc_datetime_encode(nil, :text_datetime), do: {:ok, nil}
+
   def utc_datetime_encode(%{time_zone: "Etc/UTC"} = value, :iso8601) do
     {:ok, NaiveDateTime.to_iso8601(value)}
   end
@@ -122,6 +125,9 @@ defmodule Ecto.Adapters.SQLite3.Codec do
     raise ArgumentError,
           "expected datetime type to be either `:iso8601` or `:text_datetime`, but received #{inspect(type)}"
   end
+
+  def naive_datetime_encode(nil, :iso8601), do: {:ok, nil}
+  def naive_datetime_encode(nil, :text_datetime), do: {:ok, nil}
 
   def naive_datetime_encode(value, :iso8601) do
     {:ok, NaiveDateTime.to_iso8601(value)}

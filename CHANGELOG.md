@@ -7,6 +7,8 @@ project adheres to [Semantic Versioning][semver].
 
 ## Unreleased
 
+- added: Support for encoding nil values in `:utc_datetime`, `:utc_datetime_usec`, `:naive_datetime`, and `:naive_datetime_usec` column dates.
+
 ## v0.13.0
 
 - added: Support fragment splicing.
