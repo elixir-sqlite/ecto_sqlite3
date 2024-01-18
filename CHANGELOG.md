@@ -7,6 +7,12 @@ project adheres to [Semantic Versioning][semver].
 
 ## Unreleased
 
+## v0.15.0
+
+- fixed: Support `nil` decoding for `:decimal`.
+- changed: Dropped support for Elixir v1.13.
+- changed: Added Elixir v1.16 to CI build.
+
 ## v0.14.0
 
 - added: Support for encoding nil values in `:utc_datetime`, `:utc_datetime_usec`, `:naive_datetime`, and `:naive_datetime_usec` column dates.
