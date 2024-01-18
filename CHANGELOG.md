@@ -12,6 +12,7 @@ project adheres to [Semantic Versioning][semver].
 - fixed: Support `nil` decoding for `:decimal`.
 - changed: Dropped support for Elixir v1.13.
 - changed: Added Elixir v1.16 to CI build.
+- changed: Bump minimum `exqlite` to `~ 0.19`.
 
 ## v0.14.0
 
