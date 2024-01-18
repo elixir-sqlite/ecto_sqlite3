@@ -81,6 +81,17 @@ defmodule Ecto.Adapters.SQLite3.CodecTest do
     end
   end
 
+  describe ".decimal_encode/1" do
+    test "nil" do
+      {:ok, nil} = Codec.decimal_encode(nil)
+    end
+
+    test "decimal" do
+      decimal = Decimal.new("2.5")
+      {:ok, "2.5"} = Codec.decimal_encode(decimal)
+    end
+  end
+
   describe ".time_decode/1" do
     test "nil" do
       {:ok, nil} = Codec.time_decode(nil)
