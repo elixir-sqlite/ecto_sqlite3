@@ -7,9 +7,10 @@ defmodule EctoSQLite3.Schemas.Setting do
 
   schema "settings" do
     field(:properties, :map)
+    field(:checksum, :binary)
   end
 
   def changeset(struct, attrs) do
-    cast(struct, attrs, [:properties])
+    cast(struct, attrs, [:properties, :checksum])
   end
 end

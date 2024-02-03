@@ -210,4 +210,17 @@ defmodule Ecto.Adapters.SQLite3.CodecTest do
       {:ok, "2011-01-09"} = Codec.date_encode(date, :iso8601)
     end
   end
+
+  describe ".blob_encode/1" do
+    test "nil" do
+      {:ok, nil} = Codec.blob_encode(nil)
+    end
+
+    test "valid blob" do
+      {:ok, {:blob, <<>>}} = Codec.blob_encode(<<>>)
+
+      {:ok, {:blob, <<0xDE, 0xAD, 0xBE, 0xEF>>}} =
+        Codec.blob_encode(<<0xDE, 0xAD, 0xBE, 0xEF>>)
+    end
+  end
 end

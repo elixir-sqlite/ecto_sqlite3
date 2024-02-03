@@ -92,6 +92,7 @@ defmodule Ecto.Adapters.SQLite3.Codec do
     Application.get_env(:ecto_sqlite3, :json_library, Jason).encode(value)
   end
 
+  def blob_encode(nil), do: {:ok, nil}
   def blob_encode(value), do: {:ok, {:blob, value}}
 
   def bool_encode(nil), do: {:ok, nil}

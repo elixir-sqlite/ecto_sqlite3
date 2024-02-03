@@ -44,6 +44,7 @@ defmodule EctoSQLite3.Integration.Migration do
 
     create table(:settings) do
       add(:properties, :map)
+      add(:checksum, :binary)
     end
   end
 end
