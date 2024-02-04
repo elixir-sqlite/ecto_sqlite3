@@ -7,6 +7,10 @@ project adheres to [Semantic Versioning][semver].
 
 ## Unreleased
 
+## v0.15.1
+
+- fixed: Encode nil blobs. This was previously unhandled.
+
 ## v0.15.0
 
 - fixed: Support `nil` decoding for `:decimal`.
