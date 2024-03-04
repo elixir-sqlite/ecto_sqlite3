@@ -51,6 +51,9 @@ defmodule Ecto.Adapters.SQLite3 do
     * `:datetime_type` - Defaults to `:iso8601`. Determines how datetime fields are stored in the database.
       The allowed values are `:iso8601` and `:text_datetime`. `:iso8601` corresponds to a string of the form
       `YYYY-MM-DDThh:mm:ss` and `:text_datetime` corresponds to a string of the form `YYYY-MM-DD hh:mm:ss`
+    * `:load_extensions` - list of paths identifying extensions to load. Defaults to []. The provided list will 
+       be merged with the global extensions list, set on :exqlite, :load_extensions. Be aware that the path should 
+       handle pointing to a library compiled for the current architecture. See `Exqlite.Connection.connect/1` for more.
 
   For more information about the options above, see [sqlite documentation][1]
 
