@@ -68,7 +68,7 @@ Once you have `exqlite` configured, you can use the `:key` option in the databas
 ```elixir
 config :my_app, MyApp.Repo,
   database: "path/to/my/encrypted-database.db",
-  key: "super-secret'
+  key: "supersecret'
 ```
 
 ## Benchmarks
