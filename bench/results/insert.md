@@ -1,7 +1,6 @@
+Benchmark
 
-# Benchmark
-
-Benchmark run from 2021-03-24 02:05:58.706995Z UTC
+Benchmark run from 2024-05-04 10:49:35.563150Z UTC
 
 ## System
 
@@ -10,22 +9,22 @@ Benchmark suite executing on the following system:
 <table style="width: 1%">
   <tr>
     <th style="width: 1%; white-space: nowrap">Operating System</th>
-    <td>Linux</td>
+    <td>macOS</td>
   </tr><tr>
     <th style="white-space: nowrap">CPU Information</th>
-    <td style="white-space: nowrap">AMD Ryzen 7 PRO 4750U with Radeon Graphics</td>
+    <td style="white-space: nowrap">Apple M3 Max</td>
   </tr><tr>
     <th style="white-space: nowrap">Number of Available Cores</th>
     <td style="white-space: nowrap">16</td>
   </tr><tr>
     <th style="white-space: nowrap">Available Memory</th>
-    <td style="white-space: nowrap">14.92 GB</td>
+    <td style="white-space: nowrap">128 GB</td>
   </tr><tr>
     <th style="white-space: nowrap">Elixir Version</th>
-    <td style="white-space: nowrap">1.11.3</td>
+    <td style="white-space: nowrap">1.16.2</td>
   </tr><tr>
     <th style="white-space: nowrap">Erlang Version</th>
-    <td style="white-space: nowrap">23.2.6</td>
+    <td style="white-space: nowrap">26.2.4</td>
   </tr>
 </table>
 
@@ -50,7 +49,6 @@ Benchmark suite executing with the following configuration:
 
 
 
-
 __Input: Changeset__
 
 Run Time
@@ -67,35 +65,35 @@ Run Time
 
   <tr>
     <td style="white-space: nowrap">SQLite3 Insert</td>
-    <td style="white-space: nowrap; text-align: right">7218.07</td>
-    <td style="white-space: nowrap; text-align: right">0.139 ms</td>
-    <td style="white-space: nowrap; text-align: right">±43.60%</td>
-    <td style="white-space: nowrap; text-align: right">0.123 ms</td>
-    <td style="white-space: nowrap; text-align: right">0.37 ms</td>
+    <td style="white-space: nowrap; text-align: right">26.72 K</td>
+    <td style="white-space: nowrap; text-align: right">37.42 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;89.66%</td>
+    <td style="white-space: nowrap; text-align: right">32.88 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">74.21 &micro;s</td>
   </tr>
 
   <tr>
     <td style="white-space: nowrap">Pg Insert</td>
-    <td style="white-space: nowrap; text-align: right">421.57</td>
-    <td style="white-space: nowrap; text-align: right">2.37 ms</td>
-    <td style="white-space: nowrap; text-align: right">±12.13%</td>
-    <td style="white-space: nowrap; text-align: right">2.37 ms</td>
-    <td style="white-space: nowrap; text-align: right">2.90 ms</td>
+    <td style="white-space: nowrap; text-align: right">9.65 K</td>
+    <td style="white-space: nowrap; text-align: right">103.63 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;68.38%</td>
+    <td style="white-space: nowrap; text-align: right">102.75 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">177.39 &micro;s</td>
   </tr>
 
   <tr>
     <td style="white-space: nowrap">MyXQL Insert</td>
-    <td style="white-space: nowrap; text-align: right">284.25</td>
-    <td style="white-space: nowrap; text-align: right">3.52 ms</td>
-    <td style="white-space: nowrap; text-align: right">±13.34%</td>
-    <td style="white-space: nowrap; text-align: right">3.53 ms</td>
-    <td style="white-space: nowrap; text-align: right">5.05 ms</td>
+    <td style="white-space: nowrap; text-align: right">5.49 K</td>
+    <td style="white-space: nowrap; text-align: right">182.25 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;49.23%</td>
+    <td style="white-space: nowrap; text-align: right">182.33 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">233.08 &micro;s</td>
   </tr>
 
 </table>
 
 
-Comparison
+Run Time Comparison
 
 <table style="width: 1%">
   <tr>
@@ -104,27 +102,25 @@ Comparison
     <th style="text-align: right">Slower</th>
   <tr>
     <td style="white-space: nowrap">SQLite3 Insert</td>
-    <td style="white-space: nowrap;text-align: right">7218.07</td>
+    <td style="white-space: nowrap;text-align: right">26.72 K</td>
     <td>&nbsp;</td>
   </tr>
 
   <tr>
     <td style="white-space: nowrap">Pg Insert</td>
-    <td style="white-space: nowrap; text-align: right">421.57</td>
-    <td style="white-space: nowrap; text-align: right">17.12x</td>
+    <td style="white-space: nowrap; text-align: right">9.65 K</td>
+    <td style="white-space: nowrap; text-align: right">2.77x</td>
   </tr>
 
   <tr>
     <td style="white-space: nowrap">MyXQL Insert</td>
-    <td style="white-space: nowrap; text-align: right">284.25</td>
-    <td style="white-space: nowrap; text-align: right">25.39x</td>
+    <td style="white-space: nowrap; text-align: right">5.49 K</td>
+    <td style="white-space: nowrap; text-align: right">4.87x</td>
   </tr>
 
 </table>
 
 
-
-<hr/>
 
 
 __Input: Struct__
@@ -143,35 +139,35 @@ Run Time
 
   <tr>
     <td style="white-space: nowrap">SQLite3 Insert</td>
-    <td style="white-space: nowrap; text-align: right">7765.76</td>
-    <td style="white-space: nowrap; text-align: right">0.129 ms</td>
-    <td style="white-space: nowrap; text-align: right">±32.88%</td>
-    <td style="white-space: nowrap; text-align: right">0.122 ms</td>
-    <td style="white-space: nowrap; text-align: right">0.28 ms</td>
+    <td style="white-space: nowrap; text-align: right">26.71 K</td>
+    <td style="white-space: nowrap; text-align: right">37.44 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;87.15%</td>
+    <td style="white-space: nowrap; text-align: right">32.92 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">70.50 &micro;s</td>
   </tr>
 
   <tr>
     <td style="white-space: nowrap">Pg Insert</td>
-    <td style="white-space: nowrap; text-align: right">422.86</td>
-    <td style="white-space: nowrap; text-align: right">2.36 ms</td>
-    <td style="white-space: nowrap; text-align: right">±10.49%</td>
-    <td style="white-space: nowrap; text-align: right">2.36 ms</td>
-    <td style="white-space: nowrap; text-align: right">3.02 ms</td>
+    <td style="white-space: nowrap; text-align: right">9.34 K</td>
+    <td style="white-space: nowrap; text-align: right">107.08 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;13.80%</td>
+    <td style="white-space: nowrap; text-align: right">106.87 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">132.46 &micro;s</td>
   </tr>
 
   <tr>
     <td style="white-space: nowrap">MyXQL Insert</td>
-    <td style="white-space: nowrap; text-align: right">274.00</td>
-    <td style="white-space: nowrap; text-align: right">3.65 ms</td>
-    <td style="white-space: nowrap; text-align: right">±38.43%</td>
-    <td style="white-space: nowrap; text-align: right">3.59 ms</td>
-    <td style="white-space: nowrap; text-align: right">4.75 ms</td>
+    <td style="white-space: nowrap; text-align: right">5.67 K</td>
+    <td style="white-space: nowrap; text-align: right">176.45 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;70.69%</td>
+    <td style="white-space: nowrap; text-align: right">176.79 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">234.70 &micro;s</td>
   </tr>
 
 </table>
 
 
-Comparison
+Run Time Comparison
 
 <table style="width: 1%">
   <tr>
@@ -180,25 +176,20 @@ Comparison
     <th style="text-align: right">Slower</th>
   <tr>
     <td style="white-space: nowrap">SQLite3 Insert</td>
-    <td style="white-space: nowrap;text-align: right">7765.76</td>
+    <td style="white-space: nowrap;text-align: right">26.71 K</td>
     <td>&nbsp;</td>
   </tr>
 
   <tr>
     <td style="white-space: nowrap">Pg Insert</td>
-    <td style="white-space: nowrap; text-align: right">422.86</td>
-    <td style="white-space: nowrap; text-align: right">18.37x</td>
+    <td style="white-space: nowrap; text-align: right">9.34 K</td>
+    <td style="white-space: nowrap; text-align: right">2.86x</td>
   </tr>
 
   <tr>
     <td style="white-space: nowrap">MyXQL Insert</td>
-    <td style="white-space: nowrap; text-align: right">274.00</td>
-    <td style="white-space: nowrap; text-align: right">28.34x</td>
+    <td style="white-space: nowrap; text-align: right">5.67 K</td>
+    <td style="white-space: nowrap; text-align: right">4.71x</td>
   </tr>
 
 </table>
-
-
-
-<hr/>
-
