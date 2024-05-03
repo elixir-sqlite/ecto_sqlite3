@@ -38,6 +38,6 @@ script instead of `bench/bench_helper.exs`.
 The easiest way to setup mysql and postgresql for the benchmarks is via Docker. Run the following commands to get an instance of each running.
 
 ```
-docker run -p 3306:3306 -e MYSQL_ALLOW_EMPTY_PASSWORD=yes mysql:5.7
+docker run -p 3306:3306 -e MYSQL_ALLOW_EMPTY_PASSWORD=yes mysql:8
 docker run -p 5432:5432 -e POSTGRES_PASSWORD=postgres postgres:13.2
 ```
