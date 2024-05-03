@@ -18,14 +18,8 @@ need PostgreSQL and MySQL up and running.
 
 To run the benchmarks tests just type in the console:
 
-```
-# POSIX-compatible shells
-$ MIX_ENV=bench mix run bench/bench_helper.exs
-```
-
-```
-# other shells
-$ env MIX_ENV=bench mix run bench/bench_helper.exs
+```sh
+mix run bench/bench_helper.exs
 ```
 
 Benchmarks are inside the `scripts/` directory and are divided into two
