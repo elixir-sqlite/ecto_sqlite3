@@ -29,6 +29,3 @@ exqlite-*.tar
 /tmp
 
 *.db
-
-# ADR files
-.tool-versions
