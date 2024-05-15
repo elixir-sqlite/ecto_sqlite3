@@ -126,7 +126,12 @@ defmodule Ecto.Integration.TimestampsTest do
   test "insert and fetch nil values" do
     now = DateTime.utc_now()
 
-    product = insert_product(%{name: "Nil Date Test", approved_at: now, ordered_at: now})
+    product =
+      insert_product(%{
+        name: "Nil Date Test",
+        approved_at: now,
+        ordered_at: now
+      })
 
     product = TestRepo.get(Product, product.id)
     assert product.name == "Nil Date Test"
