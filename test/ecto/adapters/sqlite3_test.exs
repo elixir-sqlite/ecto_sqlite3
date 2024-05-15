@@ -3,7 +3,7 @@ defmodule Ecto.Adapters.SQLite3ConnTest do
 
   alias Ecto.Adapters.SQLite3
 
-  @uuid_regex ~R/^[[:xdigit:]]{8}\b-[[:xdigit:]]{4}\b-[[:xdigit:]]{4}\b-[[:xdigit:]]{4}\b-[[:xdigit:]]{12}$/
+  @uuid_regex ~r/^[[:xdigit:]]{8}\b-[[:xdigit:]]{4}\b-[[:xdigit:]]{4}\b-[[:xdigit:]]{4}\b-[[:xdigit:]]{12}$/
 
   setup do
     original_binary_id_type =
