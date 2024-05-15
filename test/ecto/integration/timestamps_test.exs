@@ -126,10 +126,7 @@ defmodule Ecto.Integration.TimestampsTest do
   test "insert and fetch nil values" do
     now = DateTime.utc_now()
 
-    {:ok, product} =
-      %Product{}
-      |> Product.changeset(%{name: "Nil Date Test", approved_at: now, ordered_at: now})
-      |> TestRepo.insert()
+    product = insert_product(%{name: "Nil Date Test", approved_at: now, ordered_at: now})
 
     product = TestRepo.get(Product, product.id)
     assert product.name == "Nil Date Test"
@@ -146,34 +143,25 @@ defmodule Ecto.Integration.TimestampsTest do
   end
 
   test "datetime comparisons" do
-    account =
-      %Account{}
-      |> Account.changeset(%{name: "Test"})
-      |> TestRepo.insert!()
+    account = insert_account(%{name: "Test"})
 
-    %Product{}
-    |> Product.changeset(%{
+    insert_product(%{
       account_id: account.id,
       name: "Foo",
       approved_at: ~U[2023-01-01T01:00:00Z]
     })
-    |> TestRepo.insert!()
 
-    %Product{}
-    |> Product.changeset(%{
+    insert_product(%{
       account_id: account.id,
       name: "Bar",
       approved_at: ~U[2023-01-01T02:00:00Z]
     })
-    |> TestRepo.insert!()
 
-    %Product{}
-    |> Product.changeset(%{
+    insert_product(%{
       account_id: account.id,
       name: "Qux",
       approved_at: ~U[2023-01-01T03:00:00Z]
     })
-    |> TestRepo.insert!()
 
     since = ~U[2023-01-01T01:59:00Z]
 
@@ -186,5 +174,17 @@ defmodule Ecto.Integration.TimestampsTest do
              |> where([p], p.approved_at >= ^since)
              |> order_by([p], desc: p.approved_at)
              |> TestRepo.all()
+  end
+
+  defp insert_account(attrs) do
+    %Account{}
+    |> Account.changeset(attrs)
+    |> TestRepo.insert!()
+  end
+
+  defp insert_product(attrs) do
+    %Product{}
+    |> Product.changeset(attrs)
+    |> TestRepo.insert!()
   end
 end

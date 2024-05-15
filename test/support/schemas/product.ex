@@ -24,7 +24,15 @@ defmodule EctoSQLite3.Schemas.Product do
 
   def changeset(struct, attrs) do
     struct
-    |> cast(attrs, [:name, :description, :tags, :account_id, :approved_at, :ordered_at])
+    |> cast(attrs, [
+      :name,
+      :description,
+      :tags,
+      :account_id,
+      :approved_at,
+      :ordered_at,
+      :inserted_at
+    ])
     |> validate_required([:name])
     |> maybe_generate_external_id()
   end
