@@ -181,6 +181,40 @@ defmodule Ecto.Integration.TimestampsTest do
              |> TestRepo.all()
   end
 
+  test "using built in ecto functions" do
+    Application.put_env(:ecto_sqlite3, :datetime_type, :text_datetime)
+
+    account = insert_account(%{name: "Test"})
+
+    insert_product(%{
+      account_id: account.id,
+      name: "Foo",
+      inserted_at: days_ago(1)
+    })
+
+    insert_product(%{
+      account_id: account.id,
+      name: "Bar",
+      inserted_at: days_ago(2)
+    })
+
+    insert_product(%{
+      account_id: account.id,
+      name: "Qux",
+      inserted_at: days_ago(5)
+    })
+
+    assert [
+             %{name: "Foo"},
+             %{name: "Bar"}
+           ] =
+             Product
+             |> select([p], p)
+             |> where([p], p.inserted_at >= from_now(-3, "day"))
+             |> order_by([p], desc: p.inserted_at)
+             |> TestRepo.all()
+  end
+
   defp insert_account(attrs) do
     %Account{}
     |> Account.changeset(attrs)
@@ -191,5 +225,10 @@ defmodule Ecto.Integration.TimestampsTest do
     %Product{}
     |> Product.changeset(attrs)
     |> TestRepo.insert!()
+  end
+
+  defp days_ago(days) do
+    now = DateTime.utc_now()
+    DateTime.add(now, -days * 24 * 60 * 60, :second)
   end
 end
