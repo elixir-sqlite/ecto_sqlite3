@@ -1,7 +1,6 @@
+Benchmark
 
-# Benchmark
-
-Benchmark run from 2021-03-24 01:58:24.995583Z UTC
+Benchmark run from 2024-05-04 10:39:52.658755Z UTC
 
 ## System
 
@@ -10,22 +9,22 @@ Benchmark suite executing on the following system:
 <table style="width: 1%">
   <tr>
     <th style="width: 1%; white-space: nowrap">Operating System</th>
-    <td>Linux</td>
+    <td>macOS</td>
   </tr><tr>
     <th style="white-space: nowrap">CPU Information</th>
-    <td style="white-space: nowrap">AMD Ryzen 7 PRO 4750U with Radeon Graphics</td>
+    <td style="white-space: nowrap">Apple M3 Max</td>
   </tr><tr>
     <th style="white-space: nowrap">Number of Available Cores</th>
     <td style="white-space: nowrap">16</td>
   </tr><tr>
     <th style="white-space: nowrap">Available Memory</th>
-    <td style="white-space: nowrap">14.92 GB</td>
+    <td style="white-space: nowrap">128 GB</td>
   </tr><tr>
     <th style="white-space: nowrap">Elixir Version</th>
-    <td style="white-space: nowrap">1.11.3</td>
+    <td style="white-space: nowrap">1.16.2</td>
   </tr><tr>
     <th style="white-space: nowrap">Erlang Version</th>
-    <td style="white-space: nowrap">23.2.6</td>
+    <td style="white-space: nowrap">26.2.4</td>
   </tr>
 </table>
 
@@ -50,7 +49,6 @@ Benchmark suite executing with the following configuration:
 
 
 
-
 __Input: Big 1 Million__
 
 Run Time
@@ -66,36 +64,36 @@ Run Time
   </tr>
 
   <tr>
-    <td style="white-space: nowrap">SQLite3 Loader</td>
-    <td style="white-space: nowrap; text-align: right">0.35</td>
-    <td style="white-space: nowrap; text-align: right">2.82 s</td>
-    <td style="white-space: nowrap; text-align: right">±15.78%</td>
-    <td style="white-space: nowrap; text-align: right">2.82 s</td>
-    <td style="white-space: nowrap; text-align: right">3.13 s</td>
+    <td style="white-space: nowrap">MyXQL Loader</td>
+    <td style="white-space: nowrap; text-align: right">1.90</td>
+    <td style="white-space: nowrap; text-align: right">526.95 ms</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;7.52%</td>
+    <td style="white-space: nowrap; text-align: right">520.79 ms</td>
+    <td style="white-space: nowrap; text-align: right">590.85 ms</td>
   </tr>
 
   <tr>
     <td style="white-space: nowrap">Pg Loader</td>
-    <td style="white-space: nowrap; text-align: right">0.34</td>
-    <td style="white-space: nowrap; text-align: right">2.92 s</td>
-    <td style="white-space: nowrap; text-align: right">±17.97%</td>
-    <td style="white-space: nowrap; text-align: right">2.92 s</td>
-    <td style="white-space: nowrap; text-align: right">3.29 s</td>
+    <td style="white-space: nowrap; text-align: right">1.89</td>
+    <td style="white-space: nowrap; text-align: right">527.72 ms</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;7.17%</td>
+    <td style="white-space: nowrap; text-align: right">523.29 ms</td>
+    <td style="white-space: nowrap; text-align: right">589.90 ms</td>
   </tr>
 
   <tr>
-    <td style="white-space: nowrap">MyXQL Loader</td>
-    <td style="white-space: nowrap; text-align: right">0.33</td>
-    <td style="white-space: nowrap; text-align: right">2.99 s</td>
-    <td style="white-space: nowrap; text-align: right">±13.08%</td>
-    <td style="white-space: nowrap; text-align: right">2.99 s</td>
-    <td style="white-space: nowrap; text-align: right">3.26 s</td>
+    <td style="white-space: nowrap">SQLite3 Loader</td>
+    <td style="white-space: nowrap; text-align: right">1.89</td>
+    <td style="white-space: nowrap; text-align: right">529.12 ms</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;7.67%</td>
+    <td style="white-space: nowrap; text-align: right">522.49 ms</td>
+    <td style="white-space: nowrap; text-align: right">594.22 ms</td>
   </tr>
 
 </table>
 
 
-Comparison
+Run Time Comparison
 
 <table style="width: 1%">
   <tr>
@@ -103,28 +101,26 @@ Comparison
     <th style="text-align: right">IPS</th>
     <th style="text-align: right">Slower</th>
   <tr>
-    <td style="white-space: nowrap">SQLite3 Loader</td>
-    <td style="white-space: nowrap;text-align: right">0.35</td>
+    <td style="white-space: nowrap">MyXQL Loader</td>
+    <td style="white-space: nowrap;text-align: right">1.90</td>
     <td>&nbsp;</td>
   </tr>
 
   <tr>
     <td style="white-space: nowrap">Pg Loader</td>
-    <td style="white-space: nowrap; text-align: right">0.34</td>
-    <td style="white-space: nowrap; text-align: right">1.04x</td>
+    <td style="white-space: nowrap; text-align: right">1.89</td>
+    <td style="white-space: nowrap; text-align: right">1.0x</td>
   </tr>
 
   <tr>
-    <td style="white-space: nowrap">MyXQL Loader</td>
-    <td style="white-space: nowrap; text-align: right">0.33</td>
-    <td style="white-space: nowrap; text-align: right">1.06x</td>
+    <td style="white-space: nowrap">SQLite3 Loader</td>
+    <td style="white-space: nowrap; text-align: right">1.89</td>
+    <td style="white-space: nowrap; text-align: right">1.0x</td>
   </tr>
 
 </table>
 
 
-
-<hr/>
 
 
 __Input: Date attr__
@@ -142,36 +138,36 @@ Run Time
   </tr>
 
   <tr>
-    <td style="white-space: nowrap">Pg Loader</td>
-    <td style="white-space: nowrap; text-align: right">4.61</td>
-    <td style="white-space: nowrap; text-align: right">217.08 ms</td>
-    <td style="white-space: nowrap; text-align: right">±13.97%</td>
-    <td style="white-space: nowrap; text-align: right">214.42 ms</td>
-    <td style="white-space: nowrap; text-align: right">271.56 ms</td>
+    <td style="white-space: nowrap">MyXQL Loader</td>
+    <td style="white-space: nowrap; text-align: right">26.37</td>
+    <td style="white-space: nowrap; text-align: right">37.93 ms</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;7.64%</td>
+    <td style="white-space: nowrap; text-align: right">37.53 ms</td>
+    <td style="white-space: nowrap; text-align: right">48.13 ms</td>
   </tr>
 
   <tr>
-    <td style="white-space: nowrap">MyXQL Loader</td>
-    <td style="white-space: nowrap; text-align: right">4.56</td>
-    <td style="white-space: nowrap; text-align: right">219.25 ms</td>
-    <td style="white-space: nowrap; text-align: right">±18.19%</td>
-    <td style="white-space: nowrap; text-align: right">210.43 ms</td>
-    <td style="white-space: nowrap; text-align: right">300.02 ms</td>
+    <td style="white-space: nowrap">Pg Loader</td>
+    <td style="white-space: nowrap; text-align: right">25.98</td>
+    <td style="white-space: nowrap; text-align: right">38.49 ms</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;7.63%</td>
+    <td style="white-space: nowrap; text-align: right">38.31 ms</td>
+    <td style="white-space: nowrap; text-align: right">48.20 ms</td>
   </tr>
 
   <tr>
     <td style="white-space: nowrap">SQLite3 Loader</td>
-    <td style="white-space: nowrap; text-align: right">4.49</td>
-    <td style="white-space: nowrap; text-align: right">222.95 ms</td>
-    <td style="white-space: nowrap; text-align: right">±15.03%</td>
-    <td style="white-space: nowrap; text-align: right">232.42 ms</td>
-    <td style="white-space: nowrap; text-align: right">266.39 ms</td>
+    <td style="white-space: nowrap; text-align: right">25.91</td>
+    <td style="white-space: nowrap; text-align: right">38.59 ms</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;7.51%</td>
+    <td style="white-space: nowrap; text-align: right">38.46 ms</td>
+    <td style="white-space: nowrap; text-align: right">48.29 ms</td>
   </tr>
 
 </table>
 
 
-Comparison
+Run Time Comparison
 
 <table style="width: 1%">
   <tr>
@@ -179,28 +175,26 @@ Comparison
     <th style="text-align: right">IPS</th>
     <th style="text-align: right">Slower</th>
   <tr>
-    <td style="white-space: nowrap">Pg Loader</td>
-    <td style="white-space: nowrap;text-align: right">4.61</td>
+    <td style="white-space: nowrap">MyXQL Loader</td>
+    <td style="white-space: nowrap;text-align: right">26.37</td>
     <td>&nbsp;</td>
   </tr>
 
   <tr>
-    <td style="white-space: nowrap">MyXQL Loader</td>
-    <td style="white-space: nowrap; text-align: right">4.56</td>
+    <td style="white-space: nowrap">Pg Loader</td>
+    <td style="white-space: nowrap; text-align: right">25.98</td>
     <td style="white-space: nowrap; text-align: right">1.01x</td>
   </tr>
 
   <tr>
     <td style="white-space: nowrap">SQLite3 Loader</td>
-    <td style="white-space: nowrap; text-align: right">4.49</td>
-    <td style="white-space: nowrap; text-align: right">1.03x</td>
+    <td style="white-space: nowrap; text-align: right">25.91</td>
+    <td style="white-space: nowrap; text-align: right">1.02x</td>
   </tr>
 
 </table>
 
 
-
-<hr/>
 
 
 __Input: Medium 100 Thousand__
@@ -219,35 +213,35 @@ Run Time
 
   <tr>
     <td style="white-space: nowrap">MyXQL Loader</td>
-    <td style="white-space: nowrap; text-align: right">4.53</td>
-    <td style="white-space: nowrap; text-align: right">220.75 ms</td>
-    <td style="white-space: nowrap; text-align: right">±15.57%</td>
-    <td style="white-space: nowrap; text-align: right">209.17 ms</td>
-    <td style="white-space: nowrap; text-align: right">287.22 ms</td>
-  </tr>
-
-  <tr>
-    <td style="white-space: nowrap">Pg Loader</td>
-    <td style="white-space: nowrap; text-align: right">4.40</td>
-    <td style="white-space: nowrap; text-align: right">227.35 ms</td>
-    <td style="white-space: nowrap; text-align: right">±16.30%</td>
-    <td style="white-space: nowrap; text-align: right">222.39 ms</td>
-    <td style="white-space: nowrap; text-align: right">335.90 ms</td>
+    <td style="white-space: nowrap; text-align: right">26.27</td>
+    <td style="white-space: nowrap; text-align: right">38.07 ms</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;5.01%</td>
+    <td style="white-space: nowrap; text-align: right">38.36 ms</td>
+    <td style="white-space: nowrap; text-align: right">42.73 ms</td>
   </tr>
 
   <tr>
     <td style="white-space: nowrap">SQLite3 Loader</td>
-    <td style="white-space: nowrap; text-align: right">4.35</td>
-    <td style="white-space: nowrap; text-align: right">230.09 ms</td>
-    <td style="white-space: nowrap; text-align: right">±19.61%</td>
-    <td style="white-space: nowrap; text-align: right">236.94 ms</td>
-    <td style="white-space: nowrap; text-align: right">309.96 ms</td>
+    <td style="white-space: nowrap; text-align: right">25.64</td>
+    <td style="white-space: nowrap; text-align: right">39.01 ms</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;5.25%</td>
+    <td style="white-space: nowrap; text-align: right">39.42 ms</td>
+    <td style="white-space: nowrap; text-align: right">43.28 ms</td>
+  </tr>
+
+  <tr>
+    <td style="white-space: nowrap">Pg Loader</td>
+    <td style="white-space: nowrap; text-align: right">25.44</td>
+    <td style="white-space: nowrap; text-align: right">39.31 ms</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;6.97%</td>
+    <td style="white-space: nowrap; text-align: right">39.50 ms</td>
+    <td style="white-space: nowrap; text-align: right">49.12 ms</td>
   </tr>
 
 </table>
 
 
-Comparison
+Run Time Comparison
 
 <table style="width: 1%">
   <tr>
@@ -256,27 +250,25 @@ Comparison
     <th style="text-align: right">Slower</th>
   <tr>
     <td style="white-space: nowrap">MyXQL Loader</td>
-    <td style="white-space: nowrap;text-align: right">4.53</td>
+    <td style="white-space: nowrap;text-align: right">26.27</td>
     <td>&nbsp;</td>
   </tr>
 
   <tr>
-    <td style="white-space: nowrap">Pg Loader</td>
-    <td style="white-space: nowrap; text-align: right">4.40</td>
-    <td style="white-space: nowrap; text-align: right">1.03x</td>
+    <td style="white-space: nowrap">SQLite3 Loader</td>
+    <td style="white-space: nowrap; text-align: right">25.64</td>
+    <td style="white-space: nowrap; text-align: right">1.02x</td>
   </tr>
 
   <tr>
-    <td style="white-space: nowrap">SQLite3 Loader</td>
-    <td style="white-space: nowrap; text-align: right">4.35</td>
-    <td style="white-space: nowrap; text-align: right">1.04x</td>
+    <td style="white-space: nowrap">Pg Loader</td>
+    <td style="white-space: nowrap; text-align: right">25.44</td>
+    <td style="white-space: nowrap; text-align: right">1.03x</td>
   </tr>
 
 </table>
 
 
-
-<hr/>
 
 
 __Input: Small 1 Thousand__
@@ -294,36 +286,36 @@ Run Time
   </tr>
 
   <tr>
+    <td style="white-space: nowrap">MyXQL Loader</td>
+    <td style="white-space: nowrap; text-align: right">2.95 K</td>
+    <td style="white-space: nowrap; text-align: right">339.32 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;13.05%</td>
+    <td style="white-space: nowrap; text-align: right">330.33 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">493.99 &micro;s</td>
+  </tr>
+
+  <tr>
     <td style="white-space: nowrap">Pg Loader</td>
-    <td style="white-space: nowrap; text-align: right">883.24</td>
-    <td style="white-space: nowrap; text-align: right">1.13 ms</td>
-    <td style="white-space: nowrap; text-align: right">±62.88%</td>
-    <td style="white-space: nowrap; text-align: right">0.93 ms</td>
-    <td style="white-space: nowrap; text-align: right">2.71 ms</td>
+    <td style="white-space: nowrap; text-align: right">2.92 K</td>
+    <td style="white-space: nowrap; text-align: right">342.75 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;13.24%</td>
+    <td style="white-space: nowrap; text-align: right">332.17 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">499.14 &micro;s</td>
   </tr>
 
   <tr>
     <td style="white-space: nowrap">SQLite3 Loader</td>
-    <td style="white-space: nowrap; text-align: right">873.53</td>
-    <td style="white-space: nowrap; text-align: right">1.14 ms</td>
-    <td style="white-space: nowrap; text-align: right">±60.06%</td>
-    <td style="white-space: nowrap; text-align: right">0.92 ms</td>
-    <td style="white-space: nowrap; text-align: right">2.90 ms</td>
-  </tr>
-
-  <tr>
-    <td style="white-space: nowrap">MyXQL Loader</td>
-    <td style="white-space: nowrap; text-align: right">862.33</td>
-    <td style="white-space: nowrap; text-align: right">1.16 ms</td>
-    <td style="white-space: nowrap; text-align: right">±62.27%</td>
-    <td style="white-space: nowrap; text-align: right">0.92 ms</td>
-    <td style="white-space: nowrap; text-align: right">2.77 ms</td>
+    <td style="white-space: nowrap; text-align: right">2.91 K</td>
+    <td style="white-space: nowrap; text-align: right">343.63 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;12.64%</td>
+    <td style="white-space: nowrap; text-align: right">330.21 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">495.04 &micro;s</td>
   </tr>
 
 </table>
 
 
-Comparison
+Run Time Comparison
 
 <table style="width: 1%">
   <tr>
@@ -331,28 +323,26 @@ Comparison
     <th style="text-align: right">IPS</th>
     <th style="text-align: right">Slower</th>
   <tr>
-    <td style="white-space: nowrap">Pg Loader</td>
-    <td style="white-space: nowrap;text-align: right">883.24</td>
+    <td style="white-space: nowrap">MyXQL Loader</td>
+    <td style="white-space: nowrap;text-align: right">2.95 K</td>
     <td>&nbsp;</td>
   </tr>
 
   <tr>
-    <td style="white-space: nowrap">SQLite3 Loader</td>
-    <td style="white-space: nowrap; text-align: right">873.53</td>
+    <td style="white-space: nowrap">Pg Loader</td>
+    <td style="white-space: nowrap; text-align: right">2.92 K</td>
     <td style="white-space: nowrap; text-align: right">1.01x</td>
   </tr>
 
   <tr>
-    <td style="white-space: nowrap">MyXQL Loader</td>
-    <td style="white-space: nowrap; text-align: right">862.33</td>
-    <td style="white-space: nowrap; text-align: right">1.02x</td>
+    <td style="white-space: nowrap">SQLite3 Loader</td>
+    <td style="white-space: nowrap; text-align: right">2.91 K</td>
+    <td style="white-space: nowrap; text-align: right">1.01x</td>
   </tr>
 
 </table>
 
 
-
-<hr/>
 
 
 __Input: Time attr__
@@ -370,36 +360,36 @@ Run Time
   </tr>
 
   <tr>
-    <td style="white-space: nowrap">SQLite3 Loader</td>
-    <td style="white-space: nowrap; text-align: right">3.40</td>
-    <td style="white-space: nowrap; text-align: right">294.30 ms</td>
-    <td style="white-space: nowrap; text-align: right">±15.60%</td>
-    <td style="white-space: nowrap; text-align: right">281.23 ms</td>
-    <td style="white-space: nowrap; text-align: right">367.65 ms</td>
-  </tr>
-
-  <tr>
     <td style="white-space: nowrap">MyXQL Loader</td>
-    <td style="white-space: nowrap; text-align: right">3.18</td>
-    <td style="white-space: nowrap; text-align: right">314.55 ms</td>
-    <td style="white-space: nowrap; text-align: right">±17.11%</td>
-    <td style="white-space: nowrap; text-align: right">313.35 ms</td>
-    <td style="white-space: nowrap; text-align: right">415.89 ms</td>
+    <td style="white-space: nowrap; text-align: right">21.75</td>
+    <td style="white-space: nowrap; text-align: right">45.98 ms</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;11.17%</td>
+    <td style="white-space: nowrap; text-align: right">45.25 ms</td>
+    <td style="white-space: nowrap; text-align: right">61.90 ms</td>
   </tr>
 
   <tr>
     <td style="white-space: nowrap">Pg Loader</td>
-    <td style="white-space: nowrap; text-align: right">3.03</td>
-    <td style="white-space: nowrap; text-align: right">329.99 ms</td>
-    <td style="white-space: nowrap; text-align: right">±16.46%</td>
-    <td style="white-space: nowrap; text-align: right">321.68 ms</td>
-    <td style="white-space: nowrap; text-align: right">457.42 ms</td>
+    <td style="white-space: nowrap; text-align: right">21.43</td>
+    <td style="white-space: nowrap; text-align: right">46.67 ms</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;10.90%</td>
+    <td style="white-space: nowrap; text-align: right">45.76 ms</td>
+    <td style="white-space: nowrap; text-align: right">61.66 ms</td>
+  </tr>
+
+  <tr>
+    <td style="white-space: nowrap">SQLite3 Loader</td>
+    <td style="white-space: nowrap; text-align: right">20.72</td>
+    <td style="white-space: nowrap; text-align: right">48.26 ms</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;9.03%</td>
+    <td style="white-space: nowrap; text-align: right">48.63 ms</td>
+    <td style="white-space: nowrap; text-align: right">62.19 ms</td>
   </tr>
 
 </table>
 
 
-Comparison
+Run Time Comparison
 
 <table style="width: 1%">
   <tr>
@@ -407,28 +397,26 @@ Comparison
     <th style="text-align: right">IPS</th>
     <th style="text-align: right">Slower</th>
   <tr>
-    <td style="white-space: nowrap">SQLite3 Loader</td>
-    <td style="white-space: nowrap;text-align: right">3.40</td>
+    <td style="white-space: nowrap">MyXQL Loader</td>
+    <td style="white-space: nowrap;text-align: right">21.75</td>
     <td>&nbsp;</td>
   </tr>
 
   <tr>
-    <td style="white-space: nowrap">MyXQL Loader</td>
-    <td style="white-space: nowrap; text-align: right">3.18</td>
-    <td style="white-space: nowrap; text-align: right">1.07x</td>
+    <td style="white-space: nowrap">Pg Loader</td>
+    <td style="white-space: nowrap; text-align: right">21.43</td>
+    <td style="white-space: nowrap; text-align: right">1.01x</td>
   </tr>
 
   <tr>
-    <td style="white-space: nowrap">Pg Loader</td>
-    <td style="white-space: nowrap; text-align: right">3.03</td>
-    <td style="white-space: nowrap; text-align: right">1.12x</td>
+    <td style="white-space: nowrap">SQLite3 Loader</td>
+    <td style="white-space: nowrap; text-align: right">20.72</td>
+    <td style="white-space: nowrap; text-align: right">1.05x</td>
   </tr>
 
 </table>
 
 
-
-<hr/>
 
 
 __Input: UUID attr__
@@ -447,35 +435,35 @@ Run Time
 
   <tr>
     <td style="white-space: nowrap">SQLite3 Loader</td>
-    <td style="white-space: nowrap; text-align: right">3.61</td>
-    <td style="white-space: nowrap; text-align: right">277.20 ms</td>
-    <td style="white-space: nowrap; text-align: right">±16.59%</td>
-    <td style="white-space: nowrap; text-align: right">266.05 ms</td>
-    <td style="white-space: nowrap; text-align: right">372.08 ms</td>
-  </tr>
-
-  <tr>
-    <td style="white-space: nowrap">Pg Loader</td>
-    <td style="white-space: nowrap; text-align: right">2.75</td>
-    <td style="white-space: nowrap; text-align: right">363.06 ms</td>
-    <td style="white-space: nowrap; text-align: right">±14.14%</td>
-    <td style="white-space: nowrap; text-align: right">382.70 ms</td>
-    <td style="white-space: nowrap; text-align: right">437.37 ms</td>
+    <td style="white-space: nowrap; text-align: right">23.23</td>
+    <td style="white-space: nowrap; text-align: right">43.06 ms</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;8.19%</td>
+    <td style="white-space: nowrap; text-align: right">41.64 ms</td>
+    <td style="white-space: nowrap; text-align: right">51.14 ms</td>
   </tr>
 
   <tr>
     <td style="white-space: nowrap">MyXQL Loader</td>
-    <td style="white-space: nowrap; text-align: right">2.73</td>
-    <td style="white-space: nowrap; text-align: right">365.91 ms</td>
-    <td style="white-space: nowrap; text-align: right">±19.81%</td>
-    <td style="white-space: nowrap; text-align: right">367.23 ms</td>
-    <td style="white-space: nowrap; text-align: right">515.29 ms</td>
+    <td style="white-space: nowrap; text-align: right">15.19</td>
+    <td style="white-space: nowrap; text-align: right">65.81 ms</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;7.56%</td>
+    <td style="white-space: nowrap; text-align: right">63.25 ms</td>
+    <td style="white-space: nowrap; text-align: right">76.27 ms</td>
+  </tr>
+
+  <tr>
+    <td style="white-space: nowrap">Pg Loader</td>
+    <td style="white-space: nowrap; text-align: right">14.89</td>
+    <td style="white-space: nowrap; text-align: right">67.14 ms</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;7.74%</td>
+    <td style="white-space: nowrap; text-align: right">64.12 ms</td>
+    <td style="white-space: nowrap; text-align: right">80.65 ms</td>
   </tr>
 
 </table>
 
 
-Comparison
+Run Time Comparison
 
 <table style="width: 1%">
   <tr>
@@ -484,25 +472,20 @@ Comparison
     <th style="text-align: right">Slower</th>
   <tr>
     <td style="white-space: nowrap">SQLite3 Loader</td>
-    <td style="white-space: nowrap;text-align: right">3.61</td>
+    <td style="white-space: nowrap;text-align: right">23.23</td>
     <td>&nbsp;</td>
   </tr>
 
   <tr>
-    <td style="white-space: nowrap">Pg Loader</td>
-    <td style="white-space: nowrap; text-align: right">2.75</td>
-    <td style="white-space: nowrap; text-align: right">1.31x</td>
+    <td style="white-space: nowrap">MyXQL Loader</td>
+    <td style="white-space: nowrap; text-align: right">15.19</td>
+    <td style="white-space: nowrap; text-align: right">1.53x</td>
   </tr>
 
   <tr>
-    <td style="white-space: nowrap">MyXQL Loader</td>
-    <td style="white-space: nowrap; text-align: right">2.73</td>
-    <td style="white-space: nowrap; text-align: right">1.32x</td>
+    <td style="white-space: nowrap">Pg Loader</td>
+    <td style="white-space: nowrap; text-align: right">14.89</td>
+    <td style="white-space: nowrap; text-align: right">1.56x</td>
   </tr>
 
 </table>
-
-
-
-<hr/>
-

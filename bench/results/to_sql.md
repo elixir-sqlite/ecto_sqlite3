@@ -1,7 +1,6 @@
+Benchmark
 
-# Benchmark
-
-Benchmark run from 2021-03-24 02:02:16.278354Z UTC
+Benchmark run from 2024-05-04 10:48:53.108179Z UTC
 
 ## System
 
@@ -10,22 +9,22 @@ Benchmark suite executing on the following system:
 <table style="width: 1%">
   <tr>
     <th style="width: 1%; white-space: nowrap">Operating System</th>
-    <td>Linux</td>
+    <td>macOS</td>
   </tr><tr>
     <th style="white-space: nowrap">CPU Information</th>
-    <td style="white-space: nowrap">AMD Ryzen 7 PRO 4750U with Radeon Graphics</td>
+    <td style="white-space: nowrap">Apple M3 Max</td>
   </tr><tr>
     <th style="white-space: nowrap">Number of Available Cores</th>
     <td style="white-space: nowrap">16</td>
   </tr><tr>
     <th style="white-space: nowrap">Available Memory</th>
-    <td style="white-space: nowrap">14.92 GB</td>
+    <td style="white-space: nowrap">128 GB</td>
   </tr><tr>
     <th style="white-space: nowrap">Elixir Version</th>
-    <td style="white-space: nowrap">1.11.3</td>
+    <td style="white-space: nowrap">1.16.2</td>
   </tr><tr>
     <th style="white-space: nowrap">Erlang Version</th>
-    <td style="white-space: nowrap">23.2.6</td>
+    <td style="white-space: nowrap">26.2.4</td>
   </tr>
 </table>
 
@@ -50,7 +49,6 @@ Benchmark suite executing with the following configuration:
 
 
 
-
 __Input: Complex Query 2 Joins__
 
 Run Time
@@ -66,36 +64,36 @@ Run Time
   </tr>
 
   <tr>
-    <td style="white-space: nowrap">MyXQL Query Builder</td>
-    <td style="white-space: nowrap; text-align: right">105.28 K</td>
-    <td style="white-space: nowrap; text-align: right">9.50 μs</td>
-    <td style="white-space: nowrap; text-align: right">±116.92%</td>
-    <td style="white-space: nowrap; text-align: right">8.66 μs</td>
-    <td style="white-space: nowrap; text-align: right">24.79 μs</td>
-  </tr>
-
-  <tr>
     <td style="white-space: nowrap">Pg Query Builder</td>
-    <td style="white-space: nowrap; text-align: right">96.97 K</td>
-    <td style="white-space: nowrap; text-align: right">10.31 μs</td>
-    <td style="white-space: nowrap; text-align: right">±220.90%</td>
-    <td style="white-space: nowrap; text-align: right">8.66 μs</td>
-    <td style="white-space: nowrap; text-align: right">26.75 μs</td>
+    <td style="white-space: nowrap; text-align: right">382.74 K</td>
+    <td style="white-space: nowrap; text-align: right">2.61 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;374.25%</td>
+    <td style="white-space: nowrap; text-align: right">2.38 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">3.42 &micro;s</td>
   </tr>
 
   <tr>
     <td style="white-space: nowrap">SQLite3 Query Builder</td>
-    <td style="white-space: nowrap; text-align: right">90.46 K</td>
-    <td style="white-space: nowrap; text-align: right">11.05 μs</td>
-    <td style="white-space: nowrap; text-align: right">±204.34%</td>
-    <td style="white-space: nowrap; text-align: right">8.66 μs</td>
-    <td style="white-space: nowrap; text-align: right">39.53 μs</td>
+    <td style="white-space: nowrap; text-align: right">374.17 K</td>
+    <td style="white-space: nowrap; text-align: right">2.67 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;382.43%</td>
+    <td style="white-space: nowrap; text-align: right">2.46 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">3.42 &micro;s</td>
+  </tr>
+
+  <tr>
+    <td style="white-space: nowrap">MyXQL Query Builder</td>
+    <td style="white-space: nowrap; text-align: right">360.95 K</td>
+    <td style="white-space: nowrap; text-align: right">2.77 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;360.52%</td>
+    <td style="white-space: nowrap; text-align: right">2.54 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">3.58 &micro;s</td>
   </tr>
 
 </table>
 
 
-Comparison
+Run Time Comparison
 
 <table style="width: 1%">
   <tr>
@@ -103,28 +101,26 @@ Comparison
     <th style="text-align: right">IPS</th>
     <th style="text-align: right">Slower</th>
   <tr>
-    <td style="white-space: nowrap">MyXQL Query Builder</td>
-    <td style="white-space: nowrap;text-align: right">105.28 K</td>
+    <td style="white-space: nowrap">Pg Query Builder</td>
+    <td style="white-space: nowrap;text-align: right">382.74 K</td>
     <td>&nbsp;</td>
   </tr>
 
   <tr>
-    <td style="white-space: nowrap">Pg Query Builder</td>
-    <td style="white-space: nowrap; text-align: right">96.97 K</td>
-    <td style="white-space: nowrap; text-align: right">1.09x</td>
+    <td style="white-space: nowrap">SQLite3 Query Builder</td>
+    <td style="white-space: nowrap; text-align: right">374.17 K</td>
+    <td style="white-space: nowrap; text-align: right">1.02x</td>
   </tr>
 
   <tr>
-    <td style="white-space: nowrap">SQLite3 Query Builder</td>
-    <td style="white-space: nowrap; text-align: right">90.46 K</td>
-    <td style="white-space: nowrap; text-align: right">1.16x</td>
+    <td style="white-space: nowrap">MyXQL Query Builder</td>
+    <td style="white-space: nowrap; text-align: right">360.95 K</td>
+    <td style="white-space: nowrap; text-align: right">1.06x</td>
   </tr>
 
 </table>
 
 
-
-<hr/>
 
 
 __Input: Complex Query 4 Joins__
@@ -142,36 +138,36 @@ Run Time
   </tr>
 
   <tr>
-    <td style="white-space: nowrap">Pg Query Builder</td>
-    <td style="white-space: nowrap; text-align: right">100.25 K</td>
-    <td style="white-space: nowrap; text-align: right">9.97 μs</td>
-    <td style="white-space: nowrap; text-align: right">±92.25%</td>
-    <td style="white-space: nowrap; text-align: right">9.15 μs</td>
-    <td style="white-space: nowrap; text-align: right">23.68 μs</td>
+    <td style="white-space: nowrap">MyXQL Query Builder</td>
+    <td style="white-space: nowrap; text-align: right">342.45 K</td>
+    <td style="white-space: nowrap; text-align: right">2.92 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;313.75%</td>
+    <td style="white-space: nowrap; text-align: right">2.67 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">4.08 &micro;s</td>
   </tr>
 
   <tr>
-    <td style="white-space: nowrap">MyXQL Query Builder</td>
-    <td style="white-space: nowrap; text-align: right">98.47 K</td>
-    <td style="white-space: nowrap; text-align: right">10.16 μs</td>
-    <td style="white-space: nowrap; text-align: right">±88.64%</td>
-    <td style="white-space: nowrap; text-align: right">9.22 μs</td>
-    <td style="white-space: nowrap; text-align: right">28.70 μs</td>
+    <td style="white-space: nowrap">Pg Query Builder</td>
+    <td style="white-space: nowrap; text-align: right">340.76 K</td>
+    <td style="white-space: nowrap; text-align: right">2.93 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;350.68%</td>
+    <td style="white-space: nowrap; text-align: right">2.71 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">3.88 &micro;s</td>
   </tr>
 
   <tr>
     <td style="white-space: nowrap">SQLite3 Query Builder</td>
-    <td style="white-space: nowrap; text-align: right">90.40 K</td>
-    <td style="white-space: nowrap; text-align: right">11.06 μs</td>
-    <td style="white-space: nowrap; text-align: right">±117.48%</td>
-    <td style="white-space: nowrap; text-align: right">9.22 μs</td>
-    <td style="white-space: nowrap; text-align: right">38.69 μs</td>
+    <td style="white-space: nowrap; text-align: right">336.08 K</td>
+    <td style="white-space: nowrap; text-align: right">2.98 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;328.89%</td>
+    <td style="white-space: nowrap; text-align: right">2.79 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">3.88 &micro;s</td>
   </tr>
 
 </table>
 
 
-Comparison
+Run Time Comparison
 
 <table style="width: 1%">
   <tr>
@@ -179,28 +175,26 @@ Comparison
     <th style="text-align: right">IPS</th>
     <th style="text-align: right">Slower</th>
   <tr>
-    <td style="white-space: nowrap">Pg Query Builder</td>
-    <td style="white-space: nowrap;text-align: right">100.25 K</td>
+    <td style="white-space: nowrap">MyXQL Query Builder</td>
+    <td style="white-space: nowrap;text-align: right">342.45 K</td>
     <td>&nbsp;</td>
   </tr>
 
   <tr>
-    <td style="white-space: nowrap">MyXQL Query Builder</td>
-    <td style="white-space: nowrap; text-align: right">98.47 K</td>
-    <td style="white-space: nowrap; text-align: right">1.02x</td>
+    <td style="white-space: nowrap">Pg Query Builder</td>
+    <td style="white-space: nowrap; text-align: right">340.76 K</td>
+    <td style="white-space: nowrap; text-align: right">1.0x</td>
   </tr>
 
   <tr>
     <td style="white-space: nowrap">SQLite3 Query Builder</td>
-    <td style="white-space: nowrap; text-align: right">90.40 K</td>
-    <td style="white-space: nowrap; text-align: right">1.11x</td>
+    <td style="white-space: nowrap; text-align: right">336.08 K</td>
+    <td style="white-space: nowrap; text-align: right">1.02x</td>
   </tr>
 
 </table>
 
 
-
-<hr/>
 
 
 __Input: Fetch First Registry__
@@ -218,36 +212,36 @@ Run Time
   </tr>
 
   <tr>
-    <td style="white-space: nowrap">Pg Query Builder</td>
-    <td style="white-space: nowrap; text-align: right">173.31 K</td>
-    <td style="white-space: nowrap; text-align: right">5.77 μs</td>
-    <td style="white-space: nowrap; text-align: right">±389.85%</td>
-    <td style="white-space: nowrap; text-align: right">4.47 μs</td>
-    <td style="white-space: nowrap; text-align: right">20.18 μs</td>
+    <td style="white-space: nowrap">MyXQL Query Builder</td>
+    <td style="white-space: nowrap; text-align: right">752.12 K</td>
+    <td style="white-space: nowrap; text-align: right">1.33 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;868.39%</td>
+    <td style="white-space: nowrap; text-align: right">1.17 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">1.63 &micro;s</td>
   </tr>
 
   <tr>
-    <td style="white-space: nowrap">MyXQL Query Builder</td>
-    <td style="white-space: nowrap; text-align: right">173.06 K</td>
-    <td style="white-space: nowrap; text-align: right">5.78 μs</td>
-    <td style="white-space: nowrap; text-align: right">±411.02%</td>
-    <td style="white-space: nowrap; text-align: right">4.82 μs</td>
-    <td style="white-space: nowrap; text-align: right">16.20 μs</td>
+    <td style="white-space: nowrap">Pg Query Builder</td>
+    <td style="white-space: nowrap; text-align: right">721.56 K</td>
+    <td style="white-space: nowrap; text-align: right">1.39 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;820.83%</td>
+    <td style="white-space: nowrap; text-align: right">1.25 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">1.67 &micro;s</td>
   </tr>
 
   <tr>
     <td style="white-space: nowrap">SQLite3 Query Builder</td>
-    <td style="white-space: nowrap; text-align: right">167.17 K</td>
-    <td style="white-space: nowrap; text-align: right">5.98 μs</td>
-    <td style="white-space: nowrap; text-align: right">±420.59%</td>
-    <td style="white-space: nowrap; text-align: right">4.82 μs</td>
-    <td style="white-space: nowrap; text-align: right">19.42 μs</td>
+    <td style="white-space: nowrap; text-align: right">703.84 K</td>
+    <td style="white-space: nowrap; text-align: right">1.42 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;817.39%</td>
+    <td style="white-space: nowrap; text-align: right">1.29 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">1.71 &micro;s</td>
   </tr>
 
 </table>
 
 
-Comparison
+Run Time Comparison
 
 <table style="width: 1%">
   <tr>
@@ -255,28 +249,26 @@ Comparison
     <th style="text-align: right">IPS</th>
     <th style="text-align: right">Slower</th>
   <tr>
-    <td style="white-space: nowrap">Pg Query Builder</td>
-    <td style="white-space: nowrap;text-align: right">173.31 K</td>
+    <td style="white-space: nowrap">MyXQL Query Builder</td>
+    <td style="white-space: nowrap;text-align: right">752.12 K</td>
     <td>&nbsp;</td>
   </tr>
 
   <tr>
-    <td style="white-space: nowrap">MyXQL Query Builder</td>
-    <td style="white-space: nowrap; text-align: right">173.06 K</td>
-    <td style="white-space: nowrap; text-align: right">1.0x</td>
+    <td style="white-space: nowrap">Pg Query Builder</td>
+    <td style="white-space: nowrap; text-align: right">721.56 K</td>
+    <td style="white-space: nowrap; text-align: right">1.04x</td>
   </tr>
 
   <tr>
     <td style="white-space: nowrap">SQLite3 Query Builder</td>
-    <td style="white-space: nowrap; text-align: right">167.17 K</td>
-    <td style="white-space: nowrap; text-align: right">1.04x</td>
+    <td style="white-space: nowrap; text-align: right">703.84 K</td>
+    <td style="white-space: nowrap; text-align: right">1.07x</td>
   </tr>
 
 </table>
 
 
-
-<hr/>
 
 
 __Input: Fetch Last Registry__
@@ -294,36 +286,36 @@ Run Time
   </tr>
 
   <tr>
+    <td style="white-space: nowrap">MyXQL Query Builder</td>
+    <td style="white-space: nowrap; text-align: right">731.59 K</td>
+    <td style="white-space: nowrap; text-align: right">1.37 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;795.20%</td>
+    <td style="white-space: nowrap; text-align: right">1.21 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">1.71 &micro;s</td>
+  </tr>
+
+  <tr>
     <td style="white-space: nowrap">Pg Query Builder</td>
-    <td style="white-space: nowrap; text-align: right">177.36 K</td>
-    <td style="white-space: nowrap; text-align: right">5.64 μs</td>
-    <td style="white-space: nowrap; text-align: right">±446.37%</td>
-    <td style="white-space: nowrap; text-align: right">4.47 μs</td>
-    <td style="white-space: nowrap; text-align: right">17.67 μs</td>
+    <td style="white-space: nowrap; text-align: right">716.25 K</td>
+    <td style="white-space: nowrap; text-align: right">1.40 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;814.43%</td>
+    <td style="white-space: nowrap; text-align: right">1.25 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">1.67 &micro;s</td>
   </tr>
 
   <tr>
     <td style="white-space: nowrap">SQLite3 Query Builder</td>
-    <td style="white-space: nowrap; text-align: right">169.74 K</td>
-    <td style="white-space: nowrap; text-align: right">5.89 μs</td>
-    <td style="white-space: nowrap; text-align: right">±394.73%</td>
-    <td style="white-space: nowrap; text-align: right">4.82 μs</td>
-    <td style="white-space: nowrap; text-align: right">18.16 μs</td>
-  </tr>
-
-  <tr>
-    <td style="white-space: nowrap">MyXQL Query Builder</td>
-    <td style="white-space: nowrap; text-align: right">162.83 K</td>
-    <td style="white-space: nowrap; text-align: right">6.14 μs</td>
-    <td style="white-space: nowrap; text-align: right">±383.32%</td>
-    <td style="white-space: nowrap; text-align: right">4.82 μs</td>
-    <td style="white-space: nowrap; text-align: right">22.14 μs</td>
+    <td style="white-space: nowrap; text-align: right">707.98 K</td>
+    <td style="white-space: nowrap; text-align: right">1.41 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;839.02%</td>
+    <td style="white-space: nowrap; text-align: right">1.25 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">1.67 &micro;s</td>
   </tr>
 
 </table>
 
 
-Comparison
+Run Time Comparison
 
 <table style="width: 1%">
   <tr>
@@ -331,28 +323,26 @@ Comparison
     <th style="text-align: right">IPS</th>
     <th style="text-align: right">Slower</th>
   <tr>
-    <td style="white-space: nowrap">Pg Query Builder</td>
-    <td style="white-space: nowrap;text-align: right">177.36 K</td>
+    <td style="white-space: nowrap">MyXQL Query Builder</td>
+    <td style="white-space: nowrap;text-align: right">731.59 K</td>
     <td>&nbsp;</td>
   </tr>
 
   <tr>
-    <td style="white-space: nowrap">SQLite3 Query Builder</td>
-    <td style="white-space: nowrap; text-align: right">169.74 K</td>
-    <td style="white-space: nowrap; text-align: right">1.04x</td>
+    <td style="white-space: nowrap">Pg Query Builder</td>
+    <td style="white-space: nowrap; text-align: right">716.25 K</td>
+    <td style="white-space: nowrap; text-align: right">1.02x</td>
   </tr>
 
   <tr>
-    <td style="white-space: nowrap">MyXQL Query Builder</td>
-    <td style="white-space: nowrap; text-align: right">162.83 K</td>
-    <td style="white-space: nowrap; text-align: right">1.09x</td>
+    <td style="white-space: nowrap">SQLite3 Query Builder</td>
+    <td style="white-space: nowrap; text-align: right">707.98 K</td>
+    <td style="white-space: nowrap; text-align: right">1.03x</td>
   </tr>
 
 </table>
 
 
-
-<hr/>
 
 
 __Input: Ordinary Delete All__
@@ -370,36 +360,36 @@ Run Time
   </tr>
 
   <tr>
+    <td style="white-space: nowrap">MyXQL Query Builder</td>
+    <td style="white-space: nowrap; text-align: right">1.34 M</td>
+    <td style="white-space: nowrap; text-align: right">747.69 ns</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;2442.90%</td>
+    <td style="white-space: nowrap; text-align: right">666 ns</td>
+    <td style="white-space: nowrap; text-align: right">917 ns</td>
+  </tr>
+
+  <tr>
     <td style="white-space: nowrap">Pg Query Builder</td>
-    <td style="white-space: nowrap; text-align: right">335.81 K</td>
-    <td style="white-space: nowrap; text-align: right">2.98 μs</td>
-    <td style="white-space: nowrap; text-align: right">±775.40%</td>
-    <td style="white-space: nowrap; text-align: right">2.03 μs</td>
-    <td style="white-space: nowrap; text-align: right">9.43 μs</td>
+    <td style="white-space: nowrap; text-align: right">1.32 M</td>
+    <td style="white-space: nowrap; text-align: right">758.40 ns</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;2490.71%</td>
+    <td style="white-space: nowrap; text-align: right">667 ns</td>
+    <td style="white-space: nowrap; text-align: right">875 ns</td>
   </tr>
 
   <tr>
     <td style="white-space: nowrap">SQLite3 Query Builder</td>
-    <td style="white-space: nowrap; text-align: right">325.92 K</td>
-    <td style="white-space: nowrap; text-align: right">3.07 μs</td>
-    <td style="white-space: nowrap; text-align: right">±948.36%</td>
-    <td style="white-space: nowrap; text-align: right">2.02 μs</td>
-    <td style="white-space: nowrap; text-align: right">8.31 μs</td>
-  </tr>
-
-  <tr>
-    <td style="white-space: nowrap">MyXQL Query Builder</td>
-    <td style="white-space: nowrap; text-align: right">301.67 K</td>
-    <td style="white-space: nowrap; text-align: right">3.31 μs</td>
-    <td style="white-space: nowrap; text-align: right">±832.06%</td>
-    <td style="white-space: nowrap; text-align: right">2.03 μs</td>
-    <td style="white-space: nowrap; text-align: right">11.59 μs</td>
+    <td style="white-space: nowrap; text-align: right">1.31 M</td>
+    <td style="white-space: nowrap; text-align: right">762.71 ns</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;2451.66%</td>
+    <td style="white-space: nowrap; text-align: right">667 ns</td>
+    <td style="white-space: nowrap; text-align: right">875 ns</td>
   </tr>
 
 </table>
 
 
-Comparison
+Run Time Comparison
 
 <table style="width: 1%">
   <tr>
@@ -407,28 +397,26 @@ Comparison
     <th style="text-align: right">IPS</th>
     <th style="text-align: right">Slower</th>
   <tr>
-    <td style="white-space: nowrap">Pg Query Builder</td>
-    <td style="white-space: nowrap;text-align: right">335.81 K</td>
+    <td style="white-space: nowrap">MyXQL Query Builder</td>
+    <td style="white-space: nowrap;text-align: right">1.34 M</td>
     <td>&nbsp;</td>
   </tr>
 
   <tr>
-    <td style="white-space: nowrap">SQLite3 Query Builder</td>
-    <td style="white-space: nowrap; text-align: right">325.92 K</td>
-    <td style="white-space: nowrap; text-align: right">1.03x</td>
+    <td style="white-space: nowrap">Pg Query Builder</td>
+    <td style="white-space: nowrap; text-align: right">1.32 M</td>
+    <td style="white-space: nowrap; text-align: right">1.01x</td>
   </tr>
 
   <tr>
-    <td style="white-space: nowrap">MyXQL Query Builder</td>
-    <td style="white-space: nowrap; text-align: right">301.67 K</td>
-    <td style="white-space: nowrap; text-align: right">1.11x</td>
+    <td style="white-space: nowrap">SQLite3 Query Builder</td>
+    <td style="white-space: nowrap; text-align: right">1.31 M</td>
+    <td style="white-space: nowrap; text-align: right">1.02x</td>
   </tr>
 
 </table>
 
 
-
-<hr/>
 
 
 __Input: Ordinary Order By__
@@ -446,36 +434,36 @@ Run Time
   </tr>
 
   <tr>
-    <td style="white-space: nowrap">Pg Query Builder</td>
-    <td style="white-space: nowrap; text-align: right">186.48 K</td>
-    <td style="white-space: nowrap; text-align: right">5.36 μs</td>
-    <td style="white-space: nowrap; text-align: right">±400.39%</td>
-    <td style="white-space: nowrap; text-align: right">4.40 μs</td>
-    <td style="white-space: nowrap; text-align: right">17.81 μs</td>
+    <td style="white-space: nowrap">MyXQL Query Builder</td>
+    <td style="white-space: nowrap; text-align: right">742.88 K</td>
+    <td style="white-space: nowrap; text-align: right">1.35 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;918.40%</td>
+    <td style="white-space: nowrap; text-align: right">1.17 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">1.67 &micro;s</td>
   </tr>
 
   <tr>
-    <td style="white-space: nowrap">MyXQL Query Builder</td>
-    <td style="white-space: nowrap; text-align: right">182.02 K</td>
-    <td style="white-space: nowrap; text-align: right">5.49 μs</td>
-    <td style="white-space: nowrap; text-align: right">±402.64%</td>
-    <td style="white-space: nowrap; text-align: right">4.40 μs</td>
-    <td style="white-space: nowrap; text-align: right">17.39 μs</td>
+    <td style="white-space: nowrap">Pg Query Builder</td>
+    <td style="white-space: nowrap; text-align: right">729.59 K</td>
+    <td style="white-space: nowrap; text-align: right">1.37 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;913.47%</td>
+    <td style="white-space: nowrap; text-align: right">1.21 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">1.58 &micro;s</td>
   </tr>
 
   <tr>
     <td style="white-space: nowrap">SQLite3 Query Builder</td>
-    <td style="white-space: nowrap; text-align: right">172.19 K</td>
-    <td style="white-space: nowrap; text-align: right">5.81 μs</td>
-    <td style="white-space: nowrap; text-align: right">±427.38%</td>
-    <td style="white-space: nowrap; text-align: right">4.47 μs</td>
-    <td style="white-space: nowrap; text-align: right">21.44 μs</td>
+    <td style="white-space: nowrap; text-align: right">721.11 K</td>
+    <td style="white-space: nowrap; text-align: right">1.39 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;918.31%</td>
+    <td style="white-space: nowrap; text-align: right">1.21 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">1.58 &micro;s</td>
   </tr>
 
 </table>
 
 
-Comparison
+Run Time Comparison
 
 <table style="width: 1%">
   <tr>
@@ -483,28 +471,26 @@ Comparison
     <th style="text-align: right">IPS</th>
     <th style="text-align: right">Slower</th>
   <tr>
-    <td style="white-space: nowrap">Pg Query Builder</td>
-    <td style="white-space: nowrap;text-align: right">186.48 K</td>
+    <td style="white-space: nowrap">MyXQL Query Builder</td>
+    <td style="white-space: nowrap;text-align: right">742.88 K</td>
     <td>&nbsp;</td>
   </tr>
 
   <tr>
-    <td style="white-space: nowrap">MyXQL Query Builder</td>
-    <td style="white-space: nowrap; text-align: right">182.02 K</td>
+    <td style="white-space: nowrap">Pg Query Builder</td>
+    <td style="white-space: nowrap; text-align: right">729.59 K</td>
     <td style="white-space: nowrap; text-align: right">1.02x</td>
   </tr>
 
   <tr>
     <td style="white-space: nowrap">SQLite3 Query Builder</td>
-    <td style="white-space: nowrap; text-align: right">172.19 K</td>
-    <td style="white-space: nowrap; text-align: right">1.08x</td>
+    <td style="white-space: nowrap; text-align: right">721.11 K</td>
+    <td style="white-space: nowrap; text-align: right">1.03x</td>
   </tr>
 
 </table>
 
 
-
-<hr/>
 
 
 __Input: Ordinary Select All__
@@ -522,36 +508,36 @@ Run Time
   </tr>
 
   <tr>
+    <td style="white-space: nowrap">MyXQL Query Builder</td>
+    <td style="white-space: nowrap; text-align: right">838.25 K</td>
+    <td style="white-space: nowrap; text-align: right">1.19 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;1122.54%</td>
+    <td style="white-space: nowrap; text-align: right">1.04 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">1.46 &micro;s</td>
+  </tr>
+
+  <tr>
     <td style="white-space: nowrap">Pg Query Builder</td>
-    <td style="white-space: nowrap; text-align: right">200.19 K</td>
-    <td style="white-space: nowrap; text-align: right">5.00 μs</td>
-    <td style="white-space: nowrap; text-align: right">±657.77%</td>
-    <td style="white-space: nowrap; text-align: right">3.49 μs</td>
-    <td style="white-space: nowrap; text-align: right">14.88 μs</td>
+    <td style="white-space: nowrap; text-align: right">822.53 K</td>
+    <td style="white-space: nowrap; text-align: right">1.22 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;1179.00%</td>
+    <td style="white-space: nowrap; text-align: right">1.08 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">1.38 &micro;s</td>
   </tr>
 
   <tr>
     <td style="white-space: nowrap">SQLite3 Query Builder</td>
-    <td style="white-space: nowrap; text-align: right">199.77 K</td>
-    <td style="white-space: nowrap; text-align: right">5.01 μs</td>
-    <td style="white-space: nowrap; text-align: right">±698.35%</td>
-    <td style="white-space: nowrap; text-align: right">3.49 μs</td>
-    <td style="white-space: nowrap; text-align: right">13.90 μs</td>
-  </tr>
-
-  <tr>
-    <td style="white-space: nowrap">MyXQL Query Builder</td>
-    <td style="white-space: nowrap; text-align: right">191.70 K</td>
-    <td style="white-space: nowrap; text-align: right">5.22 μs</td>
-    <td style="white-space: nowrap; text-align: right">±601.95%</td>
-    <td style="white-space: nowrap; text-align: right">3.56 μs</td>
-    <td style="white-space: nowrap; text-align: right">16.06 μs</td>
+    <td style="white-space: nowrap; text-align: right">809.74 K</td>
+    <td style="white-space: nowrap; text-align: right">1.23 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;1198.22%</td>
+    <td style="white-space: nowrap; text-align: right">1.08 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">1.42 &micro;s</td>
   </tr>
 
 </table>
 
 
-Comparison
+Run Time Comparison
 
 <table style="width: 1%">
   <tr>
@@ -559,28 +545,26 @@ Comparison
     <th style="text-align: right">IPS</th>
     <th style="text-align: right">Slower</th>
   <tr>
-    <td style="white-space: nowrap">Pg Query Builder</td>
-    <td style="white-space: nowrap;text-align: right">200.19 K</td>
+    <td style="white-space: nowrap">MyXQL Query Builder</td>
+    <td style="white-space: nowrap;text-align: right">838.25 K</td>
     <td>&nbsp;</td>
   </tr>
 
   <tr>
-    <td style="white-space: nowrap">SQLite3 Query Builder</td>
-    <td style="white-space: nowrap; text-align: right">199.77 K</td>
-    <td style="white-space: nowrap; text-align: right">1.0x</td>
+    <td style="white-space: nowrap">Pg Query Builder</td>
+    <td style="white-space: nowrap; text-align: right">822.53 K</td>
+    <td style="white-space: nowrap; text-align: right">1.02x</td>
   </tr>
 
   <tr>
-    <td style="white-space: nowrap">MyXQL Query Builder</td>
-    <td style="white-space: nowrap; text-align: right">191.70 K</td>
+    <td style="white-space: nowrap">SQLite3 Query Builder</td>
+    <td style="white-space: nowrap; text-align: right">809.74 K</td>
     <td style="white-space: nowrap; text-align: right">1.04x</td>
   </tr>
 
 </table>
 
 
-
-<hr/>
 
 
 __Input: Ordinary Update All__
@@ -598,36 +582,36 @@ Run Time
   </tr>
 
   <tr>
-    <td style="white-space: nowrap">SQLite3 Query Builder</td>
-    <td style="white-space: nowrap; text-align: right">263.35 K</td>
-    <td style="white-space: nowrap; text-align: right">3.80 μs</td>
-    <td style="white-space: nowrap; text-align: right">±1304.70%</td>
-    <td style="white-space: nowrap; text-align: right">2.86 μs</td>
-    <td style="white-space: nowrap; text-align: right">10.13 μs</td>
-  </tr>
-
-  <tr>
     <td style="white-space: nowrap">MyXQL Query Builder</td>
-    <td style="white-space: nowrap; text-align: right">260.96 K</td>
-    <td style="white-space: nowrap; text-align: right">3.83 μs</td>
-    <td style="white-space: nowrap; text-align: right">±760.59%</td>
-    <td style="white-space: nowrap; text-align: right">2.86 μs</td>
-    <td style="white-space: nowrap; text-align: right">10.20 μs</td>
+    <td style="white-space: nowrap; text-align: right">1.03 M</td>
+    <td style="white-space: nowrap; text-align: right">971.15 ns</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;1801.37%</td>
+    <td style="white-space: nowrap; text-align: right">834 ns</td>
+    <td style="white-space: nowrap; text-align: right">1167 ns</td>
   </tr>
 
   <tr>
     <td style="white-space: nowrap">Pg Query Builder</td>
-    <td style="white-space: nowrap; text-align: right">249.05 K</td>
-    <td style="white-space: nowrap; text-align: right">4.02 μs</td>
-    <td style="white-space: nowrap; text-align: right">±827.04%</td>
-    <td style="white-space: nowrap; text-align: right">2.86 μs</td>
-    <td style="white-space: nowrap; text-align: right">12.99 μs</td>
+    <td style="white-space: nowrap; text-align: right">1.01 M</td>
+    <td style="white-space: nowrap; text-align: right">990.87 ns</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;1533.42%</td>
+    <td style="white-space: nowrap; text-align: right">875 ns</td>
+    <td style="white-space: nowrap; text-align: right">1125 ns</td>
+  </tr>
+
+  <tr>
+    <td style="white-space: nowrap">SQLite3 Query Builder</td>
+    <td style="white-space: nowrap; text-align: right">1.00 M</td>
+    <td style="white-space: nowrap; text-align: right">999.05 ns</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;1416.75%</td>
+    <td style="white-space: nowrap; text-align: right">875 ns</td>
+    <td style="white-space: nowrap; text-align: right">1166 ns</td>
   </tr>
 
 </table>
 
 
-Comparison
+Run Time Comparison
 
 <table style="width: 1%">
   <tr>
@@ -635,28 +619,26 @@ Comparison
     <th style="text-align: right">IPS</th>
     <th style="text-align: right">Slower</th>
   <tr>
-    <td style="white-space: nowrap">SQLite3 Query Builder</td>
-    <td style="white-space: nowrap;text-align: right">263.35 K</td>
+    <td style="white-space: nowrap">MyXQL Query Builder</td>
+    <td style="white-space: nowrap;text-align: right">1.03 M</td>
     <td>&nbsp;</td>
   </tr>
 
   <tr>
-    <td style="white-space: nowrap">MyXQL Query Builder</td>
-    <td style="white-space: nowrap; text-align: right">260.96 K</td>
-    <td style="white-space: nowrap; text-align: right">1.01x</td>
+    <td style="white-space: nowrap">Pg Query Builder</td>
+    <td style="white-space: nowrap; text-align: right">1.01 M</td>
+    <td style="white-space: nowrap; text-align: right">1.02x</td>
   </tr>
 
   <tr>
-    <td style="white-space: nowrap">Pg Query Builder</td>
-    <td style="white-space: nowrap; text-align: right">249.05 K</td>
-    <td style="white-space: nowrap; text-align: right">1.06x</td>
+    <td style="white-space: nowrap">SQLite3 Query Builder</td>
+    <td style="white-space: nowrap; text-align: right">1.00 M</td>
+    <td style="white-space: nowrap; text-align: right">1.03x</td>
   </tr>
 
 </table>
 
 
-
-<hr/>
 
 
 __Input: Ordinary Where__
@@ -675,35 +657,35 @@ Run Time
 
   <tr>
     <td style="white-space: nowrap">MyXQL Query Builder</td>
-    <td style="white-space: nowrap; text-align: right">162.26 K</td>
-    <td style="white-space: nowrap; text-align: right">6.16 μs</td>
-    <td style="white-space: nowrap; text-align: right">±343.86%</td>
-    <td style="white-space: nowrap; text-align: right">5.31 μs</td>
-    <td style="white-space: nowrap; text-align: right">17.74 μs</td>
-  </tr>
-
-  <tr>
-    <td style="white-space: nowrap">SQLite3 Query Builder</td>
-    <td style="white-space: nowrap; text-align: right">159.31 K</td>
-    <td style="white-space: nowrap; text-align: right">6.28 μs</td>
-    <td style="white-space: nowrap; text-align: right">±305.50%</td>
-    <td style="white-space: nowrap; text-align: right">5.38 μs</td>
-    <td style="white-space: nowrap; text-align: right">19.35 μs</td>
+    <td style="white-space: nowrap; text-align: right">579.57 K</td>
+    <td style="white-space: nowrap; text-align: right">1.73 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;668.48%</td>
+    <td style="white-space: nowrap; text-align: right">1.54 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">2.17 &micro;s</td>
   </tr>
 
   <tr>
     <td style="white-space: nowrap">Pg Query Builder</td>
-    <td style="white-space: nowrap; text-align: right">154.28 K</td>
-    <td style="white-space: nowrap; text-align: right">6.48 μs</td>
-    <td style="white-space: nowrap; text-align: right">±355.38%</td>
-    <td style="white-space: nowrap; text-align: right">5.45 μs</td>
-    <td style="white-space: nowrap; text-align: right">20.04 μs</td>
+    <td style="white-space: nowrap; text-align: right">574.41 K</td>
+    <td style="white-space: nowrap; text-align: right">1.74 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;631.02%</td>
+    <td style="white-space: nowrap; text-align: right">1.58 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">2.13 &micro;s</td>
+  </tr>
+
+  <tr>
+    <td style="white-space: nowrap">SQLite3 Query Builder</td>
+    <td style="white-space: nowrap; text-align: right">568.60 K</td>
+    <td style="white-space: nowrap; text-align: right">1.76 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">&plusmn;635.93%</td>
+    <td style="white-space: nowrap; text-align: right">1.62 &micro;s</td>
+    <td style="white-space: nowrap; text-align: right">2.13 &micro;s</td>
   </tr>
 
 </table>
 
 
-Comparison
+Run Time Comparison
 
 <table style="width: 1%">
   <tr>
@@ -712,25 +694,20 @@ Comparison
     <th style="text-align: right">Slower</th>
   <tr>
     <td style="white-space: nowrap">MyXQL Query Builder</td>
-    <td style="white-space: nowrap;text-align: right">162.26 K</td>
+    <td style="white-space: nowrap;text-align: right">579.57 K</td>
     <td>&nbsp;</td>
   </tr>
 
   <tr>
-    <td style="white-space: nowrap">SQLite3 Query Builder</td>
-    <td style="white-space: nowrap; text-align: right">159.31 K</td>
-    <td style="white-space: nowrap; text-align: right">1.02x</td>
+    <td style="white-space: nowrap">Pg Query Builder</td>
+    <td style="white-space: nowrap; text-align: right">574.41 K</td>
+    <td style="white-space: nowrap; text-align: right">1.01x</td>
   </tr>
 
   <tr>
-    <td style="white-space: nowrap">Pg Query Builder</td>
-    <td style="white-space: nowrap; text-align: right">154.28 K</td>
-    <td style="white-space: nowrap; text-align: right">1.05x</td>
+    <td style="white-space: nowrap">SQLite3 Query Builder</td>
+    <td style="white-space: nowrap; text-align: right">568.60 K</td>
+    <td style="white-space: nowrap; text-align: right">1.02x</td>
   </tr>
 
 </table>
-
-
-
-<hr/>
-

@@ -116,6 +116,11 @@ defmodule Ecto.Adapters.SQLite3.CodecTest do
       {:ok, time} = Time.from_iso8601("23:50:07.123Z")
       assert {:ok, ^time} = Codec.time_decode("23:50:07.123Z")
     end
+
+    test "struct" do
+      time = ~T[10:28:14.748721]
+      assert {:ok, ^time} = Codec.time_decode(time)
+    end
   end
 
   describe ".utc_datetime_decode/1" do

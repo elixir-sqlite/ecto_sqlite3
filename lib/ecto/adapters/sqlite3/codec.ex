@@ -79,6 +79,10 @@ defmodule Ecto.Adapters.SQLite3.Codec do
 
   def time_decode(nil), do: {:ok, nil}
 
+  def time_decode(%Time{} = value) do
+    {:ok, value}
+  end
+
   def time_decode(value) do
     case Time.from_iso8601(value) do
       {:ok, _time} = result -> result
