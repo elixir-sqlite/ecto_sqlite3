@@ -7,6 +7,10 @@ project adheres to [Semantic Versioning][semver].
 
 ## Unreleased
 
+## v0.16.0
+
+- changed: Set minimum `exqlite` dependency to `0.22`.
+
 ## v0.15.1
 
 - fixed: Encode nil blobs. This was previously unhandled.
