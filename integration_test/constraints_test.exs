@@ -39,6 +39,7 @@ defmodule Ecto.Integration.ConstraintsTest do
     :ok
   end
 
+  @tag :create_constraint
   test "check constraint" do
     changeset = Ecto.Changeset.change(%Constraint{}, fromm: 0, too: 10)
     {:ok, _} = PoolRepo.insert(changeset)
