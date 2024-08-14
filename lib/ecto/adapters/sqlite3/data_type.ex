@@ -12,6 +12,7 @@ defmodule Ecto.Adapters.SQLite3.DataType do
   def column_type(:serial, _opts), do: "INTEGER"
   def column_type(:bigserial, _opts), do: "INTEGER"
   def column_type(:boolean, _opts), do: "INTEGER"
+  def column_type(:integer, _opts), do: "INTEGER"
   def column_type(:bigint, _opts), do: "INTEGER"
   def column_type(:string, _opts), do: "TEXT"
   def column_type(:float, _opts), do: "NUMERIC"
