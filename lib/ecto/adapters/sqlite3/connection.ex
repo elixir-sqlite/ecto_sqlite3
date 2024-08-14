@@ -9,6 +9,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   alias Ecto.Migration.Reference
   alias Ecto.Migration.Table
   alias Ecto.Query.BooleanExpr
+  alias Ecto.Query.ByExpr
   alias Ecto.Query.JoinExpr
   alias Ecto.Query.QueryExpr
   alias Ecto.Query.WithExpr
@@ -844,16 +845,16 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   def handle_call(fun, _arity), do: {:fun, Atom.to_string(fun)}
 
   defp distinct(nil, _sources, _query), do: []
-  defp distinct(%QueryExpr{expr: true}, _sources, _query), do: "DISTINCT "
-  defp distinct(%QueryExpr{expr: false}, _sources, _query), do: []
+  defp distinct(%ByExpr{expr: true}, _sources, _query), do: "DISTINCT "
+  defp distinct(%ByExpr{expr: false}, _sources, _query), do: []
 
-  defp distinct(%QueryExpr{expr: exprs}, _sources, query) when is_list(exprs) do
+  defp distinct(%ByExpr{expr: exprs}, _sources, query) when is_list(exprs) do
     raise Ecto.QueryError,
       query: query,
       message: "DISTINCT with multiple columns is not supported by SQLite3"
   end
 
-  def select(%{select: %{fields: fields}, distinct: distinct} = query, sources) do
+  defp select(%{select: %{fields: fields}, distinct: distinct} = query, sources) do
     [
       "SELECT ",
       distinct(distinct, sources, query) | select_fields(fields, sources, query)
@@ -1065,8 +1066,8 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   def group_by(%{group_bys: group_bys} = query, sources) do
     [
       " GROUP BY "
-      | intersperse_map(group_bys, ", ", fn %QueryExpr{expr: expression} ->
-          intersperse_map(expression, ", ", &expr(&1, sources, query))
+      | intersperse_map(group_bys, ", ", fn %ByExpr{expr: expression} ->
+          intersperse_map(expression, ", ", &top_level_expr(&1, sources, query))
         end)
     ]
   end
@@ -1110,7 +1111,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   end
 
   defp order_by_expr({dir, expression}, sources, query) do
-    str = expr(expression, sources, query)
+    str = top_level_expr(expression, sources, query)
 
     case dir do
       :asc ->
@@ -1217,6 +1218,21 @@ defmodule Ecto.Adapters.SQLite3.Connection do
 
   defp paren_expr(expression, sources, query) do
     [?(, expr(expression, sources, query), ?)]
+  end
+
+  defp top_level_expr(%Ecto.SubQuery{query: query}, sources, parent_query) do
+    combinations =
+      Enum.map(query.combinations, fn {type, combination_query} ->
+        {type, put_in(combination_query.aliases[@parent_as], {parent_query, sources})}
+      end)
+
+    query = put_in(query.combinations, combinations)
+    query = put_in(query.aliases[@parent_as], {parent_query, sources})
+    [all(query, subquery_as_prefix(sources))]
+  end
+
+  defp top_level_expr(other, sources, parent_query) do
+    expr(other, sources, parent_query)
   end
 
   ##
