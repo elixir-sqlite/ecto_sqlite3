@@ -285,10 +285,10 @@ defmodule Ecto.Adapters.SQLite3.Connection do
 
   @impl true
   def update(prefix, table, fields, filters, returning) do
-    fields = intersperse_map(fields, ", ", &[quote_name(&1), " = ?"])
+    fields = Enum.map_intersperse(fields, ", ", &[quote_name(&1), " = ?"])
 
     filters =
-      intersperse_map(filters, " AND ", fn
+      Enum.map_intersperse(filters, " AND ", fn
         {field, nil} ->
           [quote_name(field), " IS NULL"]
 
@@ -310,7 +310,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   @impl true
   def delete(prefix, table, filters, returning) do
     filters =
-      intersperse_map(filters, " AND ", fn
+      Enum.map_intersperse(filters, " AND ", fn
         {field, nil} ->
           [quote_name(field), " IS NULL"]
 
@@ -482,7 +482,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
 
   @impl true
   def execute_ddl({:create, %Index{} = index}) do
-    fields = intersperse_map(index.columns, ", ", &index_expr/1)
+    fields = Enum.map_intersperse(index.columns, ", ", &index_expr/1)
 
     [
       [
@@ -502,7 +502,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
 
   @impl true
   def execute_ddl({:create_if_not_exists, %Index{} = index}) do
-    fields = intersperse_map(index.columns, ", ", &index_expr/1)
+    fields = Enum.map_intersperse(index.columns, ", ", &index_expr/1)
 
     [
       [
@@ -591,7 +591,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
 
   @impl true
   def execute_ddl({:create, %Index{} = index}) do
-    fields = intersperse_map(index.columns, ", ", &index_expr/1)
+    fields = Enum.map_intersperse(index.columns, ", ", &index_expr/1)
 
     [
       [
@@ -611,7 +611,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   end
 
   def execute_ddl({:create_if_not_exists, %Index{} = index}) do
-    fields = intersperse_map(index.columns, ", ", &index_expr/1)
+    fields = Enum.map_intersperse(index.columns, ", ", &index_expr/1)
 
     [
       [
@@ -753,13 +753,13 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     do: [fragment, ?\s]
 
   defp conflict_target(targets) do
-    [?(, intersperse_map(targets, ?,, &quote_name/1), ?), ?\s]
+    [?(, Enum.map_intersperse(targets, ?,, &quote_name/1), ?), ?\s]
   end
 
   defp replace(fields) do
     [
       "UPDATE SET "
-      | intersperse_map(fields, ?,, fn field ->
+      | Enum.map_intersperse(fields, ?,, fn field ->
           quoted = quote_name(field)
           [quoted, " = ", "EXCLUDED." | quoted]
         end)
@@ -864,7 +864,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   defp select_fields([], _sources, _query), do: "1"
 
   defp select_fields(fields, sources, query) do
-    intersperse_map(fields, ", ", fn
+    Enum.map_intersperse(fields, ", ", fn
       {:&, _, [idx]} ->
         case elem(sources, idx) do
           {source, _, nil} ->
@@ -906,7 +906,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
         sources
       ) do
     recursive_opt = if recursive, do: "RECURSIVE ", else: ""
-    ctes = intersperse_map(queries, ", ", &cte_expr(&1, sources, query))
+    ctes = Enum.map_intersperse(queries, ", ", &cte_expr(&1, sources, query))
 
     [
       "WITH ",
@@ -993,7 +993,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
 
   defp using_join(%{joins: joins} = query, _kind, prefix, sources) do
     froms =
-      intersperse_map(joins, ", ", fn
+      Enum.map_intersperse(joins, ", ", fn
         %JoinExpr{qual: _qual, ix: ix, source: source} ->
           {join, name} = get_source(query, sources, ix, source)
           [join, " AS " | name]
@@ -1066,8 +1066,8 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   def group_by(%{group_bys: group_bys} = query, sources) do
     [
       " GROUP BY "
-      | intersperse_map(group_bys, ", ", fn %ByExpr{expr: expression} ->
-          intersperse_map(expression, ", ", &top_level_expr(&1, sources, query))
+      | Enum.map_intersperse(group_bys, ", ", fn %ByExpr{expr: expression} ->
+          Enum.map_intersperse(expression, ", ", &top_level_expr(&1, sources, query))
         end)
     ]
   end
@@ -1077,22 +1077,22 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   def window(%{windows: windows} = query, sources) do
     [
       " WINDOW "
-      | intersperse_map(windows, ", ", fn {name, %{expr: kw}} ->
+      | Enum.map_intersperse(windows, ", ", fn {name, %{expr: kw}} ->
           [quote_name(name), " AS " | window_exprs(kw, sources, query)]
         end)
     ]
   end
 
   defp window_exprs(kw, sources, query) do
-    [?(, intersperse_map(kw, ?\s, &window_expr(&1, sources, query)), ?)]
+    [?(, Enum.map_intersperse(kw, ?\s, &window_expr(&1, sources, query)), ?)]
   end
 
   defp window_expr({:partition_by, fields}, sources, query) do
-    ["PARTITION BY " | intersperse_map(fields, ", ", &expr(&1, sources, query))]
+    ["PARTITION BY " | Enum.map_intersperse(fields, ", ", &expr(&1, sources, query))]
   end
 
   defp window_expr({:order_by, fields}, sources, query) do
-    ["ORDER BY " | intersperse_map(fields, ", ", &order_by_expr(&1, sources, query))]
+    ["ORDER BY " | Enum.map_intersperse(fields, ", ", &order_by_expr(&1, sources, query))]
   end
 
   defp window_expr({:frame, {:fragment, _, _} = fragment}, sources, query) do
@@ -1106,7 +1106,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
 
     [
       " ORDER BY "
-      | intersperse_map(order_bys, ", ", &order_by_expr(&1, sources, query))
+      | Enum.map_intersperse(order_bys, ", ", &order_by_expr(&1, sources, query))
     ]
   end
 
@@ -1288,7 +1288,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   end
 
   defp expr({:in, _, [left, right]}, sources, query) when is_list(right) do
-    args = intersperse_map(right, ?,, &expr(&1, sources, query))
+    args = Enum.map_intersperse(right, ?,, &expr(&1, sources, query))
     [expr(left, sources, query), " IN (", args, ?)]
   end
 
@@ -1411,7 +1411,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   end
 
   defp expr({:{}, _, elems}, sources, query) do
-    [?(, intersperse_map(elems, ?,, &expr(&1, sources, query)), ?)]
+    [?(, Enum.map_intersperse(elems, ?,, &expr(&1, sources, query)), ?)]
   end
 
   defp expr({:count, _, []}, _sources, _query), do: "count(*)"
@@ -1457,7 +1457,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
         [op_to_binary(left, sources, query), op | op_to_binary(right, sources, query)]
 
       {:fun, fun} ->
-        [fun, ?(, modifier, intersperse_map(args, ", ", &expr(&1, sources, query)), ?)]
+        [fun, ?(, modifier, Enum.map_intersperse(args, ", ", &expr(&1, sources, query)), ?)]
     end
   end
 
@@ -1607,7 +1607,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   end
 
   defp column_definitions(table, columns) do
-    intersperse_map(columns, ", ", &column_definition(table, &1))
+    Enum.map_intersperse(columns, ", ", &column_definition(table, &1))
   end
 
   defp column_definition(table, {:add, name, %Reference{} = ref, opts}) do
@@ -1900,7 +1900,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     end
   end
 
-  defp quote_names(names), do: intersperse_map(names, ?,, &quote_name/1)
+  defp quote_names(names), do: Enum.map_intersperse(names, ?,, &quote_name/1)
 
   def quote_name(name), do: quote_entity(name)
 
@@ -1917,20 +1917,6 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   end
 
   defp quote_entity(val), do: [[?", val, ?"]]
-
-  defp intersperse_map(list, separator, mapper, acc \\ [])
-
-  defp intersperse_map([], _separator, _mapper, acc) do
-    acc
-  end
-
-  defp intersperse_map([elem], _separator, mapper, acc) do
-    [acc | mapper.(elem)]
-  end
-
-  defp intersperse_map([elem | rest], separator, mapper, acc) do
-    intersperse_map(rest, separator, mapper, [acc, mapper.(elem), separator])
-  end
 
   defp intersperse_reduce(list, separator, user_acc, reducer, acc \\ [])
 
