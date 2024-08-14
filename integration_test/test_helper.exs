@@ -57,6 +57,85 @@ _ = Ecto.Adapters.SQLite3.storage_down(PoolRepo.config())
 {:ok, _} = TestRepo.start_link()
 {:ok, _pid} = PoolRepo.start_link()
 
+excludes = [
+  :delete_with_join,
+  :right_join,
+
+  # SQLite does not have an array type
+  :array_type,
+  :transaction_isolation,
+  :insert_cell_wise_defaults,
+  :insert_select,
+
+  # sqlite does not support microsecond precision, only millisecond
+  :microsecond_precision,
+
+  # sqlite supports FKs, but does not return sufficient data
+  # for ecto to support matching on a given constraint violation name
+  # which is what most of the tests validate
+  :foreign_key_constraint,
+
+  # SQLite with DSQLITE_LIKE_DOESNT_MATCH_BLOBS=1
+  # does not support using LIKE on BLOB types
+  :like_match_blob,
+
+  # SQLite will return a string for schemaless map types as
+  # Ecto does not have enough information to call the associated loader
+  # that converts the string JSON representaiton into a map
+  :map_type_schemaless,
+
+  # right now in lock_for_migrations() we do effectively nothing, this is because
+  # SQLite is single-writer so there isn't really a need for us to do anything.
+  # ecto assumes all implementing adapters need >=2 connections for migrations
+  # which is not true for SQLite
+  :lock_for_migrations,
+
+  # Migration we don't support
+  :prefix,
+  :add_column_if_not_exists,
+  :remove_column_if_exists,
+  :alter_primary_key,
+  :alter_foreign_key,
+  :assigns_id_type,
+  :modify_column,
+  :restrict,
+
+  # SQLite3 does not support the concat function
+  :concat,
+
+  # SQLite3 does not support placeholders
+  :placeholders,
+
+  # SQLite3 stores booleans as integers, causing Ecto's json_extract_path tests to fail
+  :json_extract_path,
+
+  # SQLite3 doesn't support specifying columns for ON DELETE SET NULL
+  :on_delete_nilify_column_list,
+
+  # not sure how to support this yet
+  :bitstring_type,
+
+  # sqlite does not have a duration type... yet
+  :duration_type,
+
+  # We don't support selected_as
+  :selected_as_with_group_by,
+  :selected_as_with_order_by,
+  :selected_as_with_order_by_expression,
+  :selected_as_with_having,
+
+  # Distinct with options not supported
+  :distinct_count,
+
+  # SQLite does not support anything except a single column in DISTINCT
+  :multicolumn_distinct,
+
+  # Values list
+  :values_list
+]
+
+ExUnit.configure(exclude: excludes)
+
 # migrate the pool repo
 case Ecto.Migrator.migrated_versions(PoolRepo) do
   [] ->
@@ -71,64 +150,4 @@ end
 Ecto.Adapters.SQL.Sandbox.mode(TestRepo, :manual)
 Process.flag(:trap_exit, true)
 
-ExUnit.start(
-  exclude: [
-    :delete_with_join,
-    :right_join,
-    # SQLite does not have an array type
-    :array_type,
-    :transaction_isolation,
-    :insert_cell_wise_defaults,
-    :insert_select,
-    # sqlite does not support microsecond precision, only millisecond
-    :microsecond_precision,
-    # sqlite supports FKs, but does not return sufficient data
-    # for ecto to support matching on a given constraint violation name
-    # which is what most of the tests validate
-    :foreign_key_constraint,
-    # SQLite with DSQLITE_LIKE_DOESNT_MATCH_BLOBS=1
-    # does not support using LIKE on BLOB types
-    :like_match_blob,
-    # SQLite will return a string for schemaless map types as
-    # Ecto does not have enough information to call the associated loader
-    # that converts the string JSON representaiton into a map
-    :map_type_schemaless,
-
-    # right now in lock_for_migrations() we do effectively nothing, this is because
-    # SQLite is single-writer so there isn't really a need for us to do anything.
-    # ecto assumes all implementing adapters need >=2 connections for migrations
-    # which is not true for SQLite
-    :lock_for_migrations,
-
-    # Migration we don't support
-    :prefix,
-    :add_column_if_not_exists,
-    :remove_column_if_exists,
-    :alter_primary_key,
-    :alter_foreign_key,
-    :assigns_id_type,
-    :modify_column,
-    :restrict,
-
-    # SQLite3 does not support the concat function
-    :concat,
-    # SQLite3 does not support placeholders
-    :placeholders,
-    # SQLite3 stores booleans as integers, causing Ecto's json_extract_path tests to fail
-    :json_extract_path,
-    # SQLite3 doesn't support specifying columns for ON DELETE SET NULL
-    :on_delete_nilify_column_list,
-
-    # We don't support selected_as
-    :selected_as_with_group_by,
-    :selected_as_with_order_by,
-    :selected_as_with_order_by_expression,
-    :selected_as_with_having,
-
-    # Distinct with options not supported
-    :distinct_count,
-
-    # Values list
-    :values_list
-  ]
-)
+ExUnit.start()
