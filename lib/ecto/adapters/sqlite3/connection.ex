@@ -1223,13 +1223,13 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   ## Expression generation
   ##
 
-  def expr({:^, [], [_ix]}, _sources, _query) do
+  defp expr({:^, [], [_ix]}, _sources, _query) do
     ~c"?"
   end
 
   # workaround for the fact that SQLite3 as of 3.35.4 does not support specifying table
   # in the returning clause. when a later release adds the ability, this code can be deleted
-  def expr(
+  defp expr(
         {{:., _, [{:parent_as, _, [{:&, _, [_idx]}]}, field]}, _, []},
         _sources,
         %{returning: true}
@@ -1240,57 +1240,57 @@ defmodule Ecto.Adapters.SQLite3.Connection do
 
   # workaround for the fact that SQLite3 as of 3.35.4 does not support specifying table
   # in the returning clause. when a later release adds the ability, this code can be deleted
-  def expr({{:., _, [{:&, _, [_idx]}, field]}, _, []}, _sources, %{returning: true})
+  defp expr({{:., _, [{:&, _, [_idx]}, field]}, _, []}, _sources, %{returning: true})
       when is_atom(field) do
     quote_name(field)
   end
 
-  def expr({{:., _, [{:parent_as, _, [as]}, field]}, _, []}, _sources, query)
+  defp expr({{:., _, [{:parent_as, _, [as]}, field]}, _, []}, _sources, query)
       when is_atom(field) do
     {ix, sources} = get_parent_sources_ix(query, as)
     {_, name, _} = elem(sources, ix)
     [name, ?. | quote_name(field)]
   end
 
-  def expr({{:., _, [{:&, _, [idx]}, field]}, _, []}, sources, _query)
+  defp expr({{:., _, [{:&, _, [idx]}, field]}, _, []}, sources, _query)
       when is_atom(field) do
     {_, name, _} = elem(sources, idx)
     [name, ?. | quote_name(field)]
   end
 
-  def expr({:&, _, [idx]}, sources, _query) do
+  defp expr({:&, _, [idx]}, sources, _query) do
     {_, source, _} = elem(sources, idx)
     source
   end
 
-  def expr({:in, _, [_left, "[]"]}, _sources, _query) do
+  defp expr({:in, _, [_left, "[]"]}, _sources, _query) do
     "0"
   end
 
-  def expr({:in, _, [_left, []]}, _sources, _query) do
+  defp expr({:in, _, [_left, []]}, _sources, _query) do
     "0"
   end
 
-  def expr({:in, _, [left, right]}, sources, query) when is_list(right) do
+  defp expr({:in, _, [left, right]}, sources, query) when is_list(right) do
     args = intersperse_map(right, ?,, &expr(&1, sources, query))
     [expr(left, sources, query), " IN (", args, ?)]
   end
 
-  def expr({:in, _, [_, {:^, _, [_, 0]}]}, _sources, _query) do
+  defp expr({:in, _, [_, {:^, _, [_, 0]}]}, _sources, _query) do
     "0"
   end
 
-  def expr({:in, _, [left, {:^, _, [_, len]}]}, sources, query) do
+  defp expr({:in, _, [left, {:^, _, [_, len]}]}, sources, query) do
     args = Enum.intersperse(List.duplicate(??, len), ?,)
     [expr(left, sources, query), " IN (", args, ?)]
   end
 
-  def expr({:in, _, [left, %Ecto.SubQuery{} = subquery]}, sources, query) do
+  defp expr({:in, _, [left, %Ecto.SubQuery{} = subquery]}, sources, query) do
     [expr(left, sources, query), " IN ", expr(subquery, sources, query)]
   end
 
   # Super Hack to handle arrays in json
-  def expr({:in, _, [left, right]}, sources, query) do
+  defp expr({:in, _, [left, right]}, sources, query) do
     [
       expr(left, sources, query),
       " IN (SELECT value FROM JSON_EACH(",
@@ -1300,20 +1300,20 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     ]
   end
 
-  def expr({:is_nil, _, [arg]}, sources, query) do
+  defp expr({:is_nil, _, [arg]}, sources, query) do
     [expr(arg, sources, query) | " IS NULL"]
   end
 
-  def expr({:not, _, [expression]}, sources, query) do
+  defp expr({:not, _, [expression]}, sources, query) do
     ["NOT (", expr(expression, sources, query), ?)]
   end
 
-  def expr({:filter, _, [agg, filter]}, sources, query) do
+  defp expr({:filter, _, [agg, filter]}, sources, query) do
     aggregate = expr(agg, sources, query)
     [aggregate, " FILTER (WHERE ", expr(filter, sources, query), ?)]
   end
 
-  def expr(%Ecto.SubQuery{query: query}, sources, parent_query) do
+  defp expr(%Ecto.SubQuery{query: query}, sources, parent_query) do
     combinations =
       Enum.map(query.combinations, fn {type, combination_query} ->
         {type, put_in(combination_query.aliases[@parent_as], {parent_query, sources})}
@@ -1324,14 +1324,14 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     [?(, all(query, subquery_as_prefix(sources)), ?)]
   end
 
-  def expr({:fragment, _, [kw]}, _sources, query)
+  defp expr({:fragment, _, [kw]}, _sources, query)
       when is_list(kw) or tuple_size(kw) == 3 do
     raise Ecto.QueryError,
       query: query,
       message: "SQLite3 adapter does not support keyword or interpolated fragments"
   end
 
-  def expr({:fragment, _, parts}, sources, query) do
+  defp expr({:fragment, _, parts}, sources, query) do
     parts
     |> Enum.map(fn
       {:raw, part} -> part
@@ -1340,23 +1340,23 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     |> parens_for_select
   end
 
-  def expr({:values, _, _}, _, _query) do
+  defp expr({:values, _, _}, _, _query) do
     raise ArgumentError, "SQLite3 adapter does not support values lists"
   end
 
-  def expr({:literal, _, [literal]}, _sources, _query) do
+  defp expr({:literal, _, [literal]}, _sources, _query) do
     quote_name(literal)
   end
 
-  def expr({:splice, _, [{:^, _, [_, length]}]}, _sources, _query) do
+  defp expr({:splice, _, [{:^, _, [_, length]}]}, _sources, _query) do
     Enum.intersperse(List.duplicate(??, length), ?,)
   end
 
-  def expr({:selected_as, _, [name]}, _sources, _query) do
+  defp expr({:selected_as, _, [name]}, _sources, _query) do
     [quote_name(name)]
   end
 
-  def expr({:datetime_add, _, [datetime, count, interval]}, sources, query) do
+  defp expr({:datetime_add, _, [datetime, count, interval]}, sources, query) do
     [
       "CAST (",
       "strftime('%Y-%m-%d %H:%M:%f000Z'",
@@ -1368,7 +1368,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     ]
   end
 
-  def expr({:date_add, _, [date, count, interval]}, sources, query) do
+  defp expr({:date_add, _, [date, count, interval]}, sources, query) do
     [
       "CAST (",
       "strftime('%Y-%m-%d'",
@@ -1380,33 +1380,33 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     ]
   end
 
-  def expr({:ilike, _, [_, _]}, _sources, query) do
+  defp expr({:ilike, _, [_, _]}, _sources, query) do
     raise Ecto.QueryError,
       query: query,
       message: "ilike is not supported by SQLite3"
   end
 
-  def expr({:over, _, [agg, name]}, sources, query) when is_atom(name) do
+  defp expr({:over, _, [agg, name]}, sources, query) when is_atom(name) do
     [expr(agg, sources, query), " OVER " | quote_name(name)]
   end
 
-  def expr({:over, _, [agg, kw]}, sources, query) do
+  defp expr({:over, _, [agg, kw]}, sources, query) do
     [expr(agg, sources, query), " OVER " | window_exprs(kw, sources, query)]
   end
 
-  def expr({:{}, _, elems}, sources, query) do
+  defp expr({:{}, _, elems}, sources, query) do
     [?(, intersperse_map(elems, ?,, &expr(&1, sources, query)), ?)]
   end
 
-  def expr({:count, _, []}, _sources, _query), do: "count(*)"
+  defp expr({:count, _, []}, _sources, _query), do: "count(*)"
 
-  def expr({:count, _, [{:&, _, [_]}]}, _sources, query) do
+  defp expr({:count, _, [{:&, _, [_]}]}, _sources, query) do
     raise Ecto.QueryError,
       query: query,
       message: "The argument to `count/1` must be a column in SQLite3"
   end
 
-  def expr({:json_extract_path, _, [expr, path]}, sources, query) do
+  defp expr({:json_extract_path, _, [expr, path]}, sources, query) do
     path =
       Enum.map(path, fn
         binary when is_binary(binary) ->
@@ -1419,11 +1419,11 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     ["json_extract(", expr(expr, sources, query), ", '$", path, "')"]
   end
 
-  def expr({:exists, _, [subquery]}, sources, query) do
+  defp expr({:exists, _, [subquery]}, sources, query) do
     ["exists", expr(subquery, sources, query)]
   end
 
-  def expr({fun, _, args}, sources, query) when is_atom(fun) and is_list(args) do
+  defp expr({fun, _, args}, sources, query) when is_atom(fun) and is_list(args) do
     {modifier, args} =
       case args do
         [_rest, :distinct] ->
@@ -1446,23 +1446,23 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   end
 
   # TODO It technically is, its just a json array, so we *could* support it
-  def expr(list, _sources, query) when is_list(list) do
+  defp expr(list, _sources, query) when is_list(list) do
     raise Ecto.QueryError,
       query: query,
       message: "Array literals are not supported by SQLite3"
   end
 
-  def expr(%Decimal{} = decimal, _sources, _query) do
+  defp expr(%Decimal{} = decimal, _sources, _query) do
     Decimal.to_string(decimal, :normal)
   end
 
-  def expr(%Ecto.Query.Tagged{value: binary, type: :binary}, _sources, _query)
+  defp expr(%Ecto.Query.Tagged{value: binary, type: :binary}, _sources, _query)
       when is_binary(binary) do
     hex = Base.encode16(binary, case: :lower)
     [?x, ?', hex, ?']
   end
 
-  def expr(%Ecto.Query.Tagged{value: expr, type: :binary_id}, sources, query) do
+  defp expr(%Ecto.Query.Tagged{value: expr, type: :binary_id}, sources, query) do
     case Application.get_env(:ecto_sqlite3, :binary_id_type, :string) do
       :string ->
         ["CAST(", expr(expr, sources, query), " AS ", column_type(:string, query), ?)]
@@ -1472,7 +1472,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     end
   end
 
-  def expr(%Ecto.Query.Tagged{value: expr, type: :uuid}, sources, query) do
+  defp expr(%Ecto.Query.Tagged{value: expr, type: :uuid}, sources, query) do
     case Application.get_env(:ecto_sqlite3, :uuid_type, :string) do
       :string ->
         ["CAST(", expr(expr, sources, query), " AS ", column_type(:string, query), ?)]
@@ -1482,32 +1482,32 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     end
   end
 
-  def expr(%Ecto.Query.Tagged{value: other, type: type}, sources, query)
+  defp expr(%Ecto.Query.Tagged{value: other, type: type}, sources, query)
       when type in [:decimal, :float] do
     ["CAST(", expr(other, sources, query), " AS REAL)"]
   end
 
-  def expr(%Ecto.Query.Tagged{value: other, type: type}, sources, query) do
+  defp expr(%Ecto.Query.Tagged{value: other, type: type}, sources, query) do
     ["CAST(", expr(other, sources, query), " AS ", column_type(type, query), ?)]
   end
 
-  def expr(nil, _sources, _query), do: "NULL"
-  def expr(true, _sources, _query), do: "1"
-  def expr(false, _sources, _query), do: "0"
+  defp expr(nil, _sources, _query), do: "NULL"
+  defp expr(true, _sources, _query), do: "1"
+  defp expr(false, _sources, _query), do: "0"
 
-  def expr(literal, _sources, _query) when is_binary(literal) do
+  defp expr(literal, _sources, _query) when is_binary(literal) do
     [?', escape_string(literal), ?']
   end
 
-  def expr(literal, _sources, _query) when is_integer(literal) do
+  defp expr(literal, _sources, _query) when is_integer(literal) do
     Integer.to_string(literal)
   end
 
-  def expr(literal, _sources, _query) when is_float(literal) do
+  defp expr(literal, _sources, _query) when is_float(literal) do
     ["CAST(", Float.to_string(literal), " AS REAL)"]
   end
 
-  def expr(expr, _sources, query) do
+  defp expr(expr, _sources, query) do
     raise Ecto.QueryError,
       query: query,
       message: "unsupported expression #{inspect(expr)}"
