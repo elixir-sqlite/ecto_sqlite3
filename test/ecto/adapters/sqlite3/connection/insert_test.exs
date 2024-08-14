@@ -133,7 +133,8 @@ defmodule Ecto.Adapters.SQLite3.Connection.InsertTest do
 
     query = insert(nil, "schema", [:foo, :bar], query, {:raise, [], []}, [:foo])
 
-    assert query == ~s{INSERT INTO "schema" ("foo","bar") SELECT 3, s0."bar" FROM "schema" AS s0 RETURNING "foo"}
+    assert query ==
+             ~s{INSERT INTO "schema" ("foo","bar") SELECT 3, s0."bar" FROM "schema" AS s0 RETURNING "foo"}
 
     query =
       from(s in "schema", select: %{foo: fragment("3"), bar: s.bar}, where: true)

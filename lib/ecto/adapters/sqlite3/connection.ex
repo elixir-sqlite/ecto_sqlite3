@@ -1086,7 +1086,10 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   end
 
   defp window_expr({:order_by, fields}, sources, query) do
-    ["ORDER BY " | Enum.map_intersperse(fields, ", ", &order_by_expr(&1, sources, query))]
+    [
+      "ORDER BY "
+      | Enum.map_intersperse(fields, ", ", &order_by_expr(&1, sources, query))
+    ]
   end
 
   defp window_expr({:frame, {:fragment, _, _} = fragment}, sources, query) do
@@ -1240,30 +1243,30 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   # workaround for the fact that SQLite3 as of 3.35.4 does not support specifying table
   # in the returning clause. when a later release adds the ability, this code can be deleted
   defp expr(
-        {{:., _, [{:parent_as, _, [{:&, _, [_idx]}]}, field]}, _, []},
-        _sources,
-        %{returning: true}
-      )
-      when is_atom(field) do
+         {{:., _, [{:parent_as, _, [{:&, _, [_idx]}]}, field]}, _, []},
+         _sources,
+         %{returning: true}
+       )
+       when is_atom(field) do
     quote_name(field)
   end
 
   # workaround for the fact that SQLite3 as of 3.35.4 does not support specifying table
   # in the returning clause. when a later release adds the ability, this code can be deleted
   defp expr({{:., _, [{:&, _, [_idx]}, field]}, _, []}, _sources, %{returning: true})
-      when is_atom(field) do
+       when is_atom(field) do
     quote_name(field)
   end
 
   defp expr({{:., _, [{:parent_as, _, [as]}, field]}, _, []}, _sources, query)
-      when is_atom(field) do
+       when is_atom(field) do
     {ix, sources} = get_parent_sources_ix(query, as)
     {_, name, _} = elem(sources, ix)
     [name, ?. | quote_name(field)]
   end
 
   defp expr({{:., _, [{:&, _, [idx]}, field]}, _, []}, sources, _query)
-      when is_atom(field) do
+       when is_atom(field) do
     {_, name, _} = elem(sources, idx)
     [name, ?. | quote_name(field)]
   end
@@ -1335,7 +1338,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   end
 
   defp expr({:fragment, _, [kw]}, _sources, query)
-      when is_list(kw) or tuple_size(kw) == 3 do
+       when is_list(kw) or tuple_size(kw) == 3 do
     raise Ecto.QueryError,
       query: query,
       message: "SQLite3 adapter does not support keyword or interpolated fragments"
@@ -1451,7 +1454,13 @@ defmodule Ecto.Adapters.SQLite3.Connection do
         [op_to_binary(left, sources, query), op | op_to_binary(right, sources, query)]
 
       {:fun, fun} ->
-        [fun, ?(, modifier, Enum.map_intersperse(args, ", ", &expr(&1, sources, query)), ?)]
+        [
+          fun,
+          ?(,
+          modifier,
+          Enum.map_intersperse(args, ", ", &expr(&1, sources, query)),
+          ?)
+        ]
     end
   end
 
@@ -1467,7 +1476,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   end
 
   defp expr(%Ecto.Query.Tagged{value: binary, type: :binary}, _sources, _query)
-      when is_binary(binary) do
+       when is_binary(binary) do
     hex = Base.encode16(binary, case: :lower)
     [?x, ?', hex, ?']
   end
@@ -1493,7 +1502,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   end
 
   defp expr(%Ecto.Query.Tagged{value: other, type: type}, sources, query)
-      when type in [:decimal, :float] do
+       when type in [:decimal, :float] do
     ["CAST(", expr(other, sources, query), " AS REAL)"]
   end
 
