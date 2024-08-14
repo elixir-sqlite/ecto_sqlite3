@@ -1691,7 +1691,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     check = Keyword.get(opts, :check)
 
     [
-      default_expr(default, type),
+      default_expr(default),
       null_expr(null),
       collate_expr(collate),
       check_expr(check),
@@ -1715,48 +1715,30 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   defp null_expr(true), do: " NULL"
   defp null_expr(_), do: []
 
-  defp default_expr({:ok, nil}, _type) do
+  defp default_expr({:ok, nil}) do
     " DEFAULT NULL"
   end
 
-  defp default_expr({:ok, literal}, _type) when is_binary(literal) do
-    [
-      " DEFAULT '",
-      escape_string(literal),
-      ?'
-    ]
+  defp default_expr({:ok, literal}) when is_binary(literal) do
+    [" DEFAULT '", escape_string(literal), ?']
   end
 
-  defp default_expr({:ok, literal}, _type)
-       when is_number(literal) or is_boolean(literal) do
-    [
-      " DEFAULT ",
-      to_string(literal)
-    ]
+  defp default_expr({:ok, literal}) when is_number(literal) or is_boolean(literal) do
+    [" DEFAULT ", to_string(literal)]
   end
 
-  defp default_expr({:ok, {:fragment, expression}}, _type) do
-    [
-      " DEFAULT ",
-      expression
-    ]
+  defp default_expr({:ok, {:fragment, expression}}) do
+    [" DEFAULT ", expression]
   end
 
-  defp default_expr({:ok, value}, _type) when is_map(value) or is_list(value) do
+  defp default_expr({:ok, value}) when is_map(value) or is_list(value) do
     library = Application.get_env(:ecto_sqlite3, :json_library, Jason)
     expression = IO.iodata_to_binary(library.encode_to_iodata!(value))
 
-    [
-      " DEFAULT ",
-      ?(,
-      ?',
-      escape_string(expression),
-      ?',
-      ?)
-    ]
+    [" DEFAULT ('", escape_string(expression), "')"]
   end
 
-  defp default_expr(:error, _type), do: []
+  defp default_expr(:error), do: []
 
   defp index_expr(literal) when is_binary(literal), do: literal
   defp index_expr(literal), do: quote_name(literal)
