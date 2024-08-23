@@ -7,10 +7,13 @@ project adheres to [Semantic Versioning][semver].
 
 ## Unreleased
 
+## v0.17.1
+- changed: Bump minimum ecto to `3.12`.
+
 ## v0.17.0
 
 - added: Added an explicit `:integer` column type support. Under the hood it is stored the same regardless.
-- fixed: Handle new style of distinct expressions introduce upstream in Ecto 3.12
+- fixed: Handle new style of distinct expressions introduce upstream in Ecto `3.12`.
 - changed: Allow `insert_all` to no longer require a where clause.
 - changed: Made some public functions now private.
 - changed: Test against elixir 1.17 and OTP 27, 26, and 25.
