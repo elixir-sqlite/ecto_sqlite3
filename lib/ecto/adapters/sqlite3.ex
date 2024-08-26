@@ -124,7 +124,7 @@ defmodule Ecto.Adapters.SQLite3 do
 
   ### Case sensitivity
 
-  Case sensitivty for `LIKE` is off by default, and controlled by the `:case_sensitive_like`
+  Case sensitivity for `LIKE` is off by default, and controlled by the `:case_sensitive_like`
   option outlined above.
 
   However, for equality comparison, case sensitivity is always _on_.
