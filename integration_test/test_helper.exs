@@ -81,7 +81,7 @@ excludes = [
 
   # SQLite will return a string for schemaless map types as
   # Ecto does not have enough information to call the associated loader
-  # that converts the string JSON representaiton into a map
+  # that converts the string JSON representation into a map
   :map_type_schemaless,
 
   # right now in lock_for_migrations() we do effectively nothing, this is because

@@ -1,4 +1,4 @@
-defmodule Ecto.Adapters.SQLite3.Connection.ToCosntraintsTest do
+defmodule Ecto.Adapters.SQLite3.Connection.ToConstraintsTest do
   use ExUnit.Case, async: true
 
   alias Ecto.Adapters.SQLite3.Connection

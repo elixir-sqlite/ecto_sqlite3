@@ -62,8 +62,8 @@ project adheres to [Semantic Versioning][semver].
 
 ## v0.10.3
 
-- fixed: Handle unique cosntraint error formats.
-- changed: Updated depenendencies.
+- fixed: Handle unique constraint error formats.
+- changed: Updated dependencies.
 
 ## v0.10.2
 
@@ -130,7 +130,7 @@ project adheres to [Semantic Versioning][semver].
 - added: `:time` decode support.
 
 ## v0.7.1
-- fixed: Backport of default drops to `:restrict` are now backwards compatible with older versions of `ecto_sql`. We don't really have support for `drop index ... cascade` as it is not in the grammer of sqlite.
+- fixed: Backport of default drops to `:restrict` are now backwards compatible with older versions of `ecto_sql`. We don't really have support for `drop index ... cascade` as it is not in the grammar of sqlite.
 
 ## v0.7.0
 - changed: update dependencies to the latest.

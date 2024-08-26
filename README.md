@@ -85,7 +85,7 @@ Running unit tests
 mix test
 ```
 
-Runing integration tests
+Running integration tests
 
 ```sh
 EXQLITE_INTEGRATION=true mix test

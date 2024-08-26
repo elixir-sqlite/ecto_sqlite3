@@ -98,7 +98,7 @@ defmodule Ecto.Adapters.SQLite3.Connection.WindowingTest do
              ~s{ORDER BY s0."x")} == all(query)
   end
 
-  test "partition by ond order by over" do
+  test "partition by one order by over" do
     query =
       Schema
       |> select([r], count(r.x) |> over(partition_by: [r.x, r.z], order_by: r.x))
