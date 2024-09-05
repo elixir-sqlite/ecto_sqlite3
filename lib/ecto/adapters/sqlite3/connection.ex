@@ -1372,7 +1372,14 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   @datetime_type Application.compile_env(:ecto_sqlite3, :datetime_type, :iso8601)
 
   defp expr({:datetime_add, _, [datetime, count, interval]}, sources, query) do
-    format = Ecto.Adapters.SQLite3.Codec.datetime_format(@datetime_type)
+    format =
+      case @datetime_type do
+        :text_datetime ->
+          "%Y-%m-%d %H:%M:%f000Z"
+
+        _ ->
+          "%Y-%m-%dT%H:%M:%f000Z"
+      end
 
     [
       "CAST (",

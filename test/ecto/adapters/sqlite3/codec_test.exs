@@ -144,26 +144,26 @@ defmodule Ecto.Adapters.SQLite3.CodecTest do
   end
 
   describe ".utc_datetime_encode/2" do
-    setup do
-      [dt: ~U[2021-08-25 10:58:59Z]]
-    end
-
     test "nil" do
       assert {:ok, nil} = Codec.utc_datetime_encode(nil, :iso8601)
       assert {:ok, nil} = Codec.utc_datetime_encode(nil, :text_datetime)
     end
 
-    test "iso8601", %{dt: dt} do
-      dt_str = "2021-08-25T10:58:59"
+    test "iso8601" do
+      dt = ~U[2021-08-25 10:58:59Z]
+      dt_str = "2021-08-25T10:58:59Z"
       assert {:ok, ^dt_str} = Codec.utc_datetime_encode(dt, :iso8601)
     end
 
-    test ":text_datetime", %{dt: dt} do
+    test ":text_datetime" do
+      dt = ~U[2021-08-25 10:58:59Z]
       dt_str = "2021-08-25 10:58:59"
       assert {:ok, ^dt_str} = Codec.utc_datetime_encode(dt, :text_datetime)
     end
 
-    test "unknown datetime type", %{dt: dt} do
+    test "unknown datetime type" do
+      dt = ~U[2021-08-25 10:58:59Z]
+
       msg =
         "expected datetime type to be either `:iso8601` or `:text_datetime`, but received `:whatsthis`"
 
@@ -174,26 +174,26 @@ defmodule Ecto.Adapters.SQLite3.CodecTest do
   end
 
   describe ".naive_datetime_encode/2" do
-    setup do
-      [dt: ~U[2021-08-25 10:58:59Z], dt_str: "2021-08-25T10:58:59"]
-    end
-
     test "nil" do
       assert {:ok, nil} = Codec.naive_datetime_encode(nil, :iso8601)
       assert {:ok, nil} = Codec.naive_datetime_encode(nil, :text_datetime)
     end
 
-    test "iso8601", %{dt: dt} do
+    test "iso8601" do
+      dt = ~U[2021-08-25 10:58:59Z]
       dt_str = "2021-08-25T10:58:59"
       assert {:ok, ^dt_str} = Codec.naive_datetime_encode(dt, :iso8601)
     end
 
-    test ":text_datetime", %{dt: dt} do
+    test ":text_datetime" do
+      dt = ~U[2021-08-25 10:58:59Z]
       dt_str = "2021-08-25 10:58:59"
       assert {:ok, ^dt_str} = Codec.naive_datetime_encode(dt, :text_datetime)
     end
 
-    test "unknown datetime type", %{dt: dt} do
+    test "unknown datetime type" do
+      dt = ~U[2021-08-25 10:58:59Z]
+
       msg =
         "expected datetime type to be either `:iso8601` or `:text_datetime`, but received `:whatsthis`"
 

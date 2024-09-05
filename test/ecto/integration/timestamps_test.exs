@@ -197,7 +197,7 @@ defmodule Ecto.Integration.TimestampsTest do
     })
 
     assert [
-             %{name: "Foo"},
+             %{name: "Foo"}
            ] =
              Product
              |> select([p], p)

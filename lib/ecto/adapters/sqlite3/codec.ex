@@ -114,16 +114,12 @@ defmodule Ecto.Adapters.SQLite3.Codec do
   end
 
   @text_datetime_format "%Y-%m-%d %H:%M:%S"
-  @iso8601_format "%Y-%m-%dT%H:%M:%S"
-
-  def datetime_format(:text_datetime), do: @text_datetime_format
-  def datetime_format(_), do: @iso8601_format
 
   def utc_datetime_encode(nil, :iso8601), do: {:ok, nil}
   def utc_datetime_encode(nil, :text_datetime), do: {:ok, nil}
 
-  def utc_datetime_encode(%{time_zone: "Etc/UTC"} = value, :iso8601) do
-    {:ok, Calendar.strftime(value, @iso8601_format)}
+  def utc_datetime_encode(%DateTime{time_zone: "Etc/UTC"} = value, :iso8601) do
+    {:ok, DateTime.to_iso8601(value)}
   end
 
   def utc_datetime_encode(%{time_zone: "Etc/UTC"} = value, :text_datetime) do
@@ -139,7 +135,7 @@ defmodule Ecto.Adapters.SQLite3.Codec do
   def naive_datetime_encode(nil, :text_datetime), do: {:ok, nil}
 
   def naive_datetime_encode(value, :iso8601) do
-    {:ok, Calendar.strftime(value, @iso8601_format)}
+    {:ok, NaiveDateTime.to_iso8601(value)}
   end
 
   def naive_datetime_encode(value, :text_datetime) do
