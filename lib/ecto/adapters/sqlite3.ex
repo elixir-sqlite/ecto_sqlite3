@@ -164,7 +164,7 @@ defmodule Ecto.Adapters.SQLite3 do
 
   This is because the above functions depend on the Ecto Adapter returning the name of the violated constraint,
   which you annotate in your changeset so that Ecto can convert the constraint violation into the correct
-  updated changeset when the constraint is hit during a `Ecto.Repo.update/2` or `Ecto.Repo.insert/2` operation.
+  updated changeset when the constraint is hit during a `m:Ecto.Repo.update/2` or `m:Ecto.Repo.insert/2` operation.
   Since we cannot get the name of the violated constraint back from SQLite3 at `INSERT` or `UPDATE` time,
   there is no way to effectively use these changeset functions. This is a SQLite3 limitation.
 
