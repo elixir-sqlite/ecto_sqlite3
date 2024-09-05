@@ -181,6 +181,31 @@ defmodule Ecto.Integration.TimestampsTest do
              |> TestRepo.all()
   end
 
+  test "using built in ecto functions" do
+    account = insert_account(%{name: "Test"})
+
+    insert_product(%{
+      account_id: account.id,
+      name: "Foo",
+      inserted_at: seconds_ago(1)
+    })
+
+    insert_product(%{
+      account_id: account.id,
+      name: "Bar",
+      inserted_at: seconds_ago(3)
+    })
+
+    assert [
+             %{name: "Foo"},
+           ] =
+             Product
+             |> select([p], p)
+             |> where([p], p.inserted_at >= ago(2, "second"))
+             |> order_by([p], desc: p.inserted_at)
+             |> TestRepo.all()
+  end
+
   defp insert_account(attrs) do
     %Account{}
     |> Account.changeset(attrs)
@@ -191,5 +216,10 @@ defmodule Ecto.Integration.TimestampsTest do
     %Product{}
     |> Product.changeset(attrs)
     |> TestRepo.insert!()
+  end
+
+  defp seconds_ago(seconds) do
+    now = DateTime.utc_now()
+    DateTime.add(now, -seconds, :second)
   end
 end

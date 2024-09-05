@@ -11,7 +11,7 @@ defmodule Ecto.Adapters.SQLite3.Connection.DatetimeAddTest do
       |> select([], true)
       |> plan()
 
-    assert ~s{SELECT 1 FROM "schema" AS s0 WHERE (CAST (strftime('%Y-%m-%d %H:%M:%f000Z',s0.\"foo\",1 || ' month') AS TEXT) > s0."bar")} ==
+    assert ~s{SELECT 1 FROM "schema" AS s0 WHERE (CAST (strftime('%Y-%m-%dT%H:%M:%S',s0.\"foo\",1 || ' month') AS TEXT) > s0."bar")} ==
              all(query)
   end
 
@@ -22,7 +22,7 @@ defmodule Ecto.Adapters.SQLite3.Connection.DatetimeAddTest do
       |> select([], true)
       |> plan()
 
-    assert ~s{SELECT 1 FROM "schema" AS s0 WHERE (CAST (strftime('%Y-%m-%d %H:%M:%f000Z',CAST(s0.\"foo\" AS TEXT),1 || ' month') AS TEXT) > s0."bar")} ==
+    assert ~s{SELECT 1 FROM "schema" AS s0 WHERE (CAST (strftime('%Y-%m-%dT%H:%M:%S',CAST(s0.\"foo\" AS TEXT),1 || ' month') AS TEXT) > s0."bar")} ==
              all(query)
   end
 end

@@ -6,6 +6,7 @@ The format is loosely based on [Keep a Changelog][keepachangelog], and this
 project adheres to [Semantic Versioning][semver].
 
 ## Unreleased
+- fixed: Handle datetime serialization format via `:datetime_type` config.
 
 ## v0.17.1
 - changed: Bump minimum ecto to `3.12`.
