@@ -11,6 +11,7 @@ defmodule EctoSQLite3.Schemas.Product do
     field(:name, :string)
     field(:description, :string)
     field(:external_id, Ecto.UUID)
+    field(:type, Ecto.Enum, values: [inventory: 1, non_inventory: 2])
     field(:bid, :binary_id)
     field(:tags, {:array, :string}, default: [])
     field(:approved_at, :naive_datetime)
@@ -31,7 +32,8 @@ defmodule EctoSQLite3.Schemas.Product do
       :account_id,
       :approved_at,
       :ordered_at,
-      :inserted_at
+      :inserted_at,
+      :type
     ])
     |> validate_required([:name])
     |> maybe_generate_external_id()

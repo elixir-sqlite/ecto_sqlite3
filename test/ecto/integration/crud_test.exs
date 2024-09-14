@@ -51,6 +51,26 @@ defmodule Ecto.Integration.CrudTest do
       assert found.tags == []
     end
 
+    test "inserts product with type set" do
+      assert {:ok, account} = TestRepo.insert(%Account{name: "Something"})
+
+      assert {:ok, product} =
+               TestRepo.insert(%Product{
+                 name: "Thing",
+                 type: :inventory,
+                 account_id: account.id,
+                 approved_at: nil
+               })
+
+      assert found = TestRepo.get(Product, product.id)
+      assert found.id == product.id
+      assert found.approved_at == nil
+      assert found.description == nil
+      assert found.type == :inventory
+      assert found.name == "Thing"
+      assert found.tags == []
+    end
+
     test "insert_all" do
       TestRepo.insert!(%User{name: "John"}, [])
       timestamp = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
