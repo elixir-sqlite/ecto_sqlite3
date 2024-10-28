@@ -7,6 +7,10 @@ project adheres to [Semantic Versioning][semver].
 
 ## Unreleased
 
+## v0.17.3
+- fixed: Handle placeholders for `insert_all` calls.
+- changed: Added cell-wise placeholders for inserts.
+
 ## v0.17.2
 - fixed: Handle datetime serialization format via `:datetime_type` config.
 - fixed: Retain microsecond serialization.
