@@ -267,17 +267,21 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     ]
   end
 
-  def insert(prefix, table, header, rows, on_conflict, returning, _placeholders) do
-    fields = quote_names(header)
+  def insert(prefix, table, header, rows, on_conflict, returning, placeholders) do
+    counter_offset = length(placeholders) + 1
+
+    values =
+      if header == [] do
+        [" VALUES " | Enum.map_intersperse(rows, ?,, fn _ -> "(DEFAULT)" end)]
+      else
+        [" (", quote_names(header), ") " | insert_all(rows, counter_offset)]
+      end
 
     [
       "INSERT INTO ",
       quote_table(prefix, table),
       insert_as(on_conflict),
-      " (",
-      fields,
-      ") ",
-      insert_all(rows, on_conflict),
+      values,
       on_conflict(on_conflict, header),
       returning(returning)
     ]
@@ -766,13 +770,13 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     ]
   end
 
-  def insert_all(rows, on_conflict), do: insert_all(rows, on_conflict, 1)
+  def insert_all(rows), do: insert_all(rows, 1)
 
-  def insert_all(%Ecto.Query{} = query, _on_conflict, _counter) do
+  def insert_all(%Ecto.Query{} = query, _counter) do
     [all(query)]
   end
 
-  def insert_all(rows, _on_conflict, counter) do
+  def insert_all(rows, counter) do
     [
       "VALUES ",
       intersperse_reduce(
@@ -797,11 +801,12 @@ defmodule Ecto.Adapters.SQLite3.Connection do
       {%Ecto.Query{} = query, params_counter}, counter ->
         {[?(, all(query), ?)], counter + params_counter}
 
+      {:placeholder, placeholder_index}, counter ->
+        {[?? | placeholder_index], counter}
+
       _, counter ->
-        # TODO: Should we have cell wise value support?
-        #       Essentially ``?1 ?2 ?3`` instead of ``? ? ?``
-        # {['?' | Integer.to_string(counter)], counter + 1}
-        {[~c"?"], counter + 1}
+        # Cell wise value support ex: (?1, ?2, ?3)
+        {[?? | Integer.to_string(counter)], counter + 1}
     end)
   end
 
