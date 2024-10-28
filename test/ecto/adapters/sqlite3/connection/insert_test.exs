@@ -6,7 +6,7 @@ defmodule Ecto.Adapters.SQLite3.Connection.InsertTest do
 
   test "insert" do
     query = insert(nil, "schema", [:x, :y], [[:x, :y]], {:raise, [], []}, [:id])
-    assert query == ~s{INSERT INTO "schema" ("x","y") VALUES (?,?) RETURNING "id"}
+    assert query == ~s{INSERT INTO "schema" ("x","y") VALUES (?1,?2) RETURNING "id"}
 
     assert_raise ArgumentError, fn ->
       insert(nil, "schema", [:x, :y], [[:x, :y], [nil, :z]], {:raise, [], []}, [:id])
@@ -30,7 +30,7 @@ defmodule Ecto.Adapters.SQLite3.Connection.InsertTest do
     end
 
     query = insert(nil, "schema", [:x, :y], [[:x, :y]], {:raise, [], []}, [:id])
-    assert query == ~s{INSERT INTO "schema" ("x","y") VALUES (?,?) RETURNING "id"}
+    assert query == ~s{INSERT INTO "schema" ("x","y") VALUES (?1,?2) RETURNING "id"}
 
     assert_raise(
       ArgumentError,
@@ -46,19 +46,19 @@ defmodule Ecto.Adapters.SQLite3.Connection.InsertTest do
     query = insert(nil, "schema", [:x, :y], [[:x, :y]], {:nothing, [], []}, [])
 
     assert query ==
-             ~s{INSERT INTO "schema" ("x","y") VALUES (?,?) ON CONFLICT DO NOTHING}
+             ~s{INSERT INTO "schema" ("x","y") VALUES (?1,?2) ON CONFLICT DO NOTHING}
 
     query = insert(nil, "schema", [:x, :y], [[:x, :y]], {:nothing, [], [:x, :y]}, [])
 
     assert query ==
-             ~s{INSERT INTO "schema" ("x","y") VALUES (?,?) ON CONFLICT ("x","y") DO NOTHING}
+             ~s{INSERT INTO "schema" ("x","y") VALUES (?1,?2) ON CONFLICT ("x","y") DO NOTHING}
 
     # For :update
     update = from("schema", update: [set: [z: "foo"]]) |> plan(:update_all)
     query = insert(nil, "schema", [:x, :y], [[:x, :y]], {update, [], [:x, :y]}, [:z])
 
     assert query ==
-             ~s{INSERT INTO "schema" AS s0 ("x","y") VALUES (?,?) ON CONFLICT ("x","y") DO UPDATE SET "z" = 'foo' RETURNING "z"}
+             ~s{INSERT INTO "schema" AS s0 ("x","y") VALUES (?1,?2) ON CONFLICT ("x","y") DO UPDATE SET "z" = 'foo' RETURNING "z"}
 
     # For :unsafe_fragment
     update = from("schema", update: [set: [z: "foo"]]) |> plan(:update_all)
@@ -74,7 +74,7 @@ defmodule Ecto.Adapters.SQLite3.Connection.InsertTest do
       )
 
     assert query ==
-             ~s{INSERT INTO "schema" AS s0 ("x","y") VALUES (?,?) ON CONFLICT foobar DO UPDATE SET "z" = 'foo' RETURNING "z"}
+             ~s{INSERT INTO "schema" AS s0 ("x","y") VALUES (?1,?2) ON CONFLICT foobar DO UPDATE SET "z" = 'foo' RETURNING "z"}
 
     assert_raise ArgumentError, "Upsert in SQLite3 requires :conflict_target", fn ->
       conflict_target = []
@@ -107,7 +107,7 @@ defmodule Ecto.Adapters.SQLite3.Connection.InsertTest do
     assert query ==
              """
              INSERT INTO "schema" ("x","y") \
-             VALUES (?,?) \
+             VALUES (?1,?2) \
              ON CONFLICT ("id") \
              DO UPDATE SET "x" = EXCLUDED."x","y" = EXCLUDED."y"\
              """
