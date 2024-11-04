@@ -188,18 +188,36 @@ defmodule Ecto.Adapters.SQLite3 do
 
   Here are several ways to specify a different transaction mode:
 
-  1. **Pass `mode: :immediate` to `Repo.transaction/2`:** Use this approach to set the transaction mode for individual transactions.
+  **Pass `mode: :immediate` to `Repo.transaction/2`:** Use this approach to set 
+  the transaction mode for individual transactions.
 
-  2. **Define custom transaction functions:** Create wrappers, such as `Repo.immediate_transaction/2` or `Repo.deferred_transaction/2`,
-    to easily apply different modes where needed.
+      Multi.new()
+      |> Multi.run(:example, fn _repo, _changes_so_far ->
+        # ... do some work ...
+      end)
+      |> Repo.transaction(mode: :immediate)
 
-  3. **Set a global default:** Configure `:default_transaction_mode` to apply a preferred mode for all transactions.
+  **Define custom transaction functions:** Create wrappers, such as 
+  `Repo.immediate_transaction/2` or `Repo.deferred_transaction/2`, to easily 
+  apply different modes where needed.
 
-  ```elixir
-  config :my_app, MyApp.Repo,
-    database: "path/to/my/database.db",
-    default_transaction_mode: :immediate
-  ```
+      defmodule MyApp.Repo do
+        def immediate_transaction(fun_or_multi) do
+          transaction(fun_or_multi, mode: :immediate)
+        end
+
+        def deferred_transaction(fun_or_multi) do
+          transaction(fun_or_multi, mode: :deferred)
+        end
+      end
+
+  **Set a global default:** Configure `:default_transaction_mode` to apply a 
+  preferred mode for all transactions, unless explicitly passed a different
+  `:mode` to `Repo.transaction/2`.
+
+      config :my_app, MyApp.Repo,
+        database: "path/to/my/database.db",
+        default_transaction_mode: :immediate
 
   [3]: https://www.sqlite.org/compile.html
   [4]: https://www.sqlite.org/whentouse.html
