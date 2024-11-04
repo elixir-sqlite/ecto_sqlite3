@@ -7,6 +7,10 @@ project adheres to [Semantic Versioning][semver].
 
 ## Unreleased
 
+## v0.17.4
+- added: Documentation for `default_transaction_mode`.
+- changed: Clarified some documentation.
+
 ## v0.17.3
 - fixed: Handle placeholders for `insert_all` calls.
 - changed: Added cell-wise placeholders for inserts.
