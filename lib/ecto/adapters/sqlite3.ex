@@ -182,8 +182,9 @@ defmodule Ecto.Adapters.SQLite3 do
 
   ### Transaction mode
 
-  By default, [SQLite transactions][8] run in `DEFERRED` mode. However, in typical web applications with a balanced load
-  of reads and writes, using `IMMEDIATE` mode can yield better performance.
+  By default, [SQLite transactions][8] run in `DEFERRED` mode. However, in 
+  web applications with a balanced load of reads and writes, using  `IMMEDIATE` 
+  mode may yield better performance.
 
   Here are several ways to specify a different transaction mode:
 
