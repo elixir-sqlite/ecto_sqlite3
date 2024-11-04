@@ -201,8 +201,6 @@ defmodule Ecto.Adapters.SQLite3 do
     default_transaction_mode: :immediate
   ```
 
-  See [this GitHub issue](https://github.com/elixir-sqlite/ecto_sqlite3/issues/153) for more details.
-
   [3]: https://www.sqlite.org/compile.html
   [4]: https://www.sqlite.org/whentouse.html
   [5]: https://www.sqlite.org/datatype3.html
