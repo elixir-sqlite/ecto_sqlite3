@@ -94,8 +94,10 @@ defmodule Ecto.Adapters.SQLite3 do
   The `:binary_id_type` configuration option allows configuring how `:binary_id` fields
   are stored in the database as well as the type of the column in which these IDs will
   be stored. The possible values are:
-  * `:string` (default): IDs are stored as strings, and the type of the column is `TEXT`.
-  * `:binary`: IDs are stored in their raw binary form, and the type of the column is `BLOB`.
+
+  * `:string` - IDs are stored as strings, and the type of the column is `TEXT`. This is
+    the default.
+  * `:binary` - IDs are stored in their raw binary form, and the type of the column is `BLOB`.
 
   The main differences between the two formats are as follows:
   * When stored as binary, UUIDs require much less space in the database. IDs stored as
@@ -128,8 +130,8 @@ defmodule Ecto.Adapters.SQLite3 do
 
   ### LIKE match on BLOB columns
 
-  We have the DSQLITE_LIKE_DOESNT_MATCH_BLOBS compile-time option set to true, as
-  [recommended][3] by SQLite. This means you cannot do LIKE queries on BLOB columns.
+  We have the `SQLITE_LIKE_DOESNT_MATCH_BLOBS` compile-time definition option set to true,
+  as [recommended by SQLite][3]. This means you cannot do `LIKE` queries on `BLOB` columns.
 
   ### Case sensitivity
 
