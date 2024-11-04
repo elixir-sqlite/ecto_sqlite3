@@ -13,6 +13,9 @@ defmodule Ecto.Adapters.SQLite3 do
 
     * `:database` - The path to the database. In memory is allowed. You can use
       `:memory` or `":memory:"` to designate that.
+    * `:default_transaction_mode` - one of `deferred` (default), `immediate`,
+      or `exclusive`. If a mode is not specified in a call to `Repo.transaction/2`,
+      this will be the default transaction mode.
     * `:journal_mode` - Sets the journal mode for the sqlite connection. Can be
       one of the following `:delete`, `:truncate`, `:persist`, `:memory`,
       `:wal`, or `:off`. Defaults to `:wal`.
@@ -51,8 +54,8 @@ defmodule Ecto.Adapters.SQLite3 do
     * `:datetime_type` - Defaults to `:iso8601`. Determines how datetime fields are stored in the database.
       The allowed values are `:iso8601` and `:text_datetime`. `:iso8601` corresponds to a string of the form
       `YYYY-MM-DDThh:mm:ss` and `:text_datetime` corresponds to a string of the form `YYYY-MM-DD hh:mm:ss`
-    * `:load_extensions` - list of paths identifying extensions to load. Defaults to []. The provided list will 
-       be merged with the global extensions list, set on :exqlite, :load_extensions. Be aware that the path should 
+    * `:load_extensions` - list of paths identifying extensions to load. Defaults to []. The provided list will
+       be merged with the global extensions list, set on :exqlite, :load_extensions. Be aware that the path should
        handle pointing to a library compiled for the current architecture. See `Exqlite.Connection.connect/1` for more.
 
   For more information about the options above, see [sqlite documentation][1]
@@ -177,11 +180,34 @@ defmodule Ecto.Adapters.SQLite3 do
   types, despite the fact SQLite only has [five storage classes][5]. The query will still
   work and return data, but you will need to do this mapping on your own.
 
+  ### Transaction mode
+
+  By default, [SQLite transactions][8] run in `DEFERRED` mode. However, in typical web applications with a balanced load
+  of reads and writes, using `IMMEDIATE` mode can yield better performance.
+
+  Here are several ways to specify a different transaction mode:
+
+  1. **Pass `mode: :immediate` to `Repo.transaction/2`:** Use this approach to set the transaction mode for individual transactions.
+
+  2. **Define custom transaction functions:** Create wrappers, such as `Repo.immediate_transaction/2` or `Repo.deferred_transaction/2`,
+    to easily apply different modes where needed.
+
+  3. **Set a global default:** Configure `:default_transaction_mode` to apply a preferred mode for all transactions.
+
+  ```elixir
+  config :my_app, MyApp.Repo,
+    database: "path/to/my/database.db",
+    default_transaction_mode: :immediate
+  ```
+
+  See [this GitHub issue](https://github.com/elixir-sqlite/ecto_sqlite3/issues/153) for more details.
+
   [3]: https://www.sqlite.org/compile.html
   [4]: https://www.sqlite.org/whentouse.html
   [5]: https://www.sqlite.org/datatype3.html
   [6]: https://www.sqlite.org/datatype3.html#collating_sequences
   [7]: https://hexdocs.pm/ecto/schemaless-queries.html
+  [8]: https://www.sqlite.org/lang_transaction.html#deferred_immediate_and_exclusive_transactions
   """
 
   use Ecto.Adapters.SQL,
