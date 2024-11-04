@@ -13,59 +13,63 @@ defmodule Ecto.Adapters.SQLite3 do
 
     * `:database` - The path to the database. In memory is allowed. You can use
       `:memory` or `":memory:"` to designate that.
-    * `:default_transaction_mode` - one of `deferred` (default), `immediate`,
-      or `exclusive`. If a mode is not specified in a call to `Repo.transaction/2`,
-      this will be the default transaction mode.
-    * `:journal_mode` - Sets the journal mode for the sqlite connection. Can be
-      one of the following `:delete`, `:truncate`, `:persist`, `:memory`,
-      `:wal`, or `:off`. Defaults to `:wal`.
-    * `:temp_store` - Sets the storage used for temporary tables. Default is
-      `:default`. Allowed values are `:default`, `:file`, `:memory`.
-    * `:synchronous` - Can be `:extra`, `:full`, `:normal`, or `:off`. Defaults
-      to `:normal`.
-    * `:foreign_keys` - Sets if foreign key checks should be enforced or not.
-      Can be `:on` or `:off`. Default is `:on`.
-    * `:cache_size` - Sets the cache size to be used for the connection. This is
-      an odd setting as a positive value is the number of pages in memory to use
-      and a negative value is the size in kilobytes to use. Default is `-64000`.
-    * `:cache_spill` - The cache_spill pragma enables or disables the ability of
-      the pager to spill dirty cache pages to the database file in the middle of
-      a transaction. By default it is `:on`, and for most applications, it
-      should remain so.
+    * `:default_transaction_mode` - one of `:deferred` (default), `:immediate`, or
+      `:exclusive`. If a mode is not specified in a call to `Repo.transaction/2`, this
+      will be the default transaction mode.
+    * `:journal_mode` - Sets the journal mode for the sqlite connection. Can be one of
+      the following `:delete`, `:truncate`, `:persist`, `:memory`, `:wal`, or `:off`.
+      Defaults to `:wal`.
+    * `:temp_store` - Sets the storage used for temporary tables. Default is `:default`.
+      Allowed values are `:default`, `:file`, `:memory`.
+    * `:synchronous` - Can be `:extra`, `:full`, `:normal`, or `:off`. Defaults to `:normal`.
+    * `:foreign_keys` - Sets if foreign key checks should be enforced or not. Can be
+      `:on` or `:off`. Default is `:on`.
+    * `:cache_size` - Sets the cache size to be used for the connection. This is an odd
+      setting as a positive value is the number of pages in memory to use and a negative
+      value is the size in kilobytes to use. Default is `-64000`.
+    * `:cache_spill` - The cache_spill pragma enables or disables the ability of the
+      pager to spill dirty cache pages to the database file in the middle of a
+      transaction. By default it is `:on`, and for most applications, it should remain
+      so.
     * `:case_sensitive_like` - whether LIKE is case-sensitive or not. Can be
       `:off` or `:on`. Defaults to `:off`.
-    * `:auto_vacuum` - Defaults to `:none`. Can be `:none`, `:full` or
-      `:incremental`. Depending on the database size, `:incremental` may be
-      beneficial.
+    * `:auto_vacuum` - Defaults to `:none`. Can be `:none`, `:full` or `:incremental`.
+      Depending on the database size, `:incremental` may be beneficial.
     * `:locking_mode` - Defaults to `:normal`. Allowed values are `:normal` or
       `:exclusive`. See [sqlite documentation][1] for more information.
-    * `:secure_delete` - Defaults to `:off`. Can be `:off` or `:on`. If `:on`, it will cause SQLite3
-      to overwrite records that were deleted with zeros.
-    * `:wal_auto_check_point` - Sets the write-ahead log auto-checkpoint
-      interval. Default is `1000`. Setting the auto-checkpoint size to zero or a
-      negative value turns auto-checkpointing off.
+    * `:secure_delete` - Defaults to `:off`. Can be `:off` or `:on`. If `:on`, it will
+      cause SQLite3 to overwrite records that were deleted with zeros.
+    * `:wal_auto_check_point` - Sets the write-ahead log auto-checkpoint interval.
+      Default is `1000`. Setting the auto-checkpoint size to zero or a negative value
+      turns auto-checkpointing off.
     * `:busy_timeout` - Sets the busy timeout in milliseconds for a connection.
       Default is `2000`.
     * `:pool_size` - the size of the connection pool. Defaults to `5`.
-    * `:binary_id_type` - Defaults to `:string`. Determines how binary IDs are stored in the database and the type of
-    `:binary_id` columns. See the [section on binary ID types](#module-binary-id-types) for more details.
-    * `:uuid_type` - Defaults to `:string`. Determines the type of `:uuid` columns. Possible values and
-      column types are the same as for [binary IDs](#module-binary-id-types).
-    * `:datetime_type` - Defaults to `:iso8601`. Determines how datetime fields are stored in the database.
-      The allowed values are `:iso8601` and `:text_datetime`. `:iso8601` corresponds to a string of the form
-      `YYYY-MM-DDThh:mm:ss` and `:text_datetime` corresponds to a string of the form `YYYY-MM-DD hh:mm:ss`
-    * `:load_extensions` - list of paths identifying extensions to load. Defaults to []. The provided list will
-       be merged with the global extensions list, set on :exqlite, :load_extensions. Be aware that the path should
-       handle pointing to a library compiled for the current architecture. See `Exqlite.Connection.connect/1` for more.
+    * `:binary_id_type` - Defaults to `:string`. Determines how binary IDs are stored in
+      the database and the type of `:binary_id` columns. See the
+      [section on binary ID types](#module-binary-id-types) for more details.
+    * `:uuid_type` - Defaults to `:string`. Determines the type of `:uuid` columns.
+      Possible values and column types are the same as for
+      [binary IDs](#module-binary-id-types).
+    * `:datetime_type` - Defaults to `:iso8601`. Determines how datetime fields are
+      stored in the database. The allowed values are `:iso8601` and `:text_datetime`.
+      `:iso8601` corresponds to a string of the form `YYYY-MM-DDThh:mm:ss` and
+      `:text_datetime` corresponds to a string of the form `YYYY-MM-DD hh:mm:ss`
+    * `:load_extensions` - list of paths identifying extensions to load. Defaults to `[]`.
+       The provided list will be merged with the global extensions list, set on
+       `:exqlite, :load_extensions`. Be aware that the path should handle pointing to a
+       library compiled for the current architecture. See `Exqlite.Connection.connect/1`
+       for more.
 
   For more information about the options above, see [sqlite documentation][1]
 
   ### Differences between SQLite and Ecto SQLite defaults
 
   For the most part, the defaults we provide above match the defaults that SQLite usually
-  ships with. However, SQLite has conservative defaults due to its need to be strictly backwards
-  compatible, so some of them do not necessarily match "best practices". Below are the defaults
-  we provide above that differ from the normal SQLite defaults, along with rationale.
+  ships with. However, SQLite has conservative defaults due to its need to be strictly
+  backwards compatible, so some of them do not necessarily match "best practices". Below
+  are the defaults we provide above that differ from the normal SQLite defaults, along
+  with rationale.
 
     * `:journal_mode` - we use `:wal`, as it is vastly superior
       for concurrent access. SQLite usually defaults to `:delete`.
@@ -87,16 +91,18 @@ defmodule Ecto.Adapters.SQLite3 do
 
   ### Binary ID types
 
-  The `:binary_id_type` configuration option allows configuring how `:binary_id` fields are stored in the database as
-  well as the type of the column in which these IDs will be stored. The possible values are:
+  The `:binary_id_type` configuration option allows configuring how `:binary_id` fields
+  are stored in the database as well as the type of the column in which these IDs will
+  be stored. The possible values are:
   * `:string` (default): IDs are stored as strings, and the type of the column is `TEXT`.
   * `:binary`: IDs are stored in their raw binary form, and the type of the column is `BLOB`.
 
   The main differences between the two formats are as follows:
-  * When stored as binary, UUIDs require much less space in the database. IDs stored as strings require 36 bytes each,
-    while IDs stored as binary only require 16 bytes.
-  * Because SQLite does not have a dedicated UUID type, most clients cannot represent UUIDs stored as binary in a human
-    readable format. Therefore, IDs stored as strings may be easier to work with if manual manipulation is required.
+  * When stored as binary, UUIDs require much less space in the database. IDs stored as
+    strings require 36 bytes each, while IDs stored as binary only require 16 bytes.
+  * Because SQLite does not have a dedicated UUID type, most clients cannot represent
+    UUIDs stored as binary in a human readable format. Therefore, IDs stored as strings
+    may be easier to work with if manual manipulation is required.
 
   ## Limitations and caveats
 
@@ -116,14 +122,14 @@ defmodule Ecto.Adapters.SQLite3 do
   ### Async Sandbox testing
 
   The Ecto SQLite3 adapter does not support async tests when used with
-  `Ecto.Adapters.SQL.Sandbox`. This is due to SQLite only allowing up one
-  write transaction at a time, which often does not work with the Sandbox approach of
-  wrapping each test in a transaction.
+  `Ecto.Adapters.SQL.Sandbox`. This is due to SQLite only allowing up one write
+  transaction at a time, which often does not work with the Sandbox approach of wrapping
+  each test in a transaction.
 
   ### LIKE match on BLOB columns
 
-  We have the DSQLITE_LIKE_DOESNT_MATCH_BLOBS compile-time option set to true,
-  as [recommended][3] by SQLite. This means you cannot do LIKE queries on BLOB columns.
+  We have the DSQLITE_LIKE_DOESNT_MATCH_BLOBS compile-time option set to true, as
+  [recommended][3] by SQLite. This means you cannot do LIKE queries on BLOB columns.
 
   ### Case sensitivity
 
@@ -131,9 +137,9 @@ defmodule Ecto.Adapters.SQLite3 do
   option outlined above.
 
   However, for equality comparison, case sensitivity is always _on_.
-  If you want to make a column not be case sensitive, for email storage for example, you can
-  make it case insensitive by using the [`COLLATE NOCASE`][6] option in SQLite. This is configured
-  via the `:collate` option.
+  If you want to make a column not be case sensitive, for email storage for example, you
+  can make it case insensitive by using the [`COLLATE NOCASE`][6] option in SQLite. This
+  is configured via the `:collate` option.
 
   So instead of:
 
@@ -145,15 +151,18 @@ defmodule Ecto.Adapters.SQLite3 do
 
   ### Check constraints
 
-  SQLite3 supports specifying check constraints on the table or on the column definition. We currently only
-  support adding a check constraint via a column definition, since the table definition approach only
-  works at table-creation time and cannot be added at table-alter time. You can see more information in
-  the SQLite3 [CREATE TABLE documentation](https://sqlite.org/lang_createtable.html).
+  SQLite3 supports specifying check constraints on the table or on the column definition.
+  We currently only support adding a check constraint via a column definition, since the
+  table definition approach only works at table-creation time and cannot be added at
+  table-alter time. You can see more information in the SQLite3
+  [CREATE TABLE documentation](https://sqlite.org/lang_createtable.html).
 
-  Because of this, you cannot add a constraint via the normal `Ecto.Migration.constraint/3` method, as that
-  operates via ALTER TABLE ADD CONSTRAINT, and this type of ALTER TABLE operation SQLite3 does not support.
-  You can however get the full functionality by adding a constraint at the column level, specifying the name
-  and expression. Per the SQLite3 documentation, there is no _functional_ difference between a column or table constraint.
+  Because of this, you cannot add a constraint via the normal `Ecto.Migration.constraint/3`
+  method, as that operates via `ALTER TABLE ADD CONSTRAINT`, and this type of `ALTER TABLE`
+  operation SQLite3 does not support. You can however get the full functionality by
+  adding a constraint at the column level, specifying the name and expression. Per the
+  SQLite3 documentation, there is no _functional_ difference between a column or table
+  constraint.
 
   Thus, adding a check constraint for a new column is as simple as:
 
@@ -161,17 +170,21 @@ defmodule Ecto.Adapters.SQLite3 do
 
   ### Handling foreign key constraints in changesets
 
-  Unfortunately, unlike other databases, SQLite3 does not provide the precise name of the constraint violated,
-  but only the columns within that constraint (if it provides any information at all). Because of this, changeset
-  functions like `Ecto.Changeset.foreign_key_constraint/3` may not work at all.
+  Unfortunately, unlike other databases, SQLite3 does not provide the precise name of
+  the constraint violated, but only the columns within that constraint (if it provides
+  any information at all). Because of this, changeset functions like
+  `Ecto.Changeset.foreign_key_constraint/3` may not work at all.
 
-  This is because the above functions depend on the Ecto Adapter returning the name of the violated constraint,
-  which you annotate in your changeset so that Ecto can convert the constraint violation into the correct
-  updated changeset when the constraint is hit during a `m:Ecto.Repo.update/2` or `m:Ecto.Repo.insert/2` operation.
-  Since we cannot get the name of the violated constraint back from SQLite3 at `INSERT` or `UPDATE` time,
-  there is no way to effectively use these changeset functions. This is a SQLite3 limitation.
+  This is because the above functions depend on the Ecto Adapter returning the name of
+  the violated constraint, which you annotate in your changeset so that Ecto can convert
+  the constraint violation into the correct updated changeset when the constraint is hit
+  during a `c:Ecto.Repo.update/2` or `c:Ecto.Repo.insert/2` operation. Since we cannot
+  get the name of the violated constraint back from SQLite3 at `INSERT` or `UPDATE`
+  time, there is no way to effectively use these changeset functions. This is a SQLite3
+  limitation.
 
-  See [this GitHub issue](https://github.com/elixir-sqlite/ecto_sqlite3/issues/42) for more details.
+  See [this GitHub issue](https://github.com/elixir-sqlite/ecto_sqlite3/issues/42) for
+  more details.
 
   ### Schemaless queries
 
