@@ -7,6 +7,9 @@ project adheres to [Semantic Versioning][semver].
 
 ## Unreleased
 
+## v0.17.5
+- fixed: Report correct error for value lists in joins.
+
 ## v0.17.4
 - added: Documentation for `default_transaction_mode`.
 - changed: Clarified some documentation.
