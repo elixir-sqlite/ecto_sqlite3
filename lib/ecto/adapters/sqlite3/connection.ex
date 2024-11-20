@@ -993,7 +993,8 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   defp using_join(%{joins: joins} = query, _kind, prefix, sources) do
     froms =
       Enum.map_intersperse(joins, ", ", fn
-        %JoinExpr{qual: _qual, ix: ix, source: source} ->
+        %JoinExpr{qual: _qual, ix: ix, source: source} = join ->
+          assert_valid_join(join, query)
           {join, name} = get_source(query, sources, ix, source)
           [join, " AS " | name]
       end)
