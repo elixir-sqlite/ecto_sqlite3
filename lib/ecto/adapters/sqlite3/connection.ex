@@ -1014,14 +1014,9 @@ defmodule Ecto.Adapters.SQLite3.Connection do
         on: %QueryExpr{expr: expression},
         qual: qual,
         ix: ix,
-        source: source,
-        hints: hints
-      } ->
-        if hints != [] do
-          raise Ecto.QueryError,
-            query: query,
-            message: "join hints are not supported by SQLite3"
-        end
+        source: source
+      } = join ->
+        assert_valid_join(join, query)
 
         {join, name} = get_source(query, sources, ix, source)
 
@@ -1034,6 +1029,20 @@ defmodule Ecto.Adapters.SQLite3.Connection do
         ]
     end)
   end
+
+  defp assert_valid_join(%JoinExpr{hints: hints}, query) when hints != [] do
+    raise Ecto.QueryError,
+      query: query,
+      message: "join hints are not supported by SQLite3"
+  end
+
+  defp assert_valid_join(%JoinExpr{source: {:values, _, _}}, query) do
+    raise Ecto.QueryError,
+      query: query,
+      message: "SQLite3 adapter does not support values lists"
+  end
+
+  defp assert_valid_join(_join_expr, _query), do: :ok
 
   defp join_on(:cross, true, _sources, _query), do: []
 

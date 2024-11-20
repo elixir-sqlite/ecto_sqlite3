@@ -135,6 +135,24 @@ defmodule Ecto.Adapters.SQLite3.Connection.JoinTest do
     end
   end
 
+  test "join with values is not supported" do
+    assert_raise Ecto.QueryError, fn ->
+      rows = [%{x: 1, y: 1}, %{x: 2, y: 2}]
+      types = %{x: :integer, y: :integer}
+
+      Schema
+      |> join(
+        :inner,
+        [p],
+        q in values(rows, types),
+        on: [x: p.x(), y: p.y()]
+      )
+      |> select([p, q], {p.id, q.x})
+      |> plan()
+      |> all()
+    end
+  end
+
   test "join with fragment" do
     query =
       Schema
