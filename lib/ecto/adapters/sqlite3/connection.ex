@@ -993,7 +993,8 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   defp using_join(%{joins: joins} = query, _kind, prefix, sources) do
     froms =
       Enum.map_intersperse(joins, ", ", fn
-        %JoinExpr{qual: _qual, ix: ix, source: source} ->
+        %JoinExpr{qual: _qual, ix: ix, source: source} = join ->
+          assert_valid_join(join, query)
           {join, name} = get_source(query, sources, ix, source)
           [join, " AS " | name]
       end)
@@ -1014,14 +1015,9 @@ defmodule Ecto.Adapters.SQLite3.Connection do
         on: %QueryExpr{expr: expression},
         qual: qual,
         ix: ix,
-        source: source,
-        hints: hints
-      } ->
-        if hints != [] do
-          raise Ecto.QueryError,
-            query: query,
-            message: "join hints are not supported by SQLite3"
-        end
+        source: source
+      } = join ->
+        assert_valid_join(join, query)
 
         {join, name} = get_source(query, sources, ix, source)
 
@@ -1034,6 +1030,20 @@ defmodule Ecto.Adapters.SQLite3.Connection do
         ]
     end)
   end
+
+  defp assert_valid_join(%JoinExpr{hints: hints}, query) when hints != [] do
+    raise Ecto.QueryError,
+      query: query,
+      message: "join hints are not supported by SQLite3"
+  end
+
+  defp assert_valid_join(%JoinExpr{source: {:values, _, _}}, query) do
+    raise Ecto.QueryError,
+      query: query,
+      message: "SQLite3 adapter does not support values lists"
+  end
+
+  defp assert_valid_join(_join_expr, _query), do: :ok
 
   defp join_on(:cross, true, _sources, _query), do: []
 
@@ -1909,9 +1919,11 @@ defmodule Ecto.Adapters.SQLite3.Connection do
 
   defp quote_table(nil, name), do: quote_entity(name)
 
-  defp quote_table(_prefix, _name) do
+  defp quote_table(prefix, _name) when is_atom(prefix) or is_binary(prefix) do
     raise ArgumentError, "SQLite3 does not support table prefixes"
   end
+
+  defp quote_table(_, name), do: quote_entity(name)
 
   defp quote_entity(val) when is_atom(val) do
     quote_entity(Atom.to_string(val))
