@@ -1909,9 +1909,11 @@ defmodule Ecto.Adapters.SQLite3.Connection do
 
   defp quote_table(nil, name), do: quote_entity(name)
 
-  defp quote_table(_prefix, _name) do
+  defp quote_table(prefix, _name) when is_atom(prefix) or is_binary(prefix) do
     raise ArgumentError, "SQLite3 does not support table prefixes"
   end
+
+  defp quote_table(_, name), do: quote_entity(name)
 
   defp quote_entity(val) when is_atom(val) do
     quote_entity(Atom.to_string(val))
