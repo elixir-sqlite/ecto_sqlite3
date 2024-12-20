@@ -15,7 +15,7 @@ jobs:
     strategy:
       matrix:
         os: ["ubuntu-latest"]
-        elixir: ["1.17"]
+        elixir: ["1.18"]
         otp: ["27"]
     steps:
       - uses: actions/checkout@v4
@@ -41,17 +41,13 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-latest"]
-        elixir: ["1.17", "1.16", "1.15", "1.14"]
-        otp: ["27", "26", "25", "24"]
+        elixir: ["1.18", "1.17", "1.16", "1.15"]
+        otp: ["27", "26", "25"]
         exclude:
-          - elixir: "1.14"
-            otp: "27"
           - elixir: "1.15"
             otp: "27"
           - elixir: "1.16"
             otp: "27"
-          - elixir: "1.17"
-            otp: "24"
     steps:
       - uses: actions/checkout@v4
       - uses: erlef/setup-beam@v1

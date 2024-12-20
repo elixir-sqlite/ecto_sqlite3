@@ -6,6 +6,7 @@ The format is loosely based on [Keep a Changelog][keepachangelog], and this
 project adheres to [Semantic Versioning][semver].
 
 ## Unreleased
+- changed: Drop Elixir `1.14` support. Elixir `1.18` was released and I am only supporting 3 minor versions back.
 
 ## v0.17.5
 - fixed: Report correct error for value lists in joins.
@@ -26,7 +27,6 @@ project adheres to [Semantic Versioning][semver].
 - changed: Bump minimum ecto to `3.12`.
 
 ## v0.17.0
-
 - added: Added an explicit `:integer` column type support. Under the hood it is stored the same regardless.
 - fixed: Handle new style of distinct expressions introduce upstream in Ecto `3.12`.
 - changed: Allow `insert_all` to no longer require a where clause.
@@ -34,62 +34,50 @@ project adheres to [Semantic Versioning][semver].
 - changed: Test against elixir 1.17 and OTP 27, 26, and 25.
 
 ## v0.16.0
-
 - changed: Set minimum `exqlite` dependency to `0.22`.
 
 ## v0.15.1
-
 - fixed: Encode nil blobs. This was previously unhandled.
 
 ## v0.15.0
-
 - fixed: Support `nil` decoding for `:decimal`.
 - changed: Dropped support for Elixir v1.13.
 - changed: Added Elixir v1.16 to CI build.
 - changed: Bump minimum `exqlite` to `~ 0.19`.
 
 ## v0.14.0
-
 - added: Support for encoding nil values in `:utc_datetime`, `:utc_datetime_usec`, `:naive_datetime`, and `:naive_datetime_usec` column dates.
 - added: Allow subquery values in `insert_all`.
 
 ## v0.13.0
-
 - added: Support fragment splicing.
 - added: Support parent_as with combination queries.
 - changed: Don't need to consider `{:maybe, type}`` when loading or dumping.
 - changed: Handle nil values in dumpers and loaders.
 
 ## v0.12.0
-
 - changed: raise if an in memory database is opened with a pool_size != 1
 - added: support `{:unsafe_fragment, ".."}` as a conflict target.
 - changed: Dropped support for Elixir `1.12`.
 - changed: Dropped support for OTP 23.
 
 ## v0.11.0
-
 - added: Support for DDL transactions.
 
 ## v0.10.4
-
 - fixed: Handle binary uuid casting when `binary_id` is specified.
 
 ## v0.10.3
-
 - fixed: Handle unique constraint error formats.
 - changed: Updated dependencies.
 
 ## v0.10.2
-
 - added: Missing support for `Date` type.
 
 ## v0.10.1
-
 - fixed: Ignore bad `init` file when using `dump_cmd/3`
 
 ## v0.10.0
-
 - changed: Add support for Ecto `v3.10`
 - changed: Bring SQLite closer to the Postgres adapter implementation
 - changed: Enable `AUTOINCREMENT` for `serial` and `bigserial`.
