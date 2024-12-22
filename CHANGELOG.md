@@ -5,8 +5,9 @@ All notable changes will be documented in this file.
 The format is loosely based on [Keep a Changelog][keepachangelog], and this
 project adheres to [Semantic Versioning][semver].
 
-## Unreleased
+## v0.18.0
 - changed: Drop Elixir `1.14` support. Elixir `1.18` was released and I am only supporting 3 minor versions back.
+- fixed: Pass through unrecognized values for float, bool, and json decodes.
 
 ## v0.17.5
 - fixed: Report correct error for value lists in joins.
