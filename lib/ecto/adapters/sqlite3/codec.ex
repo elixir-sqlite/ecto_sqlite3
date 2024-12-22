@@ -1,27 +1,23 @@
 defmodule Ecto.Adapters.SQLite3.Codec do
   @moduledoc false
 
-  def bool_decode(nil), do: {:ok, nil}
   def bool_decode(0), do: {:ok, false}
   def bool_decode("0"), do: {:ok, false}
   def bool_decode("FALSE"), do: {:ok, false}
   def bool_decode(1), do: {:ok, true}
   def bool_decode("1"), do: {:ok, true}
   def bool_decode("TRUE"), do: {:ok, true}
-  def bool_decode(_), do: :error
+  def bool_decode(v), do: {:ok, v}
 
-  def json_decode(nil), do: {:ok, nil}
-
-  def json_decode(x) when is_binary(x) do
-    Application.get_env(:ecto_sqlite3, :json_library, Jason).decode(x)
+  def json_decode(v) when is_binary(v) do
+    Application.get_env(:ecto_sqlite3, :json_library, Jason).decode(v)
   end
 
-  def json_decode(_), do: :error
+  def json_decode(v), do: {:ok, v}
 
-  def float_decode(nil), do: {:ok, nil}
   def float_decode(%Decimal{} = decimal), do: {:ok, Decimal.to_float(decimal)}
   def float_decode(x) when is_integer(x), do: {:ok, x / 1}
-  def float_decode(_), do: :error
+  def float_decode(x), do: {:ok, x}
 
   def decimal_decode(nil), do: {:ok, nil}
 
