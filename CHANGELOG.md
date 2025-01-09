@@ -5,6 +5,9 @@ All notable changes will be documented in this file.
 The format is loosely based on [Keep a Changelog][keepachangelog], and this
 project adheres to [Semantic Versioning][semver].
 
+## v0.18.1
+- fixed: Support both `Jason` and `JSON`.
+
 ## v0.18.0
 - changed: Drop Elixir `1.14` support. Elixir `1.18` was released and I am only supporting 3 minor versions back.
 - fixed: Pass through unrecognized values for float, bool, and json decodes.
