@@ -10,9 +10,10 @@ defmodule Ecto.Adapters.SQLite3.Codec do
   def bool_decode(v), do: {:ok, v}
 
   def json_decode(v) when is_binary(v) do
-    {:ok, Application.get_env(:ecto_sqlite3, :json_library, Jason).decode!(v)}
-  rescue
-    _ -> :error
+    case Application.get_env(:ecto_sqlite3, :json_library, Jason).decode(v) do
+      {:ok, decoded} -> {:ok, decoded}
+      {:error, _reason} -> :error
+    end
   end
 
   def json_decode(v), do: {:ok, v}
