@@ -35,10 +35,10 @@ defmodule Ecto.Adapters.SQLite3.CodecTest do
     end
 
     test "handles malformed json" do
-      {:error, _} = Codec.json_decode("")
-      {:error, _} = Codec.json_decode(" ")
-      {:error, _} = Codec.json_decode("{")
-      {:error, _} = Codec.json_decode("[")
+      :error = Codec.json_decode("")
+      :error = Codec.json_decode(" ")
+      :error = Codec.json_decode("{")
+      :error = Codec.json_decode("[")
     end
   end
 

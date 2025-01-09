@@ -10,7 +10,9 @@ defmodule Ecto.Adapters.SQLite3.Codec do
   def bool_decode(v), do: {:ok, v}
 
   def json_decode(v) when is_binary(v) do
-    Application.get_env(:ecto_sqlite3, :json_library, Jason).decode(v)
+    {:ok, Application.get_env(:ecto_sqlite3, :json_library, Jason).decode!(v)}
+  rescue
+    _ -> :error
   end
 
   def json_decode(v), do: {:ok, v}
@@ -89,7 +91,9 @@ defmodule Ecto.Adapters.SQLite3.Codec do
   def json_encode(value) when is_bitstring(value), do: {:ok, value}
 
   def json_encode(value) do
-    Application.get_env(:ecto_sqlite3, :json_library, Jason).encode(value)
+    {:ok, Application.get_env(:ecto_sqlite3, :json_library, Jason).encode!(value)}
+  rescue
+    _err -> :error
   end
 
   def blob_encode(nil), do: {:ok, nil}
