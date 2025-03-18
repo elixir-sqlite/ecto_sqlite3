@@ -51,6 +51,9 @@ defmodule Ecto.Adapters.SQLite3 do
     * `:uuid_type` - Defaults to `:string`. Determines the type of `:uuid` columns.
       Possible values and column types are the same as for
       [binary IDs](#module-binary-id-types).
+    * `:map_type` - Defaults to `:string`. Determines the type of `:map` columns.
+      Set to `:binary` to use the [JSONB](https://sqlite.org/jsonb.html)
+      storage format.
     * `:datetime_type` - Defaults to `:iso8601`. Determines how datetime fields are
       stored in the database. The allowed values are `:iso8601` and `:text_datetime`.
       `:iso8601` corresponds to a string of the form `YYYY-MM-DDThh:mm:ss` and
