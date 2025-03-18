@@ -54,6 +54,9 @@ defmodule Ecto.Adapters.SQLite3 do
     * `:map_type` - Defaults to `:string`. Determines the type of `:map` columns.
       Set to `:binary` to use the [JSONB](https://sqlite.org/jsonb.html)
       storage format.
+    * `:array_type` - Defaults to `:string`. Determines the type of `:array` columns.
+      Arrays are serialized using JSON. Set to `:binary` to use the
+      [JSONB](https://sqlite.org/jsonb.html) storage format.
     * `:datetime_type` - Defaults to `:iso8601`. Determines how datetime fields are
       stored in the database. The allowed values are `:iso8601` and `:text_datetime`.
       `:iso8601` corresponds to a string of the form `YYYY-MM-DDThh:mm:ss` and

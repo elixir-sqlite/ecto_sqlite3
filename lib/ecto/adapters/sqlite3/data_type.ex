@@ -17,8 +17,6 @@ defmodule Ecto.Adapters.SQLite3.DataType do
   def column_type(:string, _opts), do: "TEXT"
   def column_type(:float, _opts), do: "NUMERIC"
   def column_type(:binary, _opts), do: "BLOB"
-  def column_type(:array, _opts), do: "TEXT"
-  def column_type({:array, _}, _opts), do: "TEXT"
   def column_type(:date, _opts), do: "TEXT"
   def column_type(:utc_datetime, _opts), do: "TEXT"
   def column_type(:utc_datetime_usec, _opts), do: "TEXT"
@@ -38,6 +36,20 @@ defmodule Ecto.Adapters.SQLite3.DataType do
       "DECIMAL(#{precision},#{scale})"
     else
       "DECIMAL"
+    end
+  end
+
+  def column_type(:array, _opts) do
+    case Application.get_env(:ecto_sqlite3, :array_type, :string) do
+      :string -> "TEXT"
+      :binary -> "BLOB"
+    end
+  end
+
+  def column_type({:array, _}, _opts) do
+    case Application.get_env(:ecto_sqlite3, :array_type, :string) do
+      :string -> "TEXT"
+      :binary -> "BLOB"
     end
   end
 
