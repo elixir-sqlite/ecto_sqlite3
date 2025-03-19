@@ -6,6 +6,8 @@ The format is loosely based on [Keep a Changelog][keepachangelog], and this
 project adheres to [Semantic Versioning][semver].
 
 ## Unreleased
+
+## v0.19.0
 - changed: Configurable encoding for `:map` and `:array`, allowing usage of SQLite's JSONB storage format.
 
 ## v0.18.1
