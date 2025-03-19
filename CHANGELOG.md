@@ -5,6 +5,9 @@ All notable changes will be documented in this file.
 The format is loosely based on [Keep a Changelog][keepachangelog], and this
 project adheres to [Semantic Versioning][semver].
 
+## Unreleased
+- changed: Configurable encoding for `:map` and `:array`, allowing usage of SQLite's JSONB storage format.
+
 ## v0.18.1
 - fixed: Support both `Jason` and `JSON`.
 

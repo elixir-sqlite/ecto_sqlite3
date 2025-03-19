@@ -4,11 +4,15 @@ defmodule Ecto.Adapters.SQLite3.DataTypeTest do
   alias Ecto.Adapters.SQLite3.DataType
 
   setup do
+    Application.put_env(:ecto_sqlite3, :array_type, :string)
     Application.put_env(:ecto_sqlite3, :binary_id_type, :string)
+    Application.put_env(:ecto_sqlite3, :map_type, :string)
     Application.put_env(:ecto_sqlite3, :uuid_type, :string)
 
     on_exit(fn ->
+      Application.put_env(:ecto_sqlite3, :array_type, :string)
       Application.put_env(:ecto_sqlite3, :binary_id_type, :string)
+      Application.put_env(:ecto_sqlite3, :map_type, :string)
       Application.put_env(:ecto_sqlite3, :uuid_type, :string)
     end)
   end
@@ -46,20 +50,36 @@ defmodule Ecto.Adapters.SQLite3.DataTypeTest do
       assert DataType.column_type(:uuid, nil) == "BLOB"
     end
 
-    test ":map is TEXT" do
+    test ":map is TEXT or BLOB" do
       assert DataType.column_type(:map, nil) == "TEXT"
+
+      Application.put_env(:ecto_sqlite3, :map_type, :binary)
+
+      assert DataType.column_type(:map, nil) == "BLOB"
     end
 
-    test "{:map, _} is TEXT" do
+    test "{:map, _} is TEXT or BLOB" do
       assert DataType.column_type({:map, %{}}, nil) == "TEXT"
+
+      Application.put_env(:ecto_sqlite3, :map_type, :binary)
+
+      assert DataType.column_type({:map, %{}}, nil) == "BLOB"
     end
 
-    test ":array is TEXT" do
+    test ":array is TEXT or BLOB" do
       assert DataType.column_type(:array, nil) == "TEXT"
+
+      Application.put_env(:ecto_sqlite3, :array_type, :binary)
+
+      assert DataType.column_type(:array, nil) == "BLOB"
     end
 
-    test "{:array, _} is TEXT" do
+    test "{:array, _} is TEXT or BLOB" do
       assert DataType.column_type({:array, []}, nil) == "TEXT"
+
+      Application.put_env(:ecto_sqlite3, :array_type, :binary)
+
+      assert DataType.column_type({:array, []}, nil) == "BLOB"
     end
 
     test ":float is NUMERIC" do
