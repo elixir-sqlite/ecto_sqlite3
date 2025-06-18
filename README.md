@@ -45,6 +45,17 @@ config :my_app, MyApp.Repo,
   database: "path/to/my/database.db"
 ```
 
+## Type Extensions
+
+Type extensions allow custom data types to be stored and retrieved from an SQLite3 database.
+
+This is done by implementing a module with the `Ecto.Adapters.SQLite3.Extension` behaviour which maps types to encoder and decoder functions. Extensions are activated by adding them to the `ecto_sqlite3` configuration as a list of extention modules assigned to the `extensions` key:
+
+```elixir
+config :ecto_sqlite3,
+  extensions: [GeoSQL.SpatialLite.TypesExtension]
+```
+
 ## Database Encryption
 
 As of version 0.9, `exqlite` supports loading database engines at runtime rather than compiling `sqlite3.c` itself.
