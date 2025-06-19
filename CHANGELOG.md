@@ -6,7 +6,7 @@ The format is loosely based on [Keep a Changelog][keepachangelog], and this
 project adheres to [Semantic Versioning][semver].
 
 ## Unreleased
-- added: Ecto `identifier/1` support
+- added: Ecto [`identifier/1`](https://hexdocs.pm/ecto/Ecto.Query.API.html#identifier/1) support
 - changed: Bump (and restrict) Ecto to `3.13.0`
 
 ## v0.19.0
