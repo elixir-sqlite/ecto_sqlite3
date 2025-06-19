@@ -1376,6 +1376,10 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     quote_name(literal)
   end
 
+  defp expr({:identifier, _, [literal]}, _sources, _query) do
+    quote_name(literal)
+  end
+
   defp expr({:splice, _, [{:^, _, [_, length]}]}, _sources, _query) do
     Enum.intersperse(List.duplicate(??, length), ?,)
   end
