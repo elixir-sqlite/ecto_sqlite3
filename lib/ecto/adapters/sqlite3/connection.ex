@@ -1372,10 +1372,6 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     raise ArgumentError, "SQLite3 adapter does not support values lists"
   end
 
-  defp expr({:literal, _, [literal]}, _sources, _query) do
-    quote_name(literal)
-  end
-
   defp expr({:identifier, _, [literal]}, _sources, _query) do
     quote_name(literal)
   end
