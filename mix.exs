@@ -35,8 +35,8 @@ defmodule EctoSQLite3.MixProject do
   defp deps do
     [
       {:decimal, "~> 1.6 or ~> 2.0"},
-      {:ecto_sql, "~> 3.12"},
-      {:ecto, "~> 3.12"},
+      {:ecto_sql, "~> 3.13.0"},
+      {:ecto, "~> 3.13.0"},
       {:exqlite, "~> 0.22"},
       {:ex_doc, "~> 0.27", only: [:dev], runtime: false},
       {:jason, ">= 0.0.0", only: [:dev, :test, :docs]},

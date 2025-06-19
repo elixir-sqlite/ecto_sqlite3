@@ -282,6 +282,16 @@ defmodule Ecto.Integration.CrudTest do
       assert account.id == account1.id
     end
 
+    test "can handle fragment identifier" do
+      account1 = TestRepo.insert!(%Account{name: "Main"})
+
+      name = "name"
+      query = from(a in Account, where: fragment("? = ?", identifier(^name), "Main"))
+
+      assert [account] = TestRepo.all(query)
+      assert account.id == account1.id
+    end
+
     test "can handle selected_as" do
       TestRepo.insert!(%Account{name: "Main"})
       TestRepo.insert!(%Account{name: "Main"})
