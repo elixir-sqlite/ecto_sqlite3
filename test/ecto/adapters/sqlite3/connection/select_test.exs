@@ -157,10 +157,10 @@ defmodule Ecto.Adapters.SQLite3.Connection.SelectTest do
       assert ~s{SELECT downcase(s0."x") FROM "schema" AS s0} == all(query)
     end
 
-    test "collating with literal" do
+    test "collating with identifier" do
       query =
         Schema
-        |> select([r], fragment("? COLLATE ?", r.x, literal(^"es_ES")))
+        |> select([r], fragment("? COLLATE ?", r.x, identifier(^"es_ES")))
         |> plan()
 
       assert ~s{SELECT s0."x" COLLATE "es_ES" FROM "schema" AS s0} == all(query)

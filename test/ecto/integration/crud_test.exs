@@ -272,11 +272,11 @@ defmodule Ecto.Integration.CrudTest do
       assert [_] = TestRepo.all(from(a in Account, as: :user, where: exists(subquery)))
     end
 
-    test "can handle fragment literal" do
+    test "can handle fragment identifier" do
       account1 = TestRepo.insert!(%Account{name: "Main"})
 
       name = "name"
-      query = from(a in Account, where: fragment("? = ?", literal(^name), "Main"))
+      query = from(a in Account, where: fragment("? = ?", identifier(^name), "Main"))
 
       assert [account] = TestRepo.all(query)
       assert account.id == account1.id
