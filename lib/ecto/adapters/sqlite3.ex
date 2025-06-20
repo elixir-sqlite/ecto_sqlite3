@@ -570,7 +570,7 @@ defmodule Ecto.Adapters.SQLite3 do
     System.cmd(cmd, args, cmd_opts)
   end
 
-  defp extensions() do
+  defp extensions do
     Application.get_env(:ecto_sqlite3, :type_extensions, [])
   end
 
