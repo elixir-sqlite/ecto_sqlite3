@@ -28,13 +28,13 @@ defmodule Ecto.Adapters.SQLite3.Connection.AggregatesTest do
     end
   end
 
-  test "raises when trying to distinct count" do
-    assert_raise Ecto.QueryError, fn ->
+  test "distinct counts" do
+    query =
       Schema
       |> select([r], count(r.x, :distinct))
       |> plan()
-      |> all()
-    end
+
+    assert ~s{SELECT count(distinct s0."x") FROM "schema" AS s0} == all(query)
   end
 
   test "allows naked count" do

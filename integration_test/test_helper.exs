@@ -124,9 +124,6 @@ excludes = [
   :selected_as_with_order_by_expression,
   :selected_as_with_having,
 
-  # Distinct with options not supported
-  :distinct_count,
-
   # SQLite does not support anything except a single column in DISTINCT
   :multicolumn_distinct,
 
