@@ -1,4 +1,4 @@
-defmodule Ecto.Adapters.SQLite3.Extension do
+defmodule Ecto.Adapters.SQLite3.TypeExtension do
   @moduledoc """
   A behaviour that defines the API for extensions providing custom data loaders and dumpers
   for Ecto schemas.

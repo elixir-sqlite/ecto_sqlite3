@@ -571,7 +571,7 @@ defmodule Ecto.Adapters.SQLite3 do
   end
 
   defp extensions() do
-    Application.get_env(:ecto_sqlite3, :extensions, [])
+    Application.get_env(:ecto_sqlite3, :type_extensions, [])
   end
 
   defp loader_from_extension(primitive_type, ecto_type) do
