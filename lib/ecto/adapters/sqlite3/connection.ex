@@ -1437,6 +1437,10 @@ defmodule Ecto.Adapters.SQLite3.Connection do
 
   defp expr({:count, _, []}, _sources, _query), do: "count(*)"
 
+  defp expr({:count, _, [expr, :distinct]}, sources, query) do
+    ["count(distinct ", expr(expr, sources, query), ")"]
+  end
+
   defp expr({:count, _, [{:&, _, [_]}]}, _sources, query) do
     raise Ecto.QueryError,
       query: query,
