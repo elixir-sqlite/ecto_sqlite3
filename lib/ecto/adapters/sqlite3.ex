@@ -444,8 +444,8 @@ defmodule Ecto.Adapters.SQLite3 do
   end
 
   @impl Ecto.Adapter
-  def loaders(_, type) do
-    [type]
+  def loaders(primitive_type, ecto_type) do
+    loader_from_extension(primitive_type, ecto_type)
   end
 
   ##
@@ -528,8 +528,8 @@ defmodule Ecto.Adapters.SQLite3 do
   end
 
   @impl Ecto.Adapter
-  def dumpers(_primitive, type) do
-    [type]
+  def dumpers(primitive_type, ecto_type) do
+    dumper_from_extension(primitive_type, ecto_type)
   end
 
   ##
@@ -568,5 +568,35 @@ defmodule Ecto.Adapters.SQLite3 do
     cmd_opts = Keyword.put_new(cmd_opts, :stderr_to_stdout, true)
 
     System.cmd(cmd, args, cmd_opts)
+  end
+
+  defp extensions do
+    Application.get_env(:ecto_sqlite3, :type_extensions, [])
+  end
+
+  defp loader_from_extension(primitive_type, ecto_type) do
+    loader_from_extension(extensions(), primitive_type, ecto_type)
+  end
+
+  defp loader_from_extension([], _primitive_type, ecto_type), do: [ecto_type]
+
+  defp loader_from_extension([extension | other_extensions], primitive_type, ecto_type) do
+    case extension.loaders(primitive_type, ecto_type) do
+      nil -> loader_from_extension(other_extensions, primitive_type, ecto_type)
+      loader -> loader
+    end
+  end
+
+  defp dumper_from_extension(primitive_type, ecto_type) do
+    dumper_from_extension(extensions(), primitive_type, ecto_type)
+  end
+
+  defp dumper_from_extension([], _primitive_type, ecto_type), do: [ecto_type]
+
+  defp dumper_from_extension([extension | other_extensions], primitive_type, ecto_type) do
+    case extension.dumpers(primitive_type, ecto_type) do
+      nil -> dumper_from_extension(other_extensions, primitive_type, ecto_type)
+      dumper -> dumper
+    end
   end
 end
