@@ -7,6 +7,9 @@ project adheres to [Semantic Versioning][semver].
 
 ## Unreleased
 
+## v0.21.0
+- added: Ability to specify type extensions for custom sqlite types. See: [#167](https://github.com/elixir-sqlite/ecto_sqlite3/pull/167).
+
 ## v0.20.0
 - added: Ecto [`identifier/1`](https://hexdocs.pm/ecto/Ecto.Query.API.html#identifier/1) support
 - changed: Bump (and restrict) Ecto to `3.13.0`
