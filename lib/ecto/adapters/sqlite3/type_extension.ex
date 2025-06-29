@@ -9,7 +9,7 @@ defmodule Ecto.Adapters.SQLite3.TypeExtension do
 
   @doc """
   Takes a primitive type and, if it knows how to decode it into an
-  appropriate Elixir data structure, reutrns a two-element list in
+  appropriate Elixir data structure, returns a two-element list in
   the form `[(db_data :: any -> term), elixir_type :: atom]`.
 
   The function that is the first element will be called whenever
