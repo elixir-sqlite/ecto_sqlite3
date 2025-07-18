@@ -1037,12 +1037,6 @@ defmodule Ecto.Adapters.SQLite3.Connection do
       message: "join hints are not supported by SQLite3"
   end
 
-  defp assert_valid_join(%JoinExpr{source: {:values, _, _}}, query) do
-    raise Ecto.QueryError,
-      query: query,
-      message: "SQLite3 adapter does not support values lists"
-  end
-
   defp assert_valid_join(_join_expr, _query), do: :ok
 
   defp join_on(:cross, true, _sources, _query), do: []
@@ -1368,8 +1362,8 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     |> parens_for_select
   end
 
-  defp expr({:values, _, _}, _, _query) do
-    raise ArgumentError, "SQLite3 adapter does not support values lists"
+  defp expr({:values, _, [types, idx, num_rows]}, _, _query) do
+    [?(, values_list(types, idx + 1, num_rows), ?)]
   end
 
   defp expr({:identifier, _, [literal]}, _sources, _query) do
@@ -1560,6 +1554,36 @@ defmodule Ecto.Adapters.SQLite3.Connection do
       message: "unsupported expression #{inspect(expr)}"
   end
 
+  defp values_list(types, idx, num_rows) do
+    rows = :lists.seq(1, num_rows, 1)
+    col_names = Enum.map_join(types, ", ", &elem(&1, 0))
+
+    [
+      "WITH xxx(",
+      col_names,
+      ") AS (VALUES ",
+      intersperse_reduce(rows, ?,, idx, fn _, idx ->
+        {value, idx} = values_expr(types, idx)
+        {[?(, value, ?)], idx}
+      end)
+      |> elem(0),
+      ") SELECT * FROM xxx"
+    ]
+  end
+
+  defp values_expr(types, idx) do
+    intersperse_reduce(types, ?,, idx, fn {_field, _type}, idx ->
+      # TODO: cast?
+      # {[?$, Integer.to_string(idx), ?:, ?: | tagged_to_db(type)], idx + 1}
+      {[?$, Integer.to_string(idx)], idx + 1}
+    end)
+  end
+
+  # defp tagged_to_db(:id), do: "bigint"
+  # defp tagged_to_db(:integer), do: "bigint"
+  # defp tagged_to_db({:array, type}), do: [tagged_to_db(type), ?[, ?]]
+  # defp tagged_to_db(type), do: ecto_to_db(type)
+
   def interval(_, "microsecond", _sources) do
     raise ArgumentError,
           "SQLite does not support microsecond precision in datetime intervals"
@@ -1617,6 +1641,9 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     case elem(sources, pos) do
       {:fragment, _, _} ->
         {nil, as_prefix ++ [?f | Integer.to_string(pos)], nil}
+
+      {:values, _, _} ->
+        {nil, as_prefix ++ [?v | Integer.to_string(pos)], nil}
 
       {table, schema, prefix} ->
         name = as_prefix ++ [create_alias(table) | Integer.to_string(pos)]
