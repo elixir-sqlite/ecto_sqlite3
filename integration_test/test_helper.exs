@@ -126,9 +126,6 @@ excludes = [
 
   # SQLite does not support anything except a single column in DISTINCT
   :multicolumn_distinct,
-
-  # Values list
-  :values_list
 ]
 
 ExUnit.configure(exclude: excludes)
