@@ -7,6 +7,38 @@ defmodule Ecto.Integration.ValuesTest do
   alias Ecto.Integration.Post
   alias Ecto.Integration.TestRepo
 
+  test "values works with datetime" do
+    TestRepo.insert!(%Post{inserted_at: ~N[2000-01-01 00:01:00]})
+    TestRepo.insert!(%Post{inserted_at: ~N[2000-01-01 00:02:00]})
+    TestRepo.insert!(%Post{inserted_at: ~N[2000-01-01 00:03:00]})
+
+    params = [
+      %{id: 1, date: ~N[2000-01-01 00:00:00]},
+      %{id: 2, date: ~N[2000-01-01 00:01:00]},
+      %{id: 3, date: ~N[2000-01-01 00:02:00]},
+      %{id: 4, date: ~N[2000-01-01 00:03:00]}
+    ]
+
+    types = %{id: :integer, date: :naive_datetime}
+
+    results =
+      from(params in values(params, types),
+        left_join: p in Post,
+        on: p.inserted_at <= params.date,
+        group_by: params.id,
+        select: %{id: params.id, count: count(p.id)},
+        order_by: count(p.id)
+      )
+      |> TestRepo.all()
+
+    assert results == [
+             %{count: 0, id: 1},
+             %{count: 1, id: 2},
+             %{count: 2, id: 3},
+             %{count: 3, id: 4}
+           ]
+  end
+
   test "join to values works" do
     TestRepo.insert!(%Post{id: 1})
     TestRepo.insert!(%Comment{post_id: 1, text: "short"})
