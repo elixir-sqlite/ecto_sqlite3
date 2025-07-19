@@ -126,6 +126,10 @@ excludes = [
 
   # SQLite does not support anything except a single column in DISTINCT
   :multicolumn_distinct,
+
+  # Run all with tag values_list, except for the "delete_all" test,
+  # as JOINS are not supported on DELETE statements by SQLite.
+  {:location, {"ecto/integration_test/cases/repo.exs", 2281}}
 ]
 
 ExUnit.configure(exclude: excludes)
