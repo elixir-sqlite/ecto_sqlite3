@@ -139,6 +139,9 @@ defmodule Ecto.Adapters.SQLite3.Connection.JoinTest do
     rows = [%{x: 1, y: 1}, %{x: 2, y: 2}]
     types = %{x: :integer, y: :integer}
 
+    # Seeding rand ensures we get temp_78027 as the CTE name
+    :rand.seed(:exsss, {1, 2, 3})
+
     query =
       Schema
       |> join(
@@ -151,7 +154,7 @@ defmodule Ecto.Adapters.SQLite3.Connection.JoinTest do
       |> plan()
 
     assert ~s{SELECT s0."id", v1."x" FROM "schema" AS s0 } <>
-             ~s{INNER JOIN (WITH xxx(y, x) AS (VALUES ($1,$2),($3,$4)) SELECT * FROM xxx) AS v1 } <>
+             ~s{INNER JOIN (WITH temp_78027(y, x) AS (VALUES ($1,$2),($3,$4)) SELECT * FROM temp_78027) AS v1 } <>
              ~s{ON (v1."x" = s0."x") AND (v1."y" = s0."y")} ==
              all(query)
   end
