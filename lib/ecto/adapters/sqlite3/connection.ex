@@ -1573,17 +1573,10 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   end
 
   defp values_expr(types, idx) do
-    intersperse_reduce(types, ?,, idx, fn {_field, _type}, idx ->
-      # TODO: cast?
-      # {[?$, Integer.to_string(idx), ?:, ?: | tagged_to_db(type)], idx + 1}
-      {[?$, Integer.to_string(idx)], idx + 1}
+    intersperse_reduce(types, ?,, idx, fn {_field, type}, idx ->
+      {[?$, Integer.to_string(idx), ?:, ?: | column_type(type, nil)], idx + 1}
     end)
   end
-
-  # defp tagged_to_db(:id), do: "bigint"
-  # defp tagged_to_db(:integer), do: "bigint"
-  # defp tagged_to_db({:array, type}), do: [tagged_to_db(type), ?[, ?]]
-  # defp tagged_to_db(type), do: ecto_to_db(type)
 
   def interval(_, "microsecond", _sources) do
     raise ArgumentError,

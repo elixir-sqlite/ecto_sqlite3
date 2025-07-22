@@ -158,7 +158,8 @@ defmodule Ecto.Adapters.SQLite3.Connection.JoinTest do
     col_names = Map.keys(types) |> Enum.join(", ")
 
     assert ~s{SELECT s0."id", v1."x" FROM "schema" AS s0 } <>
-             ~s{INNER JOIN (WITH temp_78027(#{col_names}) AS (VALUES ($1,$2),($3,$4)) SELECT * FROM temp_78027) AS v1 } <>
+             ~s{INNER JOIN (WITH temp_78027(#{col_names}) AS (VALUES ($1::INTEGER,$2::INTEGER),($3::INTEGER,$4::INTEGER)) } <>
+             ~s{SELECT * FROM temp_78027) AS v1 } <>
              ~s{ON (v1."x" = s0."x") AND (v1."y" = s0."y")} ==
              all(query)
   end
