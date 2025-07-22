@@ -127,9 +127,14 @@ excludes = [
   # SQLite does not support anything except a single column in DISTINCT
   :multicolumn_distinct,
 
-  # Run all with tag values_list, except for the "delete_all" test,
-  # as JOINS are not supported on DELETE statements by SQLite.
-  {:location, {"ecto/integration_test/cases/repo.exs", 2281}}
+  # :location is not supported in elixir 1.15 and earlier, so we exclude all
+  if Version.match?(System.version(), "~> 1.16") do
+    # Run all with tag values_list, except for the "delete_all" test,
+    # as JOINS are not supported on DELETE statements by SQLite.
+    {:location, {"ecto/integration_test/cases/repo.exs", 2281}}
+  else
+    :values_list
+  end
 ]
 
 ExUnit.configure(exclude: excludes)
