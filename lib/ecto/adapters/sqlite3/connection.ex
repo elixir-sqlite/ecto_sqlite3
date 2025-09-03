@@ -1556,19 +1556,22 @@ defmodule Ecto.Adapters.SQLite3.Connection do
 
   defp values_list(types, idx, num_rows) do
     rows = :lists.seq(1, num_rows, 1)
-    col_names = Enum.map_join(types, ", ", &elem(&1, 0))
-    table_name = "temp_#{:rand.uniform(100_000)}"
+
+    col_names =
+      Enum.map_join(Enum.with_index(types), ", ", fn {{k, _v}, i} ->
+        "column#{i + 1} AS #{k}"
+      end)
 
     [
-      "WITH #{table_name}(",
+      "SELECT ",
       col_names,
-      ") AS (VALUES ",
+      " FROM (VALUES ",
       intersperse_reduce(rows, ?,, idx, fn _, idx ->
         {value, idx} = values_expr(types, idx)
         {[?(, value, ?)], idx}
       end)
       |> elem(0),
-      ") SELECT * FROM #{table_name}"
+      ")"
     ]
   end
 
