@@ -150,8 +150,11 @@ defmodule Ecto.Adapters.SQLite3.Connection.JoinTest do
       |> select([p, q], {p.id, q.x})
       |> plan()
 
+    # Key order differs between OTP 25 and 26, so we can't hardcode the column names below
+    [col1, col2] = Map.keys(types)
+
     assert ~s{SELECT s0."id", v1."x" FROM "schema" AS s0 } <>
-             ~s{INNER JOIN (SELECT column1 AS y, column2 AS x FROM (VALUES ($1::INTEGER,$2::INTEGER),($3::INTEGER,$4::INTEGER))) } <>
+             ~s{INNER JOIN (SELECT column1 AS #{col1}, column2 AS #{col2} FROM (VALUES ($1::INTEGER,$2::INTEGER),($3::INTEGER,$4::INTEGER))) } <>
              ~s{AS v1 ON (v1."x" = s0."x") AND (v1."y" = s0."y")} ==
              all(query)
   end
