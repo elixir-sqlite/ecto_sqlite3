@@ -7,6 +7,9 @@ project adheres to [Semantic Versioning][semver].
 
 ## Unreleased
 
+- added: Ability to use `values/1` in ecto queries.
+- changed: Updated locked dependencies.
+
 ## v0.21.0
 - added: Ability to specify type extensions for custom sqlite types. See: [#167](https://github.com/elixir-sqlite/ecto_sqlite3/pull/167).
 
