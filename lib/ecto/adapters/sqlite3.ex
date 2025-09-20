@@ -479,7 +479,7 @@ defmodule Ecto.Adapters.SQLite3 do
   def dumpers(:uuid, type) do
     case Application.get_env(:ecto_sqlite3, :uuid_type, :string) do
       :string -> []
-      :binary -> [type]
+      :binary -> [type, &Codec.blob_encode/1]
     end
   end
 
