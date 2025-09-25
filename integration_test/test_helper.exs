@@ -109,8 +109,12 @@ excludes = [
   # SQLite3 stores booleans as integers, causing Ecto's json_extract_path tests to fail
   :json_extract_path,
 
+  # SQLite3 does not support ON DELETE SET DEFAULT
+  :on_delete_default_all,
+
   # SQLite3 doesn't support specifying columns for ON DELETE SET NULL
   :on_delete_nilify_column_list,
+  :on_delete_default_column_list,
 
   # not sure how to support this yet
   :bitstring_type,
