@@ -7,6 +7,7 @@ project adheres to [Semantic Versioning][semver].
 
 ## Unreleased
 
+## v0.22.0
 - added: Ability to use `values/1` in ecto queries.
 - changed: Updated locked dependencies.
 
