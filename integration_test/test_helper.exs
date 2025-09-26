@@ -91,7 +91,6 @@ excludes = [
   :lock_for_migrations,
 
   # Migration we don't support
-  :prefix,
   :add_column_if_not_exists,
   :remove_column_if_exists,
   :alter_primary_key,
