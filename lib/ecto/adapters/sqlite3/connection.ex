@@ -1826,7 +1826,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
       " CONSTRAINT ",
       reference_name(ref, table, name),
       " REFERENCES ",
-      quote_table(ref.prefix || table.prefix, ref.table),
+      quote_table(nil, ref.table),
       ?(,
       quote_name(ref.column),
       ?),
