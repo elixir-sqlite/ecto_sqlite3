@@ -25,9 +25,8 @@ defmodule Ecto.Adapters.SQLite3.Connection.InsertTest do
     query = insert(nil, "schema", [], [[]], {:raise, [], []}, [])
     assert query == ~s{INSERT INTO "schema" DEFAULT VALUES}
 
-    assert_raise ArgumentError, "SQLite3 does not support table prefixes", fn ->
-      insert("prefix", "schema", [], [[]], {:raise, [], []}, [])
-    end
+    query = insert("prefix", "schema", [], [[]], {:raise, [], []}, [])
+    assert query == ~s{INSERT INTO prefix.schema DEFAULT VALUES}
 
     query = insert(nil, "schema", [:x, :y], [[:x, :y]], {:raise, [], []}, [:id])
     assert query == ~s{INSERT INTO "schema" ("x","y") VALUES (?1,?2) RETURNING "id"}

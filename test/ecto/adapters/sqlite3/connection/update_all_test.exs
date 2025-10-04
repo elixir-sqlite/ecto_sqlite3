@@ -123,12 +123,12 @@ defmodule Ecto.Adapters.SQLite3.Connection.UpdateAllTest do
   end
 
   test "update all with prefix" do
-    assert_raise ArgumentError, "SQLite3 does not support table prefixes", fn ->
+    query =
       from(m in Schema, update: [set: [x: 0]])
       |> Map.put(:prefix, "prefix")
       |> plan(:update_all)
-      |> update_all()
-    end
+
+    assert ~s{UPDATE prefix.schema AS s0 SET "x" = 0} == update_all(query)
   end
 
   test "update all with left join" do
