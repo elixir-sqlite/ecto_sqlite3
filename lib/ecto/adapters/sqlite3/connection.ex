@@ -470,7 +470,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   end
 
   @impl true
-  def execute_ddl({_, %Index{include: x}}) when length(x) != 0 do
+  def execute_ddl({_, %Index{include: [_ | _]}}) do
     raise ArgumentError, "`include` is not supported with SQLite3"
   end
 
