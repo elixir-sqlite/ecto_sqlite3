@@ -114,25 +114,27 @@ defmodule Ecto.Adapters.SQLite3.Connection.JoinTest do
              ~s{) AS s1 ON 1} == all(query)
   end
 
-  test "join with prefix is not supported" do
-    assert_raise ArgumentError, "SQLite3 does not support table prefixes", fn ->
+  test "join with prefix" do
+    query =
       Schema
       |> join(:inner, [p], q in Schema2, on: p.x == q.z)
       |> select([], true)
       |> Map.put(:prefix, "prefix")
       |> plan()
-      |> all()
-    end
 
-    assert_raise ArgumentError, "SQLite3 does not support table prefixes", fn ->
+    assert ~s{SELECT 1 FROM prefix.schema AS s0 INNER JOIN prefix.schema2 AS s1 ON s0."x" = s1."z"} ==
+             all(query)
+
+    query =
       Schema
       |> from(prefix: "first")
       |> join(:inner, [p], q in Schema2, on: p.x == q.z, prefix: "second")
       |> select([], true)
       |> Map.put(:prefix, "prefix")
       |> plan()
-      |> all()
-    end
+
+    assert ~s{SELECT 1 FROM first.schema AS s0 INNER JOIN second.schema2 AS s1 ON s0."x" = s1."z"} ==
+             all(query)
   end
 
   test "join with values" do
