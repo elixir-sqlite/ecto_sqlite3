@@ -1,7 +1,7 @@
 defmodule EctoSQLite3.MixProject do
   use Mix.Project
 
-  @version "0.22.0"
+  @version "0.23.0"
 
   def project do
     [
@@ -34,7 +34,7 @@ defmodule EctoSQLite3.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:decimal, "~> 1.6 or ~> 2.0"},
+      {:decimal, "~> 2.0 or ~> 3.0"},
       {:ecto_sql, "~> 3.13.0"},
       {:ecto, "~> 3.13.0"},
       {:exqlite, "~> 0.22"},
