@@ -1,13 +1,13 @@
 defmodule EctoSQLite3.MixProject do
   use Mix.Project
 
-  @version "0.23.0"
+  @version "0.24.0-dev"
 
   def project do
     [
       app: :ecto_sqlite3,
       version: @version,
-      elixir: "~> 1.15",
+      elixir: "~> 1.17",
       start_permanent: Mix.env() == :prod,
       source_url: "https://github.com/elixir-sqlite/ecto_sqlite3",
       homepage_url: "https://github.com/elixir-sqlite/ecto_sqlite3",
@@ -34,9 +34,9 @@ defmodule EctoSQLite3.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:decimal, "~> 2.0 or ~> 3.0"},
-      {:ecto_sql, "~> 3.13.0"},
-      {:ecto, "~> 3.13.0"},
+      {:decimal, "~> 3.0"},
+      {:ecto_sql, "~> 3.14"},
+      {:ecto, "~> 3.14"},
       {:exqlite, "~> 0.22"},
       {:ex_doc, "~> 0.27", only: [:dev], runtime: false},
       {:jason, ">= 0.0.0", only: [:dev, :test, :docs]},

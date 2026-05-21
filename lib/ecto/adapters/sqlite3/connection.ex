@@ -257,7 +257,18 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   end
 
   @impl true
-  def insert(prefix, table, [], [[]], on_conflict, returning, []) do
+  def insert(
+        prefix,
+        table,
+        header,
+        rows,
+        on_conflict,
+        returning,
+        placeholders,
+        opts \\ []
+      )
+
+  def insert(prefix, table, [], [[]], on_conflict, returning, [], _opts) do
     [
       "INSERT INTO ",
       quote_table(prefix, table),
@@ -267,7 +278,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     ]
   end
 
-  def insert(prefix, table, header, rows, on_conflict, returning, placeholders) do
+  def insert(prefix, table, header, rows, on_conflict, returning, placeholders, _opts) do
     counter_offset = length(placeholders) + 1
 
     values =
@@ -1354,12 +1365,11 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   end
 
   defp expr({:fragment, _, parts}, sources, query) do
-    parts
-    |> Enum.map(fn
-      {:raw, part} -> part
-      {:expr, expression} -> expr(expression, sources, query)
-    end)
-    |> parens_for_select
+    fragment_expr(parts, sources, query)
+  end
+
+  defp expr({{:fragment, _, parts}, schema}, sources, query) when is_atom(schema) do
+    fragment_expr(parts, sources, query)
   end
 
   defp expr({:values, _, [types, idx, num_rows]}, _, _query) do
@@ -1581,6 +1591,14 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     end)
   end
 
+  defp fragment_expr(parts, sources, query) do
+    Enum.map(parts, fn
+      {:raw, part} -> part
+      {:expr, expr} -> maybe_paren(expr, sources, query)
+    end)
+    |> parens_for_select()
+  end
+
   def interval(_, "microsecond", _sources) do
     raise ArgumentError,
           "SQLite does not support microsecond precision in datetime intervals"
@@ -1638,6 +1656,9 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     case elem(sources, pos) do
       {:fragment, _, _} ->
         {nil, as_prefix ++ [?f | Integer.to_string(pos)], nil}
+
+      {{:fragment, _, _}, schema, _} ->
+        {nil, as_prefix ++ [?f | Integer.to_string(pos)], schema}
 
       {:values, _, _} ->
         {nil, as_prefix ++ [?v | Integer.to_string(pos)], nil}
@@ -1854,6 +1875,18 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   defp reference_on_update(:update_all), do: " ON UPDATE CASCADE"
   defp reference_on_update(:restrict), do: " ON UPDATE RESTRICT"
   defp reference_on_update(_), do: []
+
+  defp maybe_paren({op, _, [_, _]} = expr, sources, query) when op in @binary_ops do
+    paren_expr(expr, sources, query)
+  end
+
+  defp maybe_paren({:is_nil, _, [_]} = expr, sources, query) do
+    paren_expr(expr, sources, query)
+  end
+
+  defp maybe_paren(expr, sources, query) do
+    expr(expr, sources, query)
+  end
 
   defp returning(%{select: nil}, _sources), do: []
 
