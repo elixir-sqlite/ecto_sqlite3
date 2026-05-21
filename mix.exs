@@ -1,7 +1,7 @@
 defmodule EctoSQLite3.MixProject do
   use Mix.Project
 
-  @version "0.24.0-dev"
+  @version "0.24.0"
 
   def project do
     [

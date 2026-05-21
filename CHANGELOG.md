@@ -7,6 +7,15 @@ project adheres to [Semantic Versioning][semver].
 
 ## Unreleased
 
+## v0.24.0
+- changed: Updated `decimal` dependency requirement to `~> 3.0`
+- changed: Updated `ecto_sql` dependency requirement to `~> 3.14`
+- changed: Updated `ecto` dependency requirement to `~> 3.14`
+- changed: Require elixir `~> 1.17`
+
+## v0.23.0
+- changed: Updated decimal requirements
+
 ## v0.22.0
 - added: Ability to use `values/1` in ecto queries.
 - changed: Updated locked dependencies.
