@@ -257,7 +257,9 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   end
 
   @impl true
-  def insert(prefix, table, [], [[]], on_conflict, returning, []) do
+  def insert(prefix, table, header, rows, on_conflict, returning, placeholders, opts \\ [])
+
+  def insert(prefix, table, [], [[]], on_conflict, returning, [], _opts) do
     [
       "INSERT INTO ",
       quote_table(prefix, table),
@@ -267,7 +269,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     ]
   end
 
-  def insert(prefix, table, header, rows, on_conflict, returning, placeholders) do
+  def insert(prefix, table, header, rows, on_conflict, returning, placeholders, _opts) do
     counter_offset = length(placeholders) + 1
 
     values =
