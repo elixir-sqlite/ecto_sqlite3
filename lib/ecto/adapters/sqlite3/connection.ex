@@ -551,11 +551,6 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   end
 
   @impl true
-  def execute_ddl({:drop_if_exists, %Index{concurrently: true}}) do
-    raise ArgumentError, "`concurrently` is not supported with SQLite3"
-  end
-
-  @impl true
   def execute_ddl({:drop_if_exists, %Index{} = index}) do
     [
       [
@@ -604,75 +599,8 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     raise ArgumentError, "SQLite3 adapter does not support keyword lists in execute"
   end
 
-  @impl true
-  def execute_ddl({:create, %Index{} = index}) do
-    fields = Enum.map_intersperse(index.columns, ", ", &index_expr/1)
-
-    [
-      [
-        "CREATE ",
-        if_do(index.unique, "UNIQUE "),
-        "INDEX",
-        ?\s,
-        quote_name(index.name),
-        " ON ",
-        quote_table(index.prefix, index.table),
-        " (",
-        fields,
-        ?),
-        if_do(index.where, [" WHERE ", to_string(index.where)])
-      ]
-    ]
-  end
-
-  def execute_ddl({:create_if_not_exists, %Index{} = index}) do
-    fields = Enum.map_intersperse(index.columns, ", ", &index_expr/1)
-
-    [
-      [
-        "CREATE ",
-        if_do(index.unique, "UNIQUE "),
-        "INDEX IF NOT EXISTS",
-        ?\s,
-        quote_name(index.name),
-        " ON ",
-        quote_table(index.prefix, index.table),
-        " (",
-        fields,
-        ?),
-        if_do(index.where, [" WHERE ", to_string(index.where)])
-      ]
-    ]
-  end
-
   def execute_ddl({:create, %Constraint{}}) do
     raise ArgumentError, "SQLite3 does not support ALTER TABLE ADD CONSTRAINT."
-  end
-
-  def execute_ddl({:drop, %Index{} = index}) do
-    [
-      [
-        "DROP INDEX ",
-        quote_table(index.prefix, index.name)
-      ]
-    ]
-  end
-
-  def execute_ddl({:drop, %Index{} = index, _mode}) do
-    execute_ddl({:drop, index})
-  end
-
-  def execute_ddl({:drop_if_exists, %Index{} = index}) do
-    [
-      [
-        "DROP INDEX IF EXISTS ",
-        quote_table(index.prefix, index.name)
-      ]
-    ]
-  end
-
-  def execute_ddl({:drop_if_exists, %Index{} = index, _mode}) do
-    execute_ddl({:drop_if_exists, index})
   end
 
   def execute_ddl({:drop, %Constraint{}, _mode}) do
@@ -683,41 +611,11 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     raise ArgumentError, "SQLite3 does not support ALTER TABLE DROP CONSTRAINT."
   end
 
-  def execute_ddl({:rename, %Table{} = current_table, %Table{} = new_table}) do
-    [
-      [
-        "ALTER TABLE ",
-        quote_table(current_table.prefix, current_table.name),
-        " RENAME TO ",
-        quote_table(new_table.prefix, new_table.name)
-      ]
-    ]
-  end
-
-  def execute_ddl({:rename, %Table{} = table, current_column, new_column}) do
-    [
-      [
-        "ALTER TABLE ",
-        quote_table(table.prefix, table.name),
-        " RENAME COLUMN ",
-        quote_name(current_column),
-        " TO ",
-        quote_name(new_column)
-      ]
-    ]
-  end
-
   def execute_ddl({:rename, %Index{} = index, new_index}) do
     [
       execute_ddl({:drop, index}),
       execute_ddl({:create, %Index{index | name: new_index}})
     ]
-  end
-
-  def execute_ddl(string) when is_binary(string), do: [string]
-
-  def execute_ddl(keyword) when is_list(keyword) do
-    raise ArgumentError, "SQLite3 adapter does not support keyword lists in execute"
   end
 
   @impl true
