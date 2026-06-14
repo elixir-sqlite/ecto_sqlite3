@@ -470,32 +470,26 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     end)
   end
 
-  @impl true
   def execute_ddl({_, %Index{concurrently: true}}) do
     raise ArgumentError, "`concurrently` is not supported with SQLite3"
   end
 
-  @impl true
   def execute_ddl({_, %Index{only: true}}) do
     raise ArgumentError, "`only` is not supported with SQLite3"
   end
 
-  @impl true
   def execute_ddl({_, %Index{include: [_ | _]}}) do
     raise ArgumentError, "`include` is not supported with SQLite3"
   end
 
-  @impl true
   def execute_ddl({_, %Index{using: x}}) when not is_nil(x) do
     raise ArgumentError, "`using` is not supported with SQLite3"
   end
 
-  @impl true
   def execute_ddl({_, %Index{nulls_distinct: x}}) when not is_nil(x) do
     raise ArgumentError, "`nulls_distinct` is not supported with SQLite3"
   end
 
-  @impl true
   def execute_ddl({:create, %Index{} = index}) do
     fields = Enum.map_intersperse(index.columns, ", ", &index_expr/1)
 
@@ -515,7 +509,6 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     ]
   end
 
-  @impl true
   def execute_ddl({:create_if_not_exists, %Index{} = index}) do
     fields = Enum.map_intersperse(index.columns, ", ", &index_expr/1)
 
@@ -535,7 +528,6 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     ]
   end
 
-  @impl true
   def execute_ddl({:drop, %Index{} = index}) do
     [
       [
@@ -545,17 +537,14 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     ]
   end
 
-  @impl true
   def execute_ddl({:drop, %Index{} = index, _mode}) do
     execute_ddl({:drop, index})
   end
 
-  @impl true
   def execute_ddl({:drop_if_exists, %Index{concurrently: true}}) do
     raise ArgumentError, "`concurrently` is not supported with SQLite3"
   end
 
-  @impl true
   def execute_ddl({:drop_if_exists, %Index{} = index}) do
     [
       [
@@ -565,12 +554,10 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     ]
   end
 
-  @impl true
   def execute_ddl({:drop_if_exists, %Index{} = index, _mode}) do
     execute_ddl({:drop_if_exists, index})
   end
 
-  @impl true
   def execute_ddl({:rename, %Table{} = current_table, %Table{} = new_table}) do
     [
       [
@@ -582,7 +569,6 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     ]
   end
 
-  @impl true
   def execute_ddl({:rename, %Table{} = current_table, old_col, new_col}) do
     [
       [
@@ -596,15 +582,12 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     ]
   end
 
-  @impl true
   def execute_ddl(string) when is_binary(string), do: [string]
 
-  @impl true
   def execute_ddl(keyword) when is_list(keyword) do
     raise ArgumentError, "SQLite3 adapter does not support keyword lists in execute"
   end
 
-  @impl true
   def execute_ddl({:create, %Index{} = index}) do
     fields = Enum.map_intersperse(index.columns, ", ", &index_expr/1)
 
