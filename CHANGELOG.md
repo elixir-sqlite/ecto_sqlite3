@@ -7,6 +7,11 @@ project adheres to [Semantic Versioning][semver].
 
 ## Unreleased
 
+## v0.24.1
+- changed: Silenced Elixir `1.20` warnings
+- changed: Removed redundant `execute_ddl` calls
+- changed: Removed redundant `@impl true` directives
+
 ## v0.24.0
 - changed: Updated `decimal` dependency requirement to `~> 3.0`
 - changed: Updated `ecto_sql` dependency requirement to `~> 3.14`
