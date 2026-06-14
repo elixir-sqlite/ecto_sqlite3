@@ -1,64 +1,66 @@
 name: CI
 
 on:
-  push:
-    branches: ["*"]
-  pull_request:
-    branches: ["*"]
+    push:
+        branches: ["*"]
+    pull_request:
+        branches: ["*"]
 
 jobs:
-  lint:
-    runs-on: ${{ matrix.os }}
-    env:
-      MIX_ENV: dev
-    name: Lint
-    strategy:
-      matrix:
-        os: ["ubuntu-latest"]
-        elixir: ["1.19"]
-        otp: ["28"]
-    steps:
-      - uses: actions/checkout@v6
-      - uses: erlef/setup-beam@v1
-        with:
-          otp-version: ${{ matrix.otp }}
-          elixir-version: ${{ matrix.elixir }}
-      - uses: actions/cache@v5
-        with:
-          path: deps
-          key: ${{ matrix.os }}-otp_${{ matrix.otp }}-elixir_${{ matrix.elixir }}-mix_${{ hashFiles('**/mix.lock') }}
-          restore-keys: ${{ matrix.os }}-otp_${{ matrix.otp }}-elixir_${{ matrix.elixir }}-mix_
-      - run: mix deps.get
-      - run: mix deps.compile
-      - run: mix lint
+    lint:
+        runs-on: ${{ matrix.os }}
+        env:
+            MIX_ENV: dev
+        name: Lint
+        strategy:
+            matrix:
+                os: ["ubuntu-latest"]
+                elixir: ["1.20"]
+                otp: ["29"]
+        steps:
+            - uses: actions/checkout@v6
+            - uses: erlef/setup-beam@v1
+              with:
+                  otp-version: ${{ matrix.otp }}
+                  elixir-version: ${{ matrix.elixir }}
+            - uses: actions/cache@v5
+              with:
+                  path: deps
+                  key: ${{ matrix.os }}-otp_${{ matrix.otp }}-elixir_${{ matrix.elixir }}-mix_${{ hashFiles('**/mix.lock') }}
+                  restore-keys: ${{ matrix.os }}-otp_${{ matrix.otp }}-elixir_${{ matrix.elixir }}-mix_
+            - run: mix deps.get
+            - run: mix deps.compile
+            - run: mix lint
 
-  test:
-    runs-on: ${{ matrix.os }}
-    name: Test Elixir ${{ matrix.elixir }}, OTP ${{ matrix.otp }}, OS ${{ matrix.os }}
-    env:
-      MIX_ENV: test
-    strategy:
-      fail-fast: false
-      matrix:
-        os: ["ubuntu-latest"]
-        elixir: ["1.19", "1.18", "1.17"]
-        otp: ["28", "27", "26"]
-        exclude:
-          - elixir: "1.17"
-            otp: "28"
-    steps:
-      - uses: actions/checkout@v6
-      - uses: erlef/setup-beam@v1
-        with:
-          otp-version: ${{ matrix.otp }}
-          elixir-version: ${{ matrix.elixir }}
-      - uses: actions/cache@v5
-        with:
-          path: deps
-          key: ${{ matrix.os }}-otp_${{ matrix.otp }}-elixir_${{ matrix.elixir }}-mix_${{ hashFiles('**/mix.lock') }}
-          restore-keys: ${{ matrix.os }}-otp_${{ matrix.otp }}-elixir_${{ matrix.elixir }}-mix_
-      - run: mix deps.get --only test
-      - run: mix deps.compile
-      - run: mix compile
-      - run: mix test
-      - run: EXQLITE_INTEGRATION=true mix test
+    test:
+        runs-on: ${{ matrix.os }}
+        name: Test Elixir ${{ matrix.elixir }}, OTP ${{ matrix.otp }}, OS ${{ matrix.os }}
+        env:
+            MIX_ENV: test
+        strategy:
+            fail-fast: false
+            matrix:
+                os: ["ubuntu-latest"]
+                elixir: ["1.20", "1.19", "1.18"]
+                otp: ["29", "28", "27"]
+                exclude:
+                    - elixir: "1.19"
+                      otp: "29"
+                    - elixir: "1.18"
+                      otp: "29"
+        steps:
+            - uses: actions/checkout@v6
+            - uses: erlef/setup-beam@v1
+              with:
+                  otp-version: ${{ matrix.otp }}
+                  elixir-version: ${{ matrix.elixir }}
+            - uses: actions/cache@v5
+              with:
+                  path: deps
+                  key: ${{ matrix.os }}-otp_${{ matrix.otp }}-elixir_${{ matrix.elixir }}-mix_${{ hashFiles('**/mix.lock') }}
+                  restore-keys: ${{ matrix.os }}-otp_${{ matrix.otp }}-elixir_${{ matrix.elixir }}-mix_
+            - run: mix deps.get --only test
+            - run: mix deps.compile
+            - run: mix compile
+            - run: mix test
+            - run: EXQLITE_INTEGRATION=true mix test
