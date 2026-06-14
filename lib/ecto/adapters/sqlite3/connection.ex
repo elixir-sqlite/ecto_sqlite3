@@ -565,15 +565,15 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     ]
   end
 
-  def execute_ddl({:rename, %Table{} = current_table, old_col, new_col}) do
+  def execute_ddl({:rename, %Table{} = table, current_column, new_column}) do
     [
       [
         "ALTER TABLE ",
-        quote_table(current_table.prefix, current_table.name),
+        quote_table(table.prefix, table.name),
         " RENAME COLUMN ",
-        quote_name(old_col),
+        quote_name(current_column),
         " TO ",
-        quote_name(new_col)
+        quote_name(new_column)
       ]
     ]
   end
