@@ -7,6 +7,13 @@
 An Ecto SQLite3 Adapter. Uses [Exqlite](https://github.com/elixir-sqlite/exqlite)
 as the driver to communicate with sqlite3.
 
+## Contributing
+
+Feel free to check the project out and submit pull requests. All that is asked
+of you, is to respect the reviewer's time and to thoroughly review the
+contributions. You can use AI for contributions, just disclose that you did and
+be honest.
+
 ## Caveats and limitations
 
 See [Limitations](https://hexdocs.pm/ecto_sqlite3/Ecto.Adapters.SQLite3.html#module-limitations-and-caveats)
