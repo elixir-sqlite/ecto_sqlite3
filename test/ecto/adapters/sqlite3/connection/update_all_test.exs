@@ -25,6 +25,14 @@ defmodule Ecto.Adapters.SQLite3.Connection.UpdateAllTest do
              ~s{"x" = 0, "y" = "y" + 1, "z" = "z" + -3} == update_all(query)
 
     query =
+      from(m in Schema)
+      |> update([m], inc: [x: m.y + m.z])
+      |> plan(:update_all)
+
+    assert ~s{UPDATE "schema" AS s0 SET "x" = "x" + (s0."y" + s0."z")} ==
+             update_all(query)
+
+    query =
       from(e in Schema)
       |> where([e], e.x == 123)
       |> update([e], set: [x: 0])

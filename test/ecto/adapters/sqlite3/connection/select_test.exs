@@ -308,11 +308,38 @@ defmodule Ecto.Adapters.SQLite3.Connection.SelectTest do
 
   test "is_nil with comparison" do
     query =
-      "schema"
+      Schema
       |> select([r], r.x == is_nil(r.y))
       |> plan()
 
     assert ~s{SELECT s0."x" = (s0."y" IS NULL) FROM "schema" AS s0} == all(query)
+  end
+
+  test "is_nil parenthesizes boolean and" do
+    query =
+      Schema
+      |> select([r], is_nil(r.x and r.y))
+      |> plan()
+
+    assert ~s{SELECT (s0."x" AND s0."y") IS NULL FROM "schema" AS s0} == all(query)
+  end
+
+  test "is_nil parenthesizes not" do
+    query =
+      Schema
+      |> select([r], is_nil(not r.x))
+      |> plan()
+
+    assert ~s{SELECT (NOT (s0."x")) IS NULL FROM "schema" AS s0} == all(query)
+  end
+
+  test "not parenthesizes when compared" do
+    query =
+      Schema
+      |> select([r], not r.x < r.y)
+      |> plan()
+
+    assert ~s{SELECT (NOT (s0."x")) < s0."y" FROM "schema" AS s0} == all(query)
   end
 
   describe "casting" do
@@ -403,10 +430,8 @@ defmodule Ecto.Adapters.SQLite3.Connection.SelectTest do
         |> select([e], e.x == ^0 or e.x in ^[1, 2, 3] or e.x == ^4)
         |> plan()
 
-      assert ~s{SELECT (} <>
-               ~s{(s0."x" = ?) OR s0."x" IN (?,?,?)} <>
-               ~s{) OR (s0."x" = ?) } <>
-               ~s{FROM "schema" AS s0} == all(query)
+      assert ~s{SELECT ((s0."x" = ?) OR (s0."x" IN (?,?,?))) OR (s0."x" = ?) FROM "schema" AS s0} ==
+               all(query)
     end
 
     test "json each" do
@@ -435,6 +460,25 @@ defmodule Ecto.Adapters.SQLite3.Connection.SelectTest do
         |> plan()
 
       assert all(query) == ~s{SELECT ? IN (1,?,3) FROM "schema" AS s0}
+    end
+
+    test "parenthesizes not on the left" do
+      query =
+        Schema
+        |> select([e], (not e.x) in [true, false])
+        |> plan()
+
+      assert ~s{SELECT (NOT (s0."x")) IN (SELECT value FROM JSON_EACH('[true,false]')) FROM "schema" AS s0} ==
+               all(query)
+    end
+
+    test "parenthesizes in when compared" do
+      query =
+        Schema
+        |> select([e], true == e.x in ^[1, 2, 3])
+        |> plan()
+
+      assert ~s{SELECT 1 = (s0."x" IN (?,?,?)) FROM "schema" AS s0} == all(query)
     end
   end
 
