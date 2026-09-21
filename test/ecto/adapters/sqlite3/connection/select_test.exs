@@ -480,6 +480,16 @@ defmodule Ecto.Adapters.SQLite3.Connection.SelectTest do
 
       assert ~s{SELECT 1 = (s0."x" IN (?,?,?)) FROM "schema" AS s0} == all(query)
     end
+
+    test "parenthesizes equality on the left of in" do
+      query =
+        Schema
+        |> select([e], (e.x == e.y) in [true, false])
+        |> plan()
+
+      assert ~s{SELECT (s0."x" = s0."y") IN (1,0) FROM "schema" AS s0} ==
+               all(query)
+    end
   end
 
   test "in subquery" do
@@ -513,6 +523,20 @@ defmodule Ecto.Adapters.SQLite3.Connection.SelectTest do
              ~s{WHERE (c0."post_id" IN (} <>
              ~s{SELECT sp0."id" FROM "posts" AS sp0 WHERE (sp0."title" = c0."subtitle")} <>
              ~s{))} == all(query)
+  end
+
+  test "parenthesizes addition on the left of in subquery" do
+    posts = subquery("posts" |> where(title: ^"hello") |> select([p], p.id))
+
+    query =
+      "comments"
+      |> where([c], (c.x + c.y) in subquery(posts))
+      |> select([c], c.x)
+      |> plan()
+
+    assert all(query) ==
+             ~s{SELECT c0."x" FROM "comments" AS c0 } <>
+               ~s{WHERE ((c0."x" + c0."y") IN (SELECT sp0."id" FROM "posts" AS sp0 WHERE (sp0."title" = ?)))}
   end
 
   describe "arrays" do
