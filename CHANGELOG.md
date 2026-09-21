@@ -7,6 +7,9 @@ project adheres to [Semantic Versioning][semver].
 
 ## Unreleased
 
+## v0.25.0
+- fixed: Precedence issues with SQL generation. See [#182](https://github.com/elixir-sqlite/ecto_sqlite3/pull/182)
+
 ## v0.24.1
 - changed: Silenced Elixir `1.20` warnings
 - changed: Removed redundant `execute_ddl` calls
