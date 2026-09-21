@@ -860,7 +860,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
       quoted_key,
       " = ",
       quoted_key,
-      " + " | expr(value, sources, query)
+      " + " | maybe_paren_expr(value, sources, query)
     ]
   end
 
@@ -1189,7 +1189,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
 
   defp expr({:in, _, [left, right]}, sources, query) when is_list(right) do
     args = Enum.map_intersperse(right, ?,, &expr(&1, sources, query))
-    [expr(left, sources, query), " IN (", args, ?)]
+    [maybe_paren_expr(left, sources, query), " IN (", args, ?)]
   end
 
   defp expr({:in, _, [_, {:^, _, [_, 0]}]}, _sources, _query) do
@@ -1198,17 +1198,17 @@ defmodule Ecto.Adapters.SQLite3.Connection do
 
   defp expr({:in, _, [left, {:^, _, [_, len]}]}, sources, query) do
     args = Enum.intersperse(List.duplicate(??, len), ?,)
-    [expr(left, sources, query), " IN (", args, ?)]
+    [maybe_paren_expr(left, sources, query), " IN (", args, ?)]
   end
 
   defp expr({:in, _, [left, %Ecto.SubQuery{} = subquery]}, sources, query) do
-    [expr(left, sources, query), " IN ", expr(subquery, sources, query)]
+    [maybe_paren_expr(left, sources, query), " IN ", expr(subquery, sources, query)]
   end
 
   # Super Hack to handle arrays in json
   defp expr({:in, _, [left, right]}, sources, query) do
     [
-      expr(left, sources, query),
+      maybe_paren_expr(left, sources, query),
       " IN (SELECT value FROM JSON_EACH(",
       expr(right, sources, query),
       ?),
@@ -1217,7 +1217,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   end
 
   defp expr({:is_nil, _, [arg]}, sources, query) do
-    [expr(arg, sources, query) | " IS NULL"]
+    [maybe_paren_expr(arg, sources, query) | " IS NULL"]
   end
 
   defp expr({:not, _, [expression]}, sources, query) do
@@ -1287,7 +1287,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
       ",",
       expr(datetime, sources, query),
       ",",
-      interval(count, interval, sources),
+      interval(count, interval, sources, query),
       ") AS TEXT)"
     ]
   end
@@ -1299,7 +1299,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
       ",",
       expr(date, sources, query),
       ",",
-      interval(count, interval, sources),
+      interval(count, interval, sources, query),
       ") AS TEXT)"
     ]
   end
@@ -1477,39 +1477,30 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   defp fragment_expr(parts, sources, query) do
     Enum.map(parts, fn
       {:raw, part} -> part
-      {:expr, expr} -> maybe_paren(expr, sources, query)
+      {:expr, expr} -> maybe_paren_expr(expr, sources, query)
     end)
     |> parens_for_select()
   end
 
-  def interval(_, "microsecond", _sources) do
+  defp interval(_, "microsecond", _sources, _query) do
     raise ArgumentError,
           "SQLite does not support microsecond precision in datetime intervals"
   end
 
-  def interval(count, "millisecond", sources) do
-    "(#{expr(count, sources, nil)} / 1000.0) || ' seconds'"
+  defp interval(count, "millisecond", sources, query) do
+    [?(, maybe_paren_expr(count, sources, query), " / 1000.0) || ' seconds'"]
   end
 
-  def interval(count, "week", sources) do
-    "(#{expr(count, sources, nil)} * 7) || ' days'"
+  defp interval(count, "week", sources, query) do
+    [?(, maybe_paren_expr(count, sources, query), " * 7) || ' days'"]
   end
 
-  def interval(count, interval, sources) do
-    "#{expr(count, sources, nil)} || ' #{interval}'"
-  end
-
-  defp op_to_binary({op, _, [_, _]} = expression, sources, query)
-       when op in @binary_ops do
-    paren_expr(expression, sources, query)
-  end
-
-  defp op_to_binary({:is_nil, _, [_]} = expression, sources, query) do
-    paren_expr(expression, sources, query)
+  defp interval(count, interval, sources, query) do
+    [maybe_paren_expr(count, sources, query), " || ' ", interval, "'"]
   end
 
   defp op_to_binary(expression, sources, query) do
-    expr(expression, sources, query)
+    maybe_paren_expr(expression, sources, query)
   end
 
   def create_names(query) do
@@ -1759,15 +1750,24 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   defp reference_on_update(:restrict), do: " ON UPDATE RESTRICT"
   defp reference_on_update(_), do: []
 
-  defp maybe_paren({op, _, [_, _]} = expr, sources, query) when op in @binary_ops do
+  defp maybe_paren_expr({op, _, [_, _]} = expr, sources, query)
+       when op in @binary_ops do
     paren_expr(expr, sources, query)
   end
 
-  defp maybe_paren({:is_nil, _, [_]} = expr, sources, query) do
+  defp maybe_paren_expr({:is_nil, _, [_]} = expr, sources, query) do
     paren_expr(expr, sources, query)
   end
 
-  defp maybe_paren(expr, sources, query) do
+  defp maybe_paren_expr({:not, _, [_]} = expr, sources, query) do
+    paren_expr(expr, sources, query)
+  end
+
+  defp maybe_paren_expr({:in, _, [_, _]} = expr, sources, query) do
+    paren_expr(expr, sources, query)
+  end
+
+  defp maybe_paren_expr(expr, sources, query) do
     expr(expr, sources, query)
   end
 
