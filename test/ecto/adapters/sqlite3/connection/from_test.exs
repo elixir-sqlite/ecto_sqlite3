@@ -62,7 +62,7 @@ defmodule Ecto.Adapters.SQLite3.Connection.FromTest do
 
     test "raises when selecting all fields without a schema" do
       assert_raise Ecto.QueryError,
-                   ~r"SQLite3 does not support selecting all fields from \"posts\" without a schema",
+                   ~r"^SQLite3 does not support selecting all fields from \"posts\" without a schema",
                    fn ->
                      all(from(p in "posts", select: p) |> plan())
                    end
