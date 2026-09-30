@@ -7,6 +7,7 @@ project adheres to [Semantic Versioning][semver].
 
 ## Unreleased
 
+- added: Support check constraints via [`Ecto.Migration.constraint/3`](https://hexdocs.pm/ecto_sql/Ecto.Migration.html#constraint/3).
 - changed: Reimplement querying prefix names.
 - added: Raise on cross-database foreign keys.
 - changed: Made `quote_name/1` private.
