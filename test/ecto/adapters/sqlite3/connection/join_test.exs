@@ -155,7 +155,7 @@ defmodule Ecto.Adapters.SQLite3.Connection.JoinTest do
         :inner,
         [p],
         q in values(rows, types),
-        on: [x: p.x(), y: p.y()]
+        on: [x: p.x, y: p.y]
       )
       |> select([p, q], {p.id, q.x})
       |> plan()
