@@ -65,20 +65,20 @@ defmodule Ecto.Adapters.SQLite3.Connection.DeleteAllTest do
   end
 
   test "delete all with prefix" do
-    assert_raise ArgumentError, "SQLite3 does not support table prefixes", fn ->
+    query =
       Schema
       |> Ecto.Queryable.to_query()
       |> Map.put(:prefix, "prefix")
       |> plan()
-      |> delete_all()
-    end
 
-    assert_raise ArgumentError, "SQLite3 does not support table prefixes", fn ->
+    assert delete_all(query) == ~s{DELETE FROM "prefix"."schema" AS s0}
+
+    query =
       Schema
       |> from(prefix: "first")
       |> Map.put(:prefix, "prefix")
       |> plan()
-      |> delete_all()
-    end
+
+    assert delete_all(query) == ~s{DELETE FROM "first"."schema" AS s0}
   end
 end

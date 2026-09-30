@@ -271,7 +271,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   def insert(prefix, table, [], [[]], on_conflict, returning, [], _opts) do
     [
       "INSERT INTO ",
-      quote_table(prefix, table),
+      quote_name(prefix, table),
       insert_as(on_conflict),
       " DEFAULT VALUES",
       returning(returning)
@@ -290,7 +290,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
 
     [
       "INSERT INTO ",
-      quote_table(prefix, table),
+      quote_name(prefix, table),
       insert_as(on_conflict),
       values,
       on_conflict(on_conflict, header),
@@ -313,7 +313,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
 
     [
       "UPDATE ",
-      quote_table(prefix, table),
+      quote_name(prefix, table),
       " SET ",
       fields,
       " WHERE ",
@@ -335,7 +335,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
 
     [
       "DELETE FROM ",
-      quote_table(prefix, table),
+      quote_name(prefix, table),
       " WHERE ",
       filters,
       returning(returning)
@@ -402,7 +402,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     [
       [
         "CREATE TABLE ",
-        quote_table(table.prefix, table.name),
+        quote_name(table.prefix, table.name),
         ?\s,
         ?(,
         column_definitions(table, columns),
@@ -421,7 +421,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     [
       [
         "CREATE TABLE IF NOT EXISTS ",
-        quote_table(table.prefix, table.name),
+        quote_name(table.prefix, table.name),
         ?\s,
         ?(,
         column_definitions(table, columns),
@@ -437,7 +437,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     [
       [
         "DROP TABLE ",
-        quote_table(table.prefix, table.name)
+        quote_name(table.prefix, table.name)
       ]
     ]
   end
@@ -450,7 +450,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     [
       [
         "DROP TABLE IF EXISTS ",
-        quote_table(table.prefix, table.name)
+        quote_name(table.prefix, table.name)
       ]
     ]
   end
@@ -463,7 +463,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     Enum.map(changes, fn change ->
       [
         "ALTER TABLE ",
-        quote_table(table.prefix, table.name),
+        quote_name(table.prefix, table.name),
         ?\s,
         column_change(table, change)
       ]
@@ -498,9 +498,9 @@ defmodule Ecto.Adapters.SQLite3.Connection do
         "CREATE ",
         if_do(index.unique, "UNIQUE "),
         "INDEX ",
-        quote_name(index.name),
+        quote_name(index.prefix, index.name),
         " ON ",
-        quote_table(index.prefix, index.table),
+        quote_name(index.table),
         " (",
         fields,
         ?),
@@ -517,9 +517,9 @@ defmodule Ecto.Adapters.SQLite3.Connection do
         "CREATE ",
         if_do(index.unique, "UNIQUE "),
         "INDEX IF NOT EXISTS ",
-        quote_name(index.name),
+        quote_name(index.prefix, index.name),
         " ON ",
-        quote_table(index.prefix, index.table),
+        quote_name(index.table),
         " (",
         fields,
         ?),
@@ -532,7 +532,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     [
       [
         "DROP INDEX ",
-        quote_table(index.prefix, index.name)
+        quote_name(index.prefix, index.name)
       ]
     ]
   end
@@ -545,7 +545,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     [
       [
         "DROP INDEX IF EXISTS ",
-        quote_table(index.prefix, index.name)
+        quote_name(index.prefix, index.name)
       ]
     ]
   end
@@ -558,9 +558,9 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     [
       [
         "ALTER TABLE ",
-        quote_table(current_table.prefix, current_table.name),
+        quote_name(current_table.prefix, current_table.name),
         " RENAME TO ",
-        quote_table(nil, new_table.name)
+        quote_name(nil, new_table.name)
       ]
     ]
   end
@@ -569,7 +569,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     [
       [
         "ALTER TABLE ",
-        quote_table(table.prefix, table.name),
+        quote_name(table.prefix, table.name),
         " RENAME COLUMN ",
         quote_name(current_column),
         " TO ",
@@ -1539,7 +1539,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
 
       {table, schema, prefix} ->
         name = as_prefix ++ [create_alias(table) | Integer.to_string(pos)]
-        {quote_table(prefix, table), name, schema}
+        {quote_name(prefix, table), name, schema}
 
       %Ecto.SubQuery{} ->
         {nil, as_prefix ++ [?s | Integer.to_string(pos)], nil}
@@ -1658,7 +1658,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   defp check_expr(nil), do: []
 
   defp check_expr(%{name: name, expr: expr}),
-    do: [" CONSTRAINT ", name, " CHECK (", expr, ")"]
+    do: [" CONSTRAINT ", quote_name(name), " CHECK (", expr, ")"]
 
   defp collate_expr(nil), do: []
 
@@ -1717,11 +1717,13 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   defp reference_expr(%Reference{with: [_]}, _table, _name), do: []
 
   defp reference_expr(%Reference{} = ref, table, name) do
+    assert_same_database(table.prefix, ref.prefix)
+
     [
       " CONSTRAINT ",
       reference_name(ref, table, name),
       " REFERENCES ",
-      quote_table(ref.prefix || table.prefix, ref.table),
+      quote_name(ref.table),
       ?(,
       quote_name(ref.column),
       ?),
@@ -1826,13 +1828,15 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   end
 
   defp composite_fk_definition(table, {_op, name, ref, _opts}) do
+    assert_same_database(table.prefix, ref.prefix)
+
     {current_columns, reference_columns} = Enum.unzip([{name, ref.column} | ref.with])
 
     [
       ", FOREIGN KEY (",
       quote_names(current_columns),
       ") REFERENCES ",
-      quote_table(ref.prefix || table.prefix, ref.table),
+      quote_name(ref.table),
       ?(,
       quote_names(reference_columns),
       ?),
@@ -1855,23 +1859,31 @@ defmodule Ecto.Adapters.SQLite3.Connection do
 
   defp quote_names(names), do: Enum.map_intersperse(names, ?,, &quote_name/1)
 
-  def quote_name(name), do: quote_entity(name)
+  defp quote_name(nil, name), do: quote_name(name)
 
-  def quote_table(table), do: quote_entity(table)
+  defp quote_name(prefix, name), do: [quote_name(prefix), ?., quote_name(name)]
 
-  defp quote_table(nil, name), do: quote_entity(name)
-
-  defp quote_table(prefix, _name) when is_atom(prefix) or is_binary(prefix) do
-    raise ArgumentError, "SQLite3 does not support table prefixes"
+  defp quote_name(val) when is_atom(val) do
+    quote_name(Atom.to_string(val))
   end
 
-  defp quote_table(_, name), do: quote_entity(name)
+  defp quote_name(val) when is_binary(val) do
+    # Don't introduce unnecessary complexity and align with Ecto.Adapters.Postgres.Connection.
+    #
+    # Although SQLite and Postgres both allow syntax like:
+    # ```sql
+    # CREATE TABLE "lookma""quotes"(id INTEGER);
+    # SELECT name    FROM sqlite_schema WHERE name    = 'lookma"quotes';
+    # SELECT relname FROM pg_class      WHERE relname = 'lookma"quotes';
+    # ```
+    # there isn't much practical use case for it.
+    if String.contains?(val, "\"") do
+      raise ArgumentError,
+            "bad literal/field/index/table name #{inspect(val)} (\" is not permitted)"
+    end
 
-  defp quote_entity(val) when is_atom(val) do
-    quote_entity(Atom.to_string(val))
+    [[?", val, ?"]]
   end
-
-  defp quote_entity(val), do: [[?", val, ?"]]
 
   defp intersperse_reduce(list, separator, user_acc, reducer, acc \\ [])
 
@@ -1902,5 +1914,28 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     value
     |> escape_string()
     |> :binary.replace("\"", "\\\"", [:global])
+  end
+
+  # We know this holds since exqlite does not export sqlite3_db_config from Sqlite3NIF,
+  # thus nobody can call sqlite3_db_config(db, SQLITE_DBCONFIG_MAINDBNAME, ...)
+  defp normalize_database_name(nil) do
+    # TODO: handle modifier-selected temp database somehow?
+    # src/parse.y: `temp(A) ::= TEMP.  {A = pParse->db->init.busy==0;}`
+    "main"
+  end
+
+  defp normalize_database_name(name) when is_atom(name) do
+    normalize_database_name(Atom.to_string(name))
+  end
+
+  defp normalize_database_name(name) when is_binary(name) do
+    String.downcase(name, :ascii)
+  end
+
+  defp assert_same_database(table_prefix, ref_prefix) do
+    if normalize_database_name(ref_prefix || table_prefix) !=
+         normalize_database_name(table_prefix) do
+      raise ArgumentError, "SQLite3 does not support cross-database foreign keys"
+    end
   end
 end

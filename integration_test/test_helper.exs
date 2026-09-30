@@ -90,8 +90,11 @@ excludes = [
   # which is not true for SQLite
   :lock_for_migrations,
 
-  # Migration we don't support
+  # sadly we can not run prefix tests since ecto_sql's integration test expects
+  # attached db to persist across connections
   :prefix,
+
+  # Migration we don't support
   :add_column_if_not_exists,
   :remove_column_if_exists,
   :alter_primary_key,
