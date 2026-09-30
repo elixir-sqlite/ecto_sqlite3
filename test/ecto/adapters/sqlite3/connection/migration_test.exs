@@ -130,6 +130,42 @@ defmodule Ecto.Adapters.SQLite3.Connection.MigrationTest do
              ]
   end
 
+  test "create table with modifiers" do
+    create =
+      {:create, table(:posts, modifiers: "TEMPORARY"),
+       [
+         {:add, :id, :serial, [primary_key: true]},
+         {:add, :created_at, :naive_datetime, []}
+       ]}
+
+    assert execute_ddl(create) ==
+             [
+               ~s|CREATE TEMPORARY TABLE "posts" ("id" INTEGER PRIMARY KEY AUTOINCREMENT, "created_at" TEXT)|
+             ]
+
+    create =
+      {:create, table(:posts, modifiers: "TEMPORARY"),
+       [
+         {:add, :id, :serial, [primary_key: true]},
+         {:add, :category_0, %Reference{table: :categories, prefix: :foo}, []}
+       ]}
+
+    assert_raise ArgumentError,
+                 "SQLite3 does not support cross-database foreign keys",
+                 fn -> execute_ddl(create) end
+
+    create =
+      {:create, table(:posts, modifiers: "UNLOGGED"),
+       [
+         {:add, :id, :serial, [primary_key: true]},
+         {:add, :created_at, :naive_datetime, []}
+       ]}
+
+    assert_raise ArgumentError,
+                 ~s|SQLite3 adapter expects :modifiers to be one of [nil, "TEMP", "TEMPORARY"], got "UNLOGGED"|,
+                 fn -> execute_ddl(create) end
+  end
+
   test "create table with composite key" do
     create =
       {:create, table(:posts),
@@ -310,12 +346,12 @@ defmodule Ecto.Adapters.SQLite3.Connection.MigrationTest do
   end
 
   test "drop table" do
-    drop = {:drop, table(:posts)}
+    drop = {:drop, table(:posts), :restrict}
     assert execute_ddl(drop) == [~s|DROP TABLE "posts"|]
   end
 
   test "drop table with prefix" do
-    drop = {:drop, table(:posts, prefix: :foo)}
+    drop = {:drop, table(:posts, prefix: :foo), :restrict}
 
     assert execute_ddl(drop) == [~s|DROP TABLE "foo"."posts"|]
   end
@@ -496,7 +532,7 @@ defmodule Ecto.Adapters.SQLite3.Connection.MigrationTest do
   end
 
   test "drop index" do
-    drop = {:drop, index(:posts, [:id], name: "posts$main")}
+    drop = {:drop, index(:posts, [:id], name: "posts$main"), :restrict}
     assert execute_ddl(drop) == [~s|DROP INDEX "posts$main"|]
   end
 
@@ -589,7 +625,7 @@ defmodule Ecto.Adapters.SQLite3.Connection.MigrationTest do
     drop = {:drop, constraint(:products, "price_must_be_positive"), :cascade}
 
     assert_raise ArgumentError,
-                 "SQLite3 does not support `CASCADE` in `DROP CONSTRAINT` commands",
+                 "SQLite3 does not support `CASCADE` in this command",
                  fn -> execute_ddl(drop) end
 
     drop =

@@ -7,6 +7,8 @@ project adheres to [Semantic Versioning][semver].
 
 ## Unreleased
 
+- changed: Raise on incorrect use of drop mode.
+- added: Support rendering `:modifiers` in `CREATE TABLE` commands.
 - added: Support check constraints via [`Ecto.Migration.constraint/3`](https://hexdocs.pm/ecto_sql/Ecto.Migration.html#constraint/3).
 - changed: Reimplement querying prefix names.
 - added: Raise on cross-database foreign keys.
