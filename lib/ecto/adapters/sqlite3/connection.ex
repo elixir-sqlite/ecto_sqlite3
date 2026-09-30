@@ -390,19 +390,30 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   ## DDL
   ##
 
+  @creates [:create, :create_if_not_exists]
+  @drops [:drop, :drop_if_exists]
+
   @impl true
   def execute_ddl({_command, %Table{options: options}, _}) when is_list(options) do
     raise ArgumentError, "SQLite3 adapter does not support keyword lists in :options"
   end
 
-  def execute_ddl({:create, %Table{} = table, columns}) do
+  def execute_ddl({command, %Table{} = table, columns}) when command in @creates do
     {table, composite_pk_def} = composite_pk_definition(table, columns)
     composite_fk_defs = composite_fk_definitions(table, columns)
 
+    table_name = quote_name(table.prefix, table.name)
+
+    modifiers = modifiers_expr(table.modifiers)
+    assert_unqual_name(modifiers, table.prefix)
+
     [
       [
-        "CREATE TABLE ",
-        quote_name(table.prefix, table.name),
+        "CREATE ",
+        modifiers,
+        "TABLE ",
+        if_do(command == :create_if_not_exists, "IF NOT EXISTS "),
+        table_name,
         ?\s,
         ?(,
         column_definitions(table, columns),
@@ -414,49 +425,15 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     ]
   end
 
-  def execute_ddl({:create_if_not_exists, %Table{} = table, columns}) do
-    {table, composite_pk_def} = composite_pk_definition(table, columns)
-    composite_fk_defs = composite_fk_definitions(table, columns)
-
-    [
-      [
-        "CREATE TABLE IF NOT EXISTS ",
-        quote_name(table.prefix, table.name),
-        ?\s,
-        ?(,
-        column_definitions(table, columns),
-        composite_pk_def,
-        composite_fk_defs,
-        ?),
-        options_expr(table.options)
-      ]
-    ]
-  end
-
-  def execute_ddl({:drop, %Table{} = table}) do
+  def execute_ddl({command, %Table{} = table, mode}) when command in @drops do
     [
       [
         "DROP TABLE ",
-        quote_name(table.prefix, table.name)
+        if_do(command == :drop_if_exists, "IF EXISTS "),
+        quote_name(table.prefix, table.name),
+        drop_mode(mode)
       ]
     ]
-  end
-
-  def execute_ddl({:drop, %Table{} = table, _mode}) do
-    execute_ddl({:drop, table})
-  end
-
-  def execute_ddl({:drop_if_exists, %Table{} = table}) do
-    [
-      [
-        "DROP TABLE IF EXISTS ",
-        quote_name(table.prefix, table.name)
-      ]
-    ]
-  end
-
-  def execute_ddl({:drop_if_exists, %Table{} = table, _mode}) do
-    execute_ddl({:drop_if_exists, table})
   end
 
   def execute_ddl({:alter, %Table{} = table, changes}) do
@@ -490,7 +467,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     raise ArgumentError, "`nulls_distinct` is not supported with SQLite3"
   end
 
-  def execute_ddl({:create, %Index{} = index}) do
+  def execute_ddl({command, %Index{} = index}) when command in @creates do
     fields = Enum.map_intersperse(index.columns, ", ", &index_expr/1)
 
     [
@@ -498,6 +475,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
         "CREATE ",
         if_do(index.unique, "UNIQUE "),
         "INDEX ",
+        if_do(command == :create_if_not_exists, "IF NOT EXISTS "),
         quote_name(index.prefix, index.name),
         " ON ",
         quote_name(index.table),
@@ -509,49 +487,15 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     ]
   end
 
-  def execute_ddl({:create_if_not_exists, %Index{} = index}) do
-    fields = Enum.map_intersperse(index.columns, ", ", &index_expr/1)
-
-    [
-      [
-        "CREATE ",
-        if_do(index.unique, "UNIQUE "),
-        "INDEX IF NOT EXISTS ",
-        quote_name(index.prefix, index.name),
-        " ON ",
-        quote_name(index.table),
-        " (",
-        fields,
-        ?),
-        if_do(index.where, [" WHERE ", to_string(index.where)])
-      ]
-    ]
-  end
-
-  def execute_ddl({:drop, %Index{} = index}) do
+  def execute_ddl({command, %Index{} = index, mode}) when command in @drops do
     [
       [
         "DROP INDEX ",
-        quote_name(index.prefix, index.name)
+        if_do(command == :drop_if_exists, "IF EXISTS "),
+        quote_name(index.prefix, index.name),
+        drop_mode(mode)
       ]
     ]
-  end
-
-  def execute_ddl({:drop, %Index{} = index, _mode}) do
-    execute_ddl({:drop, index})
-  end
-
-  def execute_ddl({:drop_if_exists, %Index{} = index}) do
-    [
-      [
-        "DROP INDEX IF EXISTS ",
-        quote_name(index.prefix, index.name)
-      ]
-    ]
-  end
-
-  def execute_ddl({:drop_if_exists, %Index{} = index, _mode}) do
-    execute_ddl({:drop_if_exists, index})
   end
 
   def execute_ddl({:rename, %Table{} = current_table, %Table{} = new_table}) do
@@ -600,18 +544,14 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     raise ArgumentError, "SQLite3 does not support exclusion constraints"
   end
 
-  def execute_ddl({:drop, %Constraint{}, :cascade}) do
-    raise ArgumentError,
-          "SQLite3 does not support `CASCADE` in `DROP CONSTRAINT` commands"
-  end
-
-  def execute_ddl({:drop, %Constraint{} = constraint, _mode}) do
+  def execute_ddl({:drop, %Constraint{} = constraint, mode}) do
     [
       [
         "ALTER TABLE ",
         quote_name(constraint.prefix, constraint.table),
         " DROP CONSTRAINT ",
-        quote_name(constraint.name)
+        quote_name(constraint.name),
+        drop_mode(mode)
       ]
     ]
   end
@@ -622,7 +562,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
 
   def execute_ddl({:rename, %Index{} = index, new_index}) do
     [
-      execute_ddl({:drop, index}),
+      execute_ddl({:drop, index, :restrict}),
       execute_ddl({:create, %Index{index | name: new_index}})
     ]
   end
@@ -634,6 +574,14 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   def table_exists_query(table) do
     {"SELECT name FROM sqlite_master WHERE type='table' AND name=? LIMIT 1", [table]}
   end
+
+  defp drop_mode(:cascade) do
+    raise ArgumentError, "SQLite3 does not support `CASCADE` in this command"
+  end
+
+  # SQLite does not support RESTRICT either, but since `Ecto.Migration.drop/2`
+  # defaults to `:restrict` we have to silently ignore it
+  defp drop_mode(:restrict), do: []
 
   ##
   ## Query generation
@@ -1736,6 +1684,22 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   defp pk_expr(true, _), do: " PRIMARY KEY"
   defp pk_expr(_, _), do: []
 
+  defp modifiers_expr(nil), do: []
+
+  defp modifiers_expr(modifiers) when is_binary(modifiers) do
+    if temporary?(modifiers) do
+      [modifiers, ?\s]
+    else
+      raise ArgumentError,
+            ~s|SQLite3 adapter expects :modifiers to be one of [nil, "TEMP", "TEMPORARY"], got #{inspect(modifiers)}|
+    end
+  end
+
+  defp modifiers_expr(other) do
+    raise ArgumentError,
+          "SQLite3 adapter expects :modifiers to be a string or nil, got #{inspect(other)}"
+  end
+
   defp options_expr(nil), do: []
 
   defp options_expr(options) when is_list(options) do
@@ -1748,7 +1712,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   defp reference_expr(%Reference{with: [_]}, _table, _name), do: []
 
   defp reference_expr(%Reference{} = ref, table, name) do
-    assert_same_database(table.prefix, ref.prefix)
+    assert_same_database(table, ref)
 
     [
       " CONSTRAINT ",
@@ -1859,7 +1823,7 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   end
 
   defp composite_fk_definition(table, {_op, name, ref, _opts}) do
-    assert_same_database(table.prefix, ref.prefix)
+    assert_same_database(table, ref)
 
     {current_columns, reference_columns} = Enum.unzip([{name, ref.column} | ref.with])
 
@@ -1950,8 +1914,6 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   # We know this holds since exqlite does not export sqlite3_db_config from Sqlite3NIF,
   # thus nobody can call sqlite3_db_config(db, SQLITE_DBCONFIG_MAINDBNAME, ...)
   defp normalize_database_name(nil) do
-    # TODO: handle modifier-selected temp database somehow?
-    # src/parse.y: `temp(A) ::= TEMP.  {A = pParse->db->init.busy==0;}`
     "main"
   end
 
@@ -1963,10 +1925,34 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     String.downcase(name, :ascii)
   end
 
-  defp assert_same_database(table_prefix, ref_prefix) do
-    if normalize_database_name(ref_prefix || table_prefix) !=
-         normalize_database_name(table_prefix) do
+  defp temporary?(modifiers) when is_binary(modifiers),
+    do:
+      (modifiers
+       |> String.trim()
+       |> String.upcase(:ascii)) in ["TEMP", "TEMPORARY"]
+
+  defp temporary?(_), do: false
+
+  defp table_database(%Table{} = table) do
+    if temporary?(table.modifiers) do
+      "temp"
+    else
+      normalize_database_name(table.prefix)
+    end
+  end
+
+  defp assert_same_database(%Table{} = table, %Reference{} = ref) do
+    table_db = table_database(table)
+    ref_db = if ref.prefix, do: normalize_database_name(ref.prefix), else: table_db
+
+    if ref_db != table_db do
       raise ArgumentError, "SQLite3 does not support cross-database foreign keys"
+    end
+  end
+
+  defp assert_unqual_name(modifiers, prefix) do
+    if modifiers != [] and prefix != nil do
+      raise ArgumentError, "SQLite3 does not support a prefix on a temporary table"
     end
   end
 end
