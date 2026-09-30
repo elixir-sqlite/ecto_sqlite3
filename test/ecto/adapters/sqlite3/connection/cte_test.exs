@@ -176,7 +176,7 @@ defmodule Ecto.Adapters.SQLite3.Connection.CteTest do
       |> plan()
 
     assert_raise Ecto.QueryError,
-                 ~r/join `:left_lateral` not supported by SQLite3/,
+                 ~r/^join `:left_lateral` not supported by SQLite3/,
                  fn ->
                    all(query)
                  end

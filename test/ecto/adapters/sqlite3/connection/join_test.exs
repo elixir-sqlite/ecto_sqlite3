@@ -29,7 +29,7 @@ defmodule Ecto.Adapters.SQLite3.Connection.JoinTest do
   end
 
   test "join with hints are not supported" do
-    assert_raise Ecto.QueryError, ~r/join hints are not supported by SQLite3/, fn ->
+    assert_raise Ecto.QueryError, ~r/^join hints are not supported by SQLite3/, fn ->
       Schema
       |> join(:inner, [p], q in Schema2,
         hints: ["USE INDEX FOO", "USE INDEX BAR"],
