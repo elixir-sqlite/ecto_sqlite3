@@ -584,16 +584,40 @@ defmodule Ecto.Adapters.SQLite3.Connection do
     raise ArgumentError, "SQLite3 adapter does not support keyword lists in execute"
   end
 
-  def execute_ddl({:create, %Constraint{}}) do
-    raise ArgumentError, "SQLite3 does not support ALTER TABLE ADD CONSTRAINT."
+  def execute_ddl({:create, %Constraint{check: check} = constraint})
+      when is_binary(check) do
+    [
+      [
+        "ALTER TABLE ",
+        quote_name(constraint.prefix, constraint.table),
+        " ADD",
+        new_constraint_expr(constraint)
+      ]
+    ]
   end
 
-  def execute_ddl({:drop, %Constraint{}, _mode}) do
-    raise ArgumentError, "SQLite3 does not support ALTER TABLE DROP CONSTRAINT."
+  def execute_ddl({:create, %Constraint{exclude: exclude}}) when is_binary(exclude) do
+    raise ArgumentError, "SQLite3 does not support exclusion constraints"
+  end
+
+  def execute_ddl({:drop, %Constraint{}, :cascade}) do
+    raise ArgumentError,
+          "SQLite3 does not support `CASCADE` in `DROP CONSTRAINT` commands"
+  end
+
+  def execute_ddl({:drop, %Constraint{} = constraint, _mode}) do
+    [
+      [
+        "ALTER TABLE ",
+        quote_name(constraint.prefix, constraint.table),
+        " DROP CONSTRAINT ",
+        quote_name(constraint.name)
+      ]
+    ]
   end
 
   def execute_ddl({:drop_if_exists, %Constraint{}, _mode}) do
-    raise ArgumentError, "SQLite3 does not support ALTER TABLE DROP CONSTRAINT."
+    raise ArgumentError, "SQLite3 does not support `drop_if_exists` for constraints"
   end
 
   def execute_ddl({:rename, %Index{} = index, new_index}) do
@@ -1670,6 +1694,13 @@ defmodule Ecto.Adapters.SQLite3.Connection do
   defp null_expr(false), do: " NOT NULL"
   defp null_expr(true), do: " NULL"
   defp null_expr(_), do: []
+
+  defp new_constraint_expr(%Constraint{validate: validate}) when validate == false do
+    raise ArgumentError, "SQLite3 does not support `validate: false` in constraints"
+  end
+
+  defp new_constraint_expr(%Constraint{check: check} = constraint)
+       when is_binary(check), do: check_expr(%{name: constraint.name, expr: check})
 
   defp default_expr({:ok, nil}) do
     " DEFAULT NULL"

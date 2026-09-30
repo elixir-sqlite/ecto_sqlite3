@@ -2,7 +2,9 @@ defmodule Ecto.Adapters.SQLite3.Connection.MigrationTest do
   use ExUnit.Case, async: true
 
   import Ecto.Adapters.SQLite3.TestHelpers
-  import Ecto.Migration, only: [table: 1, table: 2, index: 2, index: 3, constraint: 3]
+
+  import Ecto.Migration,
+    only: [table: 1, table: 2, index: 2, index: 3, constraint: 2, constraint: 3]
 
   alias Ecto.Migration.Reference
 
@@ -512,21 +514,95 @@ defmodule Ecto.Adapters.SQLite3.Connection.MigrationTest do
     end
   end
 
-  test "drop constraint" do
+  test "create check constraint" do
+    create =
+      {:create, constraint(:products, "price_must_be_positive", check: "price > 0")}
+
+    assert execute_ddl(create) ==
+             [
+               ~s|ALTER TABLE "products" ADD CONSTRAINT "price_must_be_positive" CHECK (price > 0)|
+             ]
+
+    create =
+      {:create,
+       constraint(:products, "price_must_be_positive",
+         check: "price > 0",
+         prefix: "foo"
+       )}
+
+    assert execute_ddl(create) ==
+             [
+               ~s|ALTER TABLE "foo"."products" ADD CONSTRAINT "price_must_be_positive" CHECK (price > 0)|
+             ]
+  end
+
+  test "create exclusion constraint" do
+    assert_raise ArgumentError, "SQLite3 does not support exclusion constraints", fn ->
+      execute_ddl(
+        {:create,
+         constraint(:products, "price_must_be_positive",
+           exclude: ~s|gist (int4range("from", "to", '[]') WITH &&)|
+         )}
+      )
+    end
+  end
+
+  test "create constraint with comment" do
+    create =
+      {:create,
+       constraint(:products, "price_must_be_positive",
+         check: "price > 0",
+         prefix: "foo",
+         comment: "comment"
+       )}
+
+    assert execute_ddl(create) == [
+             ~s|ALTER TABLE "foo"."products" ADD CONSTRAINT "price_must_be_positive" CHECK (price > 0)|
+           ]
+
+    # NOTE: Comments are not supported by SQLite. DDL query generator will ignore them.
+  end
+
+  test "create invalid constraint" do
     assert_raise ArgumentError,
-                 ~r/SQLite3 does not support ALTER TABLE DROP CONSTRAINT./,
+                 "SQLite3 does not support `validate: false` in constraints",
                  fn ->
                    execute_ddl(
-                     {:drop,
-                      constraint(:products, "price_must_be_positive", prefix: :foo),
-                      :restrict}
+                     {:create,
+                      constraint(:products, "price_must_be_positive",
+                        check: "price > 0",
+                        prefix: "foo",
+                        validate: false
+                      )}
                    )
                  end
   end
 
+  test "drop constraint" do
+    drop =
+      {:drop, constraint(:products, "price_must_be_positive"), :restrict}
+
+    assert execute_ddl(drop) == [
+             ~s|ALTER TABLE "products" DROP CONSTRAINT "price_must_be_positive"|
+           ]
+
+    drop = {:drop, constraint(:products, "price_must_be_positive"), :cascade}
+
+    assert_raise ArgumentError,
+                 "SQLite3 does not support `CASCADE` in `DROP CONSTRAINT` commands",
+                 fn -> execute_ddl(drop) end
+
+    drop =
+      {:drop, constraint(:products, "price_must_be_positive", prefix: :foo), :restrict}
+
+    assert execute_ddl(drop) == [
+             ~s|ALTER TABLE "foo"."products" DROP CONSTRAINT "price_must_be_positive"|
+           ]
+  end
+
   test "drop_if_exists constraint" do
     assert_raise ArgumentError,
-                 ~r/SQLite3 does not support ALTER TABLE DROP CONSTRAINT./,
+                 "SQLite3 does not support `drop_if_exists` for constraints",
                  fn ->
                    execute_ddl(
                      {:drop_if_exists,

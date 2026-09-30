@@ -160,21 +160,20 @@ defmodule Ecto.Adapters.SQLite3 do
   ### Check constraints
 
   SQLite3 supports specifying check constraints on the table or on the column definition.
-  We currently only support adding a check constraint via a column definition, since the
-  table definition approach only works at table-creation time and cannot be added at
-  table-alter time. You can see more information in the SQLite3
-  [CREATE TABLE documentation](https://sqlite.org/lang_createtable.html).
+  Table-alter time check constraints are supported since SQLite 3.53.0.
 
-  Because of this, you cannot add a constraint via the normal `Ecto.Migration.constraint/3`
-  method, as that operates via `ALTER TABLE ADD CONSTRAINT`, and this type of `ALTER TABLE`
-  operation SQLite3 does not support. You can however get the full functionality by
-  adding a constraint at the column level, specifying the name and expression. Per the
-  SQLite3 documentation, there is no _functional_ difference between a column or table
-  constraint.
+  Adding a constraint via `Ecto.Migration.constraint/3` is recommended for new projects.
+  Note that SQLite's `ADD CONSTRAINTS` verifies existing rows with `WHERE (check) IS NOT TRUE`,
+  so make sure your check is NULL-safe.
 
-  Thus, adding a check constraint for a new column is as simple as:
+  As an adapter-specific extension, the old way of adding column-level constraints is still
+  available:
 
       add :email, :string, check: %{name: "test_constraint", expr: "email != 'test@example.com'"}
+
+  Note that column-level constraints are slightly different than table-level constraints,
+  since `DROP COLUMN` can drop column-level constraints but not table-level constraints.
+  Drop the constraint first before dropping the column in those cases.
 
   ### Handling foreign key constraints in changesets
 
