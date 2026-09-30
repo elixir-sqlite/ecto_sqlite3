@@ -7,6 +7,11 @@ project adheres to [Semantic Versioning][semver].
 
 ## Unreleased
 
+- changed: Reimplement querying prefix names.
+- added: Raise on cross-database foreign keys.
+- changed: Made `quote_name/1` private.
+- changed: quote_name no longer accepts names with double quote.
+
 ## v0.25.0
 - fixed: Precedence issues with SQL generation. See [#182](https://github.com/elixir-sqlite/ecto_sqlite3/pull/182)
 

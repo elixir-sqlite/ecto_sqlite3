@@ -43,9 +43,13 @@ defmodule Ecto.Adapters.SQLite3.Connection.MigrationTest do
       {:create, table(:posts, prefix: :foo),
        [{:add, :category_0, %Reference{table: :categories}, []}]}
 
-    assert_raise ArgumentError, "SQLite3 does not support table prefixes", fn ->
-      execute_ddl(create)
-    end
+    assert execute_ddl(create) == [
+             """
+             CREATE TABLE "foo"."posts" (\
+             "category_0" INTEGER CONSTRAINT "posts_category_0_fkey" REFERENCES "categories"("id")\
+             )\
+             """
+           ]
   end
 
   test "create table with references" do
@@ -60,7 +64,8 @@ defmodule Ecto.Adapters.SQLite3.Connection.MigrationTest do
           [null: false]},
          {:add, :category_4, %Reference{table: :categories, on_delete: :nilify_all},
           []},
-         {:add, :category_5, %Reference{table: :categories, on_update: :nothing}, []},
+         {:add, :category_5,
+          %Reference{table: :categories, prefix: :main, on_update: :nothing}, []},
          {:add, :category_6, %Reference{table: :categories, on_update: :update_all},
           [null: false]},
          {:add, :category_7, %Reference{table: :categories, on_update: :nilify_all},
@@ -93,6 +98,20 @@ defmodule Ecto.Adapters.SQLite3.Connection.MigrationTest do
              )\
              """
            ]
+
+    create =
+      {:create, table(:posts),
+       [
+         {:add, :id, :serial, [primary_key: true]},
+         {:add, :cross_db_fk,
+          %Reference{table: :categories, prefix: :foo, on_update: :nothing}, []}
+       ]}
+
+    assert_raise ArgumentError,
+                 "SQLite3 does not support cross-database foreign keys",
+                 fn ->
+                   execute_ddl(create)
+                 end
   end
 
   test "create table with options" do
@@ -296,9 +315,7 @@ defmodule Ecto.Adapters.SQLite3.Connection.MigrationTest do
   test "drop table with prefix" do
     drop = {:drop, table(:posts, prefix: :foo)}
 
-    assert_raise ArgumentError, "SQLite3 does not support table prefixes", fn ->
-      execute_ddl(drop)
-    end
+    assert execute_ddl(drop) == [~s|DROP TABLE "foo"."posts"|]
   end
 
   test "alter table" do
@@ -308,6 +325,8 @@ defmodule Ecto.Adapters.SQLite3.Connection.MigrationTest do
          {:add, :title, :string, [default: "Untitled", size: 100, null: false]},
          {:add, :author_id, %Reference{table: :author}, []},
          {:add, :category_id, %Reference{table: :categories, validate: false}, []},
+         {:add, :email, :string,
+          check: %{name: "test_constraint", expr: "email != 'test@example.com'"}},
          {:remove, :summary},
          {:remove, :body, :text, []},
          {:remove, :space_id, %Reference{table: :author}, []}
@@ -317,6 +336,7 @@ defmodule Ecto.Adapters.SQLite3.Connection.MigrationTest do
              ~s|ALTER TABLE "posts" ADD COLUMN "title" TEXT DEFAULT 'Untitled' NOT NULL|,
              ~s|ALTER TABLE "posts" ADD COLUMN "author_id" INTEGER CONSTRAINT "posts_author_id_fkey" REFERENCES "author"("id")|,
              ~s|ALTER TABLE "posts" ADD COLUMN "category_id" INTEGER CONSTRAINT "posts_category_id_fkey" REFERENCES "categories"("id")|,
+             ~s|ALTER TABLE "posts" ADD COLUMN "email" TEXT CONSTRAINT "test_constraint" CHECK (email != 'test@example.com')|,
              ~s|ALTER TABLE "posts" DROP COLUMN "summary"|,
              ~s|ALTER TABLE "posts" DROP COLUMN "body"|,
              ~s|ALTER TABLE "posts" DROP COLUMN "space_id"|
@@ -328,9 +348,13 @@ defmodule Ecto.Adapters.SQLite3.Connection.MigrationTest do
       {:alter, table(:posts, prefix: :foo),
        [{:add, :author_id, %Reference{table: :author}, []}]}
 
-    assert_raise ArgumentError, "SQLite3 does not support table prefixes", fn ->
-      execute_ddl(alter)
-    end
+    assert execute_ddl(alter) == [
+             """
+             ALTER TABLE "foo"."posts" \
+             ADD COLUMN "author_id" INTEGER \
+             CONSTRAINT "posts_author_id_fkey" REFERENCES "author"("id")\
+             """
+           ]
   end
 
   test "alter table with serial primary key" do
@@ -374,20 +398,26 @@ defmodule Ecto.Adapters.SQLite3.Connection.MigrationTest do
   test "create index with prefix" do
     create = {:create, index(:posts, [:category_id, :permalink], prefix: :foo)}
 
-    assert_raise ArgumentError, "SQLite3 does not support table prefixes", fn ->
-      execute_ddl(create)
-    end
+    assert execute_ddl(create) == [
+             """
+             CREATE INDEX "foo"."posts_category_id_permalink_index" \
+             ON "posts" ("category_id", "permalink")\
+             """
+           ]
 
     create =
       {:create, index(:posts, ["lower(permalink)"], name: "posts$main", prefix: :foo)}
 
-    assert_raise ArgumentError, "SQLite3 does not support table prefixes", fn ->
-      execute_ddl(create)
-    end
+    assert execute_ddl(create) == [
+             """
+             CREATE INDEX "foo"."posts$main" ON "posts" (lower(permalink))\
+             """
+           ]
   end
 
   test "create index with comment" do
-    create = {:create, index(:posts, [:category_id, :permalink], comment: "comment")}
+    create =
+      {:create, index(:posts, [:category_id, :permalink], comment: "comment")}
 
     assert execute_ddl(create) == [
              """
@@ -470,10 +500,7 @@ defmodule Ecto.Adapters.SQLite3.Connection.MigrationTest do
 
   test "drop index with prefix" do
     drop = {:drop, index(:posts, [:id], name: "posts$main", prefix: :foo), :restrict}
-
-    assert_raise ArgumentError, "SQLite3 does not support table prefixes", fn ->
-      execute_ddl(drop)
-    end
+    assert execute_ddl(drop) == [~s|DROP INDEX "foo"."posts$main"|]
   end
 
   test "drop index concurrently not supported" do
@@ -517,9 +544,9 @@ defmodule Ecto.Adapters.SQLite3.Connection.MigrationTest do
   test "rename table with prefix" do
     rename = {:rename, table(:posts, prefix: :foo), table(:new_posts, prefix: :foo)}
 
-    assert_raise ArgumentError, "SQLite3 does not support table prefixes", fn ->
-      execute_ddl(rename)
-    end
+    assert execute_ddl(rename) == [
+             ~s|ALTER TABLE "foo"."posts" RENAME TO "new_posts"|
+           ]
   end
 
   test "rename column" do
@@ -533,9 +560,9 @@ defmodule Ecto.Adapters.SQLite3.Connection.MigrationTest do
   test "rename column in prefixed table" do
     rename = {:rename, table(:posts, prefix: :foo), :given_name, :first_name}
 
-    assert_raise ArgumentError, "SQLite3 does not support table prefixes", fn ->
-      execute_ddl(rename)
-    end
+    assert execute_ddl(rename) == [
+             ~s|ALTER TABLE "foo"."posts" RENAME COLUMN "given_name" TO "first_name"|
+           ]
   end
 
   test "autoincrement support" do
