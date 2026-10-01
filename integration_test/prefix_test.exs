@@ -1,7 +1,7 @@
 defmodule Ecto.Integration.PrefixTest do
   use Ecto.Integration.Case, async: true
 
-  import Ecto.Query, only: [from: 2]
+  import Ecto.Query, only: [from: 1, from: 2]
 
   alias Ecto.Integration.Post
   alias Ecto.Integration.TestRepo
@@ -17,5 +17,11 @@ defmodule Ecto.Integration.PrefixTest do
       |> TestRepo.all()
 
     assert [%Post{id: 1}] = results
+
+    results =
+      from(Post)
+      |> TestRepo.all()
+
+    assert [] = results
   end
 end
