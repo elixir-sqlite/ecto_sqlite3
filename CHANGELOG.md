@@ -7,6 +7,9 @@ project adheres to [Semantic Versioning][semver].
 
 ## Unreleased
 
+## v0.26.0
+
+- changed: Bump minimum version of exqlite to `~> 0.40`.
 - changed: Raise on incorrect use of drop mode.
 - added: Support rendering `:modifiers` in `CREATE TABLE` commands.
 - added: Support check constraints via [`Ecto.Migration.constraint/3`](https://hexdocs.pm/ecto_sql/Ecto.Migration.html#constraint/3).
